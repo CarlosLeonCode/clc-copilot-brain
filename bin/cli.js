@@ -94,7 +94,7 @@ function copyDirRecursive(srcDir, destDir, replacer = null) {
   }
 }
 
-// Helper: Setup IDE adapters pointing to AGENTS.md
+// Helper: Setup IDE adapters pointing to AGENTS.md and ensure .claude/commands/ are present
 function setupIdeAdapters(targetDir) {
   const adapters = ['CLAUDE.md', 'GEMINI.md', '.cursorrules', '.windsurfrules'];
   const results = [];
@@ -121,6 +121,23 @@ function setupIdeAdapters(targetDir) {
       results.push({ adapter, status: 'fallback_file', target: 'AGENTS.md' });
     }
   }
+
+  // Ensure .claude/commands/ directory and commands are present
+  const claudeCommandsSrc = path.join(PKG_ROOT, 'templates', 'base', '.claude', 'commands');
+  const claudeCommandsDest = path.join(targetDir, '.claude', 'commands');
+  if (fs.existsSync(claudeCommandsSrc)) {
+    ensureDir(claudeCommandsDest);
+    const expectedCommands = ['brain.md', 'brain:onboarding.md', 'brain:sales.md', 'brain:doctor.md', 'brain:add-area.md'];
+    for (const cmdFile of expectedCommands) {
+      const srcFile = path.join(claudeCommandsSrc, cmdFile);
+      const destFile = path.join(claudeCommandsDest, cmdFile);
+      if (fs.existsSync(srcFile) && !fs.existsSync(destFile)) {
+        fs.copyFileSync(srcFile, destFile);
+        results.push({ adapter: `.claude/commands/${cmdFile}`, status: 'copied' });
+      }
+    }
+  }
+
   return results;
 }
 
@@ -298,10 +315,23 @@ async function handleInit(targetDirArg, options = {}) {
       .replaceAll('{{UPDATED_AT}}', nowIso);
   };
 
-  // 1. Copy base templates (org-kernel.json, company-profile.md, AGENTS.md, .agents/)
+  // 1. Copy base templates (org-kernel.json, company-profile.md, AGENTS.md, .agents/, skills/, .claude/)
   copyDirRecursive(templateBaseDir, targetDir, replacer);
 
-  // 2. Setup IDE adapters (CLAUDE.md, GEMINI.md, .cursorrules, .windsurfrules)
+  // Explicitly ensure skills/ and .claude/commands/ from templates/base are copied
+  const templateSkillsDir = path.join(templateBaseDir, 'skills');
+  const targetSkillsDir = path.join(targetDir, 'skills');
+  if (fs.existsSync(templateSkillsDir)) {
+    copyDirRecursive(templateSkillsDir, targetSkillsDir, replacer);
+  }
+
+  const templateClaudeDir = path.join(templateBaseDir, '.claude');
+  const targetClaudeDir = path.join(targetDir, '.claude');
+  if (fs.existsSync(templateClaudeDir)) {
+    copyDirRecursive(templateClaudeDir, targetClaudeDir, replacer);
+  }
+
+  // 2. Setup IDE adapters (CLAUDE.md, GEMINI.md, .cursorrules, .windsurfrules) and verify .claude/commands/
   setupIdeAdapters(targetDir);
 
   // 3. Copy schemas
@@ -339,8 +369,9 @@ async function handleInit(targetDirArg, options = {}) {
     `1. ${pc.cyan('org-kernel.json')} - Core organizational state & active areas\n` +
     `2. ${pc.cyan('AGENTS.md')} - Universal SSOT for Cursor, Claude, Windsurf & Gemini\n` +
     `3. ${pc.cyan('.cursorrules, .windsurfrules, CLAUDE.md, GEMINI.md')} - Symlinked adapters\n` +
-    `4. ${pc.cyan('.agents/skills/')} - Reusable AI query & audit skills\n` +
-    `5. ${pc.cyan(selectedAreas.join(', '))} - Installed operational areas\n\n` +
+    `4. ${pc.cyan('.claude/commands/')} - Claude Code slash commands (/brain, /brain:sales, etc.)\n` +
+    `5. ${pc.cyan('skills/')} - LLM onboarding, sales copilot, doctor, & scaffolder skills\n` +
+    `6. ${pc.cyan(selectedAreas.join(', '))} - Installed operational areas\n\n` +
     `Run ${pc.bold('copilot-brain doctor')} to audit repository health.`,
     'Scaffolded Artifacts'
   );
@@ -660,6 +691,28 @@ async function handleDoctor(targetDirArg, options = {}) {
     console.log(`  ${pc.green('✔')} All multi-IDE adapters (.cursorrules, .windsurfrules, CLAUDE.md, GEMINI.md) properly configured.`);
   }
 
+  // 3b. Check Claude Code slash commands (.claude/commands/)
+  const claudeCommandsDir = path.join(targetDir, '.claude', 'commands');
+  const expectedClaudeCommands = ['brain.md', 'brain:onboarding.md', 'brain:sales.md', 'brain:doctor.md', 'brain:add-area.md'];
+  let claudeCmdIssuesCount = 0;
+  for (const cmd of expectedClaudeCommands) {
+    const cmdPath = path.join(claudeCommandsDir, cmd);
+    if (!fs.existsSync(cmdPath)) {
+      issues.push({
+        level: 'warning',
+        message: `Missing Claude slash command: .claude/commands/${cmd}`,
+        repairable: true,
+        action: 'create_claude_command',
+        command: cmd
+      });
+      claudeCmdIssuesCount++;
+    }
+  }
+  if (claudeCmdIssuesCount === 0) {
+    checksPassed++;
+    console.log(`  ${pc.green('✔')} All Claude Code slash commands (.claude/commands/) verified.`);
+  }
+
   // 4. Check native skills
   const skillsDir = path.join(targetDir, '.agents', 'skills');
   const expectedSkills = ['brain-search.md', 'sales-assist.md', 'sop-auditor.md'];
@@ -673,6 +726,27 @@ async function handleDoctor(targetDirArg, options = {}) {
   if (missingSkills === 0) {
     checksPassed++;
     console.log(`  ${pc.green('✔')} Agent query and audit skills present in .agents/skills/.`);
+  }
+
+  // 4b. Check LLM operating skills (skills/)
+  const rootSkillsDir = path.join(targetDir, 'skills');
+  const expectedRootSkills = ['skill_brain_onboarding.md', 'skill_sales_copilot.md', 'skill_brain_doctor.md', 'skill_area_scaffolder.md'];
+  let missingRootSkills = 0;
+  for (const skill of expectedRootSkills) {
+    if (!fs.existsSync(path.join(rootSkillsDir, skill))) {
+      issues.push({
+        level: 'warning',
+        message: `Missing LLM operating skill: skills/${skill}`,
+        repairable: true,
+        action: 'create_skill',
+        skill
+      });
+      missingRootSkills++;
+    }
+  }
+  if (missingRootSkills === 0) {
+    checksPassed++;
+    console.log(`  ${pc.green('✔')} LLM operating skills (skills/) verified.`);
   }
 
   // 5. Check installed areas on disk
@@ -764,14 +838,31 @@ async function handleDoctor(targetDirArg, options = {}) {
       let doRepair = options.fix;
       if (doRepair === undefined) {
         doRepair = await p.confirm({
-          message: `Detected ${repairable.length} repairable adapter/symlink issue(s). Automatically fix them now?`,
+          message: `Detected ${repairable.length} repairable issue(s). Automatically fix them now?`,
           initialValue: true
         });
       }
 
       if (doRepair && !p.isCancel(doRepair)) {
+        // 1. Repair IDE adapters and .claude/commands/
         setupIdeAdapters(targetDir);
-        console.log(pc.green('\n✔ Repaired missing and misconfigured IDE adapter symlinks!'));
+
+        // 2. Repair missing skills/ if any
+        const templateSkillsDir = path.join(PKG_ROOT, 'templates', 'base', 'skills');
+        const targetSkillsDir = path.join(targetDir, 'skills');
+        if (fs.existsSync(templateSkillsDir)) {
+          ensureDir(targetSkillsDir);
+          const expectedSkillsToCopy = ['skill_brain_onboarding.md', 'skill_sales_copilot.md', 'skill_brain_doctor.md', 'skill_area_scaffolder.md'];
+          for (const skillFile of expectedSkillsToCopy) {
+            const src = path.join(templateSkillsDir, skillFile);
+            const dst = path.join(targetSkillsDir, skillFile);
+            if (fs.existsSync(src) && !fs.existsSync(dst)) {
+              fs.copyFileSync(src, dst);
+            }
+          }
+        }
+
+        console.log(pc.green('\n✔ Repaired missing and misconfigured IDE adapters, slash commands, and skills!'));
       }
     }
   } else {

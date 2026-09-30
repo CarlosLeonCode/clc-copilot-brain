@@ -42,12 +42,54 @@ test('CLI Suite: Copilot Brain', async (t) => {
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'battlecards', 'competitor-alpha.json')), 'battlecard json must exist');
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'marketing', 'brand', 'brand-guidelines.md')), 'brand guidelines must exist');
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'product', 'roadmap', 'q3-q4-product-themes.md')), 'roadmap must exist');
+
+    // Assert .claude/commands/ are scaffolded
+    assert.ok(fs.existsSync(path.join(TEST_DIR, '.claude', 'commands', 'brain.md')), 'brain.md command must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, '.claude', 'commands', 'brain:onboarding.md')), 'brain:onboarding.md command must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, '.claude', 'commands', 'brain:sales.md')), 'brain:sales.md command must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, '.claude', 'commands', 'brain:doctor.md')), 'brain:doctor.md command must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, '.claude', 'commands', 'brain:add-area.md')), 'brain:add-area.md command must exist');
+
+    // Assert skills/ are scaffolded
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_brain_onboarding.md')), 'skill_brain_onboarding.md must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_sales_copilot.md')), 'skill_sales_copilot.md must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_brain_doctor.md')), 'skill_brain_doctor.md must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_area_scaffolder.md')), 'skill_area_scaffolder.md must exist');
   });
 
   await t.test('doctor command audits healthy scaffold', () => {
     const output = execSync('node ./bin/cli.js doctor ./test-scaffold', { cwd: PKG_DIR }).toString();
     assert.match(output, /All Second Brain health checks passed with zero errors or warnings/);
     assert.match(output, /Errors: 0/);
+    assert.match(output, /Warnings: 0/);
+  });
+
+  await t.test('doctor detects and repairs missing claude commands and skills', () => {
+    // Intentionally remove command and skill
+    const cmdToRemove = path.join(TEST_DIR, '.claude', 'commands', 'brain:sales.md');
+    const skillToRemove = path.join(TEST_DIR, 'skills', 'skill_sales_copilot.md');
+    fs.unlinkSync(cmdToRemove);
+    fs.unlinkSync(skillToRemove);
+
+    // Doctor without fix should detect warnings
+    const checkOutput = execSync('node ./bin/cli.js doctor ./test-scaffold', { cwd: PKG_DIR }).toString();
+    assert.match(checkOutput, /Missing Claude slash command/);
+    assert.match(checkOutput, /Missing LLM operating skill/);
+    assert.match(checkOutput, /Warnings: 2/);
+
+    // Doctor with --fix should repair them
+    const fixOutput = execSync('node ./bin/cli.js doctor ./test-scaffold --fix', { cwd: PKG_DIR }).toString();
+    assert.match(fixOutput, /Repaired missing and misconfigured IDE adapters, slash commands, and skills/);
+
+    // Assert restored
+    assert.ok(fs.existsSync(cmdToRemove), 'brain:sales.md should be repaired');
+    assert.ok(fs.existsSync(skillToRemove), 'skill_sales_copilot.md should be repaired');
+
+    // Re-run doctor: should be clean
+    const cleanOutput = execSync('node ./bin/cli.js doctor ./test-scaffold', { cwd: PKG_DIR }).toString();
+    assert.match(cleanOutput, /All Second Brain health checks passed with zero errors or warnings/);
+    assert.match(cleanOutput, /Errors: 0/);
+    assert.match(cleanOutput, /Warnings: 0/);
   });
 
   await t.test('list-areas displays installed vs uninstalled', () => {
@@ -74,6 +116,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
   await t.test('doctor passes on updated brain', () => {
     const output = execSync('node ./bin/cli.js doctor ./test-scaffold', { cwd: PKG_DIR }).toString();
     assert.match(output, /Errors: 0/);
+    assert.match(output, /Warnings: 0/);
   });
 
   // Cleanup
