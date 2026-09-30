@@ -1,0 +1,61 @@
+{
+  "$schema": "../../schemas/sop.schema.json",
+  "id": "incident-management",
+  "title": "P0/P1 Incident Response and Remediation Procedure",
+  "area": "operations",
+  "owner": "Site Reliability Engineering Lead",
+  "version": "1.2.0",
+  "effectiveDate": "2026-09-30",
+  "reviewFrequencyMonths": 3,
+  "purpose": "Define standard operating protocol for triaging, mitigating, and documenting high-severity production outages.",
+  "scope": "All production services, customer-facing APIs, and critical internal infrastructure.",
+  "prerequisites": [
+    "Production SSH access or AWS/GCP admin role",
+    "PagerDuty incident commander on-call authorization"
+  ],
+  "toolsRequired": [
+    "PagerDuty",
+    "Datadog / Prometheus",
+    "Slack (#incident-war-room)",
+    "Statuspage"
+  ],
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "Acknowledge and Declare Incident",
+      "description": "Acknowledge the alert within 5 minutes in PagerDuty and declare severity (P0 or P1). Designate Incident Commander (IC).",
+      "responsibleRole": "On-Call Primary SRE",
+      "verificationCriteria": "Incident ticket created and #incident-war-room channel active with pinned incident status.",
+      "fallbackOrEscalation": "If primary does not respond within 7 minutes, escalate to Secondary On-Call."
+    },
+    {
+      "stepNumber": 2,
+      "title": "Establish Stakeholder Communication",
+      "description": "Publish initial public notification to Statuspage within 15 minutes stating 'Investigating elevated error rates'.",
+      "responsibleRole": "Communications Lead",
+      "verificationCriteria": "Statuspage updated and internal Slack #general notified with war room link.",
+      "fallbackOrEscalation": "Notify VP of Engineering if customer-facing downtime exceeds 30 minutes."
+    },
+    {
+      "stepNumber": 3,
+      "title": "Mitigate and Isolate Root Cause",
+      "description": "Execute rollback of recent deployments or traffic shedding to secondary region to restore service availability.",
+      "responsibleRole": "Incident Commander / SRE",
+      "verificationCriteria": "Core API error rate falls below 0.1% for 10 consecutive minutes.",
+      "fallbackOrEscalation": "Engage third-party vendor emergency hotline if underlying cloud provider outage occurs."
+    },
+    {
+      "stepNumber": 4,
+      "title": "Publish Post-Mortem & Brain Update",
+      "description": "Conduct blameless post-mortem meeting within 48 hours and log action items and architecture changes in repository.",
+      "responsibleRole": "Incident Commander",
+      "verificationCriteria": "Post-mortem document reviewed, action items assigned in issue tracker.",
+      "fallbackOrEscalation": "Review outstanding action items in monthly operational review."
+    }
+  ],
+  "auditChecklist": [
+    "Was the incident declared within the 5-minute SLA?",
+    "Did Statuspage receive updates every 30 minutes until resolution?",
+    "Were post-mortem action items committed to the issue tracker?"
+  ]
+}

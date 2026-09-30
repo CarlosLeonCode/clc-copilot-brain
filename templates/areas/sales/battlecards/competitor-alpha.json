@@ -1,0 +1,52 @@
+{
+  "$schema": "../../schemas/sales-battlecard.schema.json",
+  "id": "competitor-alpha",
+  "competitorName": "LegacyDocs Cloud (Alpha Corp)",
+  "competitorTier": "direct",
+  "overview": "Cloud-hosted legacy enterprise documentation platform with proprietary formatting and closed AI lock-in.",
+  "lastUpdated": "2026-09-30",
+  "targetMarket": [
+    "Enterprise IT departments",
+    "Traditional enterprise software companies",
+    "Non-technical knowledge workers"
+  ],
+  "keyStrengths": [
+    "Established enterprise brand with deep procurement relationships",
+    "Extensive out-of-the-box WYSIWYG rich text editor for non-technical users",
+    "Built-in compliance certifications (FedRAMP, HIPAA)"
+  ],
+  "keyWeaknesses": [
+    "Proprietary cloud silo; markdown files cannot be checked into Git repositories",
+    "No native integration with modern AI coding environments (Cursor, Windsurf, Claude Code)",
+    "Expensive per-seat pricing with aggressive annual enterprise lock-in contracts",
+    "Slow search indexing and frequent stale content without automated schema audits"
+  ],
+  "ourSilverBullets": [
+    "Native Git repository integration: documentation lives directly next to code with instant version control and diffing.",
+    "Open Source and AI decoupled: works seamlessly across Cursor, Claude Code, and Windsurf via standard SSOT adapters.",
+    "Deterministic schema validation: built-in CLI checks that prevent knowledge decay."
+  ],
+  "pricingComparison": {
+    "model": "Per seat per month subscription",
+    "priceRange": "$25 - $45 per user / month",
+    "discountPractices": "Aggressive end-of-quarter 30-40% discounts for 3-year upfront contracts"
+  },
+  "commonObjections": [
+    {
+      "objection": "Alpha Corp is already approved by our central procurement team.",
+      "responseScript": "While Alpha Corp is great for general company wikis, your developers and AI copilots need instant, repo-level grounding. We operate alongside your existing wiki or can replace developer docs with zero per-seat tax."
+    }
+  ],
+  "winLossStats": {
+    "winRatePercent": 68.5,
+    "commonWinReasons": [
+      "Developer experience and CLI integration",
+      "No vendor lock-in with open Markdown",
+      "Immediate AI copilot context integration"
+    ],
+    "commonLossReasons": [
+      "Strict company-wide mandate to use pre-contracted enterprise vendor",
+      "Lack of non-technical WYSIWYG editing for marketing-only teams"
+    ]
+  }
+}

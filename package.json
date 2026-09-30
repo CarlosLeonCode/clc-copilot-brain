@@ -1,0 +1,31 @@
+{
+  "name": "@clc/copilot-brain",
+  "version": "1.0.0",
+  "description": "Open Source Second Brain Engine for organizations and AI coding copilot environments",
+  "type": "module",
+  "main": "bin/cli.js",
+  "bin": {
+    "copilot-brain": "./bin/cli.js",
+    "clc-brain": "./bin/cli.js"
+  },
+  "keywords": [
+    "second-brain",
+    "copilot",
+    "knowledge-base",
+    "agents",
+    "sales-enablement",
+    "cli",
+    "cursor",
+    "windsurf",
+    "claude"
+  ],
+  "author": "Carlos Leon Code Pro",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/cli.test.js"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.8.1",
+    "picocolors": "^1.1.1"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "../../schemas/sales-objection.schema.json",
+  "id": "pricing-too-high",
+  "title": "Budget Concerns & Perceived Cost Barrier",
+  "category": "pricing",
+  "severity": "high",
+  "triggerPhrases": [
+    "Your solution is outside our allocated budget this quarter",
+    "We cannot justify additional tooling spend right now",
+    "It seems expensive compared to using free Markdown files or basic wikis"
+  ],
+  "rootCause": "The prospect has not calculated the hidden cost of context-switching and developer time lost to copilot hallucinations and fragmented documentation.",
+  "pivotScript": "I completely understand that budget scrutiny is strict right now. Let me ask: how much developer time was spent last month refactoring hallucinated AI code or tracking down outdated API specs?",
+  "counterArguments": [
+    "A 50-person engineering team loses an estimated 200 hours per month navigating stale docs—exceeding $20,000/month in wasted engineering capacity.",
+    "Open-source core architecture eliminates per-seat extortion fees and gives complete data ownership.",
+    "Payback period is achieved in under 3 weeks through accelerated PR reviews and reduced onboarding lag."
+  ],
+  "proofPoints": [
+    "Fintech Scale case study: reduced engineering onboarding time from 90 days to 28 days.",
+    "Zero data-egress penalty; operates directly on local git repositories."
+  ],
+  "suggestedNextStep": "Schedule a 20-minute ROI review walking through the engineering velocity calculator."
+}

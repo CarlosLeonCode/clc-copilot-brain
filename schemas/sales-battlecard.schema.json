@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clc-copilot-brain.dev/schemas/sales-battlecard.schema.json",
+  "title": "Sales Competitor Battlecard Schema",
+  "description": "Schema for competitor intelligence battlecards in the Second Brain Engine",
+  "type": "object",
+  "required": [
+    "id",
+    "competitorName",
+    "competitorTier",
+    "overview",
+    "lastUpdated",
+    "keyStrengths",
+    "keyWeaknesses",
+    "ourSilverBullets"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "competitorName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "competitorTier": {
+      "type": "string",
+      "enum": ["direct", "indirect", "emerging"]
+    },
+    "overview": {
+      "type": "string",
+      "minLength": 10
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date"
+    },
+    "targetMarket": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "keyStrengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "keyWeaknesses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "ourSilverBullets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "pricingComparison": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "priceRange": {
+          "type": "string"
+        },
+        "discountPractices": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "commonObjections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["objection", "responseScript"],
+        "properties": {
+          "objection": {
+            "type": "string"
+          },
+          "responseScript": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "winLossStats": {
+      "type": "object",
+      "properties": {
+        "winRatePercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "commonWinReasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "commonLossReasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

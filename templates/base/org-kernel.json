@@ -1,0 +1,30 @@
+{
+  "$schema": "./schemas/org-kernel.schema.json",
+  "version": "1.0.0",
+  "organization": {
+    "name": "{{COMPANY_NAME}}",
+    "legalName": "{{COMPANY_NAME}}, Inc.",
+    "industry": "{{INDUSTRY}}",
+    "domain": "https://example.com",
+    "tagline": "{{TAGLINE}}",
+    "description": "High-velocity team leveraging an Organizational Second Brain to align human talent and AI agents.",
+    "foundedYear": 2026,
+    "headquarters": "Remote / Distributed"
+  },
+  "activeAreas": {{ACTIVE_AREAS_JSON}},
+  "governance": {
+    "owner": "Executive Leadership",
+    "coreTeam": ["RevOps Lead", "Product Lead", "Head of Operations"],
+    "reviewCadenceDays": 30
+  },
+  "aiAdapters": {
+    "ssotPath": "AGENTS.md",
+    "adapters": ["CLAUDE.md", "GEMINI.md", ".cursorrules", ".windsurfrules"],
+    "skillsDirectory": ".agents/skills"
+  },
+  "metadata": {
+    "createdAt": "{{CREATED_AT}}",
+    "updatedAt": "{{UPDATED_AT}}",
+    "schemaVersion": "1.0.0"
+  }
+}

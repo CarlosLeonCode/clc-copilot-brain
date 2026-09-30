@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clc-copilot-brain.dev/schemas/sop.schema.json",
+  "title": "Standard Operating Procedure (SOP) Schema",
+  "description": "Schema for standard operating procedures and operational checklists in the Second Brain Engine",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "area",
+    "owner",
+    "version",
+    "effectiveDate",
+    "purpose",
+    "scope",
+    "steps"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "area": {
+      "type": "string",
+      "minLength": 2
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 2
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+    },
+    "effectiveDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "reviewFrequencyMonths": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 24,
+      "default": 6
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 10
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 5
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "toolsRequired": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["stepNumber", "title", "description", "responsibleRole"],
+        "properties": {
+          "stepNumber": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10
+          },
+          "responsibleRole": {
+            "type": "string"
+          },
+          "verificationCriteria": {
+            "type": "string"
+          },
+          "fallbackOrEscalation": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "auditChecklist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

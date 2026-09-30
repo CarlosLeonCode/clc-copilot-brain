@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clc-copilot-brain.dev/schemas/sales-objection.schema.json",
+  "title": "Sales Objection Handling Schema",
+  "description": "Schema for objection-handling matrices and pivot scripts in the Second Brain Engine",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "category",
+    "severity",
+    "triggerPhrases",
+    "rootCause",
+    "pivotScript",
+    "counterArguments",
+    "suggestedNextStep"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "category": {
+      "type": "string",
+      "enum": ["pricing", "timing", "authority", "competitor", "trust", "technical_fit"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "blocker"]
+    },
+    "triggerPhrases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "rootCause": {
+      "type": "string",
+      "minLength": 10
+    },
+    "pivotScript": {
+      "type": "string",
+      "minLength": 15
+    },
+    "counterArguments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "proofPoints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "suggestedNextStep": {
+      "type": "string",
+      "minLength": 5
+    }
+  },
+  "additionalProperties": true
+}
