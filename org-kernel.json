@@ -1,0 +1,46 @@
+{
+  "$schema": "./schemas/org-kernel.schema.json",
+  "version": "1.0.0",
+  "organization": {
+    "name": "CLC Copilot Brain",
+    "legalName": "CLC Copilot Brain, Inc.",
+    "industry": "Developer Tools & AI Engineering",
+    "domain": "https://github.com/carlosleoncodepro/clc-copilot-brain",
+    "tagline": "Open Source Organizational Second Brain Engine",
+    "description": "High-velocity team leveraging an Organizational Second Brain to align human talent and AI agents.",
+    "foundedYear": 2026,
+    "headquarters": "Remote / Distributed"
+  },
+  "activeAreas": [],
+  "ecosystemTools": {
+    "salesFlowDiagrams": {
+      "tool": "Archify",
+      "repository": "https://github.com/tt-a1i/archify",
+      "purpose": "Interactive workflow, sequence, and lifecycle diagramming for sales journey maps"
+    }
+  },
+  "governance": {
+    "owner": "Executive Leadership",
+    "coreTeam": [
+      "RevOps Lead",
+      "Product Lead",
+      "Head of Operations"
+    ],
+    "reviewCadenceDays": 30
+  },
+  "aiAdapters": {
+    "ssotPath": "AGENTS.md",
+    "adapters": [
+      "CLAUDE.md",
+      "GEMINI.md",
+      ".cursorrules",
+      ".windsurfrules"
+    ],
+    "skillsDirectory": ".agents/skills"
+  },
+  "metadata": {
+    "createdAt": "2026-09-30T10:00:00Z",
+    "updatedAt": "2026-09-30T10:00:00Z",
+    "schemaVersion": "1.0.0"
+  }
+}

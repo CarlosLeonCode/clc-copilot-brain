@@ -85,6 +85,26 @@
       },
       "additionalProperties": true
     },
+    "ecosystemTools": {
+      "type": "object",
+      "description": "Recommended or integrated tools within the organization ecosystem",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["tool", "repository", "purpose"],
+        "properties": {
+          "tool": {
+            "type": "string"
+          },
+          "repository": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
     "aiAdapters": {
       "type": "object",
       "properties": {

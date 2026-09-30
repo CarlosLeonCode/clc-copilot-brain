@@ -730,7 +730,14 @@ async function handleDoctor(targetDirArg, options = {}) {
 
   // 4b. Check LLM operating skills (skills/)
   const rootSkillsDir = path.join(targetDir, 'skills');
-  const expectedRootSkills = ['skill_brain_onboarding.md', 'skill_sales_copilot.md', 'skill_brain_doctor.md', 'skill_area_scaffolder.md'];
+  const expectedRootSkills = [
+    'skill_brain_onboarding.md',
+    'skill_sales_copilot.md',
+    'skill_call_analyzer.md',
+    'skill_monthly_retrospective.md',
+    'skill_brain_doctor.md',
+    'skill_area_scaffolder.md'
+  ];
   let missingRootSkills = 0;
   for (const skill of expectedRootSkills) {
     if (!fs.existsSync(path.join(rootSkillsDir, skill))) {
@@ -852,7 +859,14 @@ async function handleDoctor(targetDirArg, options = {}) {
         const targetSkillsDir = path.join(targetDir, 'skills');
         if (fs.existsSync(templateSkillsDir)) {
           ensureDir(targetSkillsDir);
-          const expectedSkillsToCopy = ['skill_brain_onboarding.md', 'skill_sales_copilot.md', 'skill_brain_doctor.md', 'skill_area_scaffolder.md'];
+          const expectedSkillsToCopy = [
+            'skill_brain_onboarding.md',
+            'skill_sales_copilot.md',
+            'skill_call_analyzer.md',
+            'skill_monthly_retrospective.md',
+            'skill_brain_doctor.md',
+            'skill_area_scaffolder.md'
+          ];
           for (const skillFile of expectedSkillsToCopy) {
             const src = path.join(templateSkillsDir, skillFile);
             const dst = path.join(targetSkillsDir, skillFile);

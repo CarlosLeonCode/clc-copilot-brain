@@ -12,6 +12,13 @@
     "headquarters": "Remote / Distributed"
   },
   "activeAreas": {{ACTIVE_AREAS_JSON}},
+  "ecosystemTools": {
+    "salesFlowDiagrams": {
+      "tool": "Archify",
+      "repository": "https://github.com/tt-a1i/archify",
+      "purpose": "Interactive workflow, sequence, and lifecycle diagramming for sales journey maps"
+    }
+  },
   "governance": {
     "owner": "Executive Leadership",
     "coreTeam": ["RevOps Lead", "Product Lead", "Head of Operations"],

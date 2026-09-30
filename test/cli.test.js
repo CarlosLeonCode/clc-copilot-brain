@@ -40,8 +40,23 @@ test('CLI Suite: Copilot Brain', async (t) => {
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'GEMINI.md')), 'GEMINI.md must exist');
     assert.ok(fs.existsSync(path.join(TEST_DIR, '.agents', 'skills', 'brain-search.md')), 'brain-search skill must exist');
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'battlecards', 'competitor-alpha.json')), 'battlecard json must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'calls', 'README.md')), 'calls README must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'calls', '2026-09', '2026-09-15_carlos_acme-corp.md')), 'historical call log must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'win-loss', 'README.md')), 'win-loss README must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'win-loss', 'post-mortem-template.md')), 'post-mortem template must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'win-loss', 'sample-closed-won-fintech.md')), 'closed-won sample must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'win-loss', 'sample-closed-lost-legacy.md')), 'closed-lost sample must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'qualification', 'qualification-matrix.md')), 'qualification matrix must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'stages', 'pipeline-stages.md')), 'pipeline stages must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'skills', 'skill_call_analyzer.md')), 'area call analyzer skill must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'skills', 'skill_monthly_retrospective.md')), 'area monthly retro skill must exist');
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'marketing', 'brand', 'brand-guidelines.md')), 'brand guidelines must exist');
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'product', 'roadmap', 'q3-q4-product-themes.md')), 'roadmap must exist');
+
+    // Assert ecosystemTools in org-kernel.json
+    const kernelData = JSON.parse(fs.readFileSync(path.join(TEST_DIR, 'org-kernel.json'), 'utf8'));
+    assert.ok(kernelData.ecosystemTools, 'ecosystemTools must exist in org-kernel.json');
+    assert.strictEqual(kernelData.ecosystemTools.salesFlowDiagrams.tool, 'Archify');
 
     // Assert .claude/commands/ are scaffolded
     assert.ok(fs.existsSync(path.join(TEST_DIR, '.claude', 'commands', 'brain.md')), 'brain.md command must exist');
@@ -53,6 +68,8 @@ test('CLI Suite: Copilot Brain', async (t) => {
     // Assert skills/ are scaffolded
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_brain_onboarding.md')), 'skill_brain_onboarding.md must exist');
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_sales_copilot.md')), 'skill_sales_copilot.md must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_call_analyzer.md')), 'skill_call_analyzer.md must exist');
+    assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_monthly_retrospective.md')), 'skill_monthly_retrospective.md must exist');
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_brain_doctor.md')), 'skill_brain_doctor.md must exist');
     assert.ok(fs.existsSync(path.join(TEST_DIR, 'skills', 'skill_area_scaffolder.md')), 'skill_area_scaffolder.md must exist');
   });
