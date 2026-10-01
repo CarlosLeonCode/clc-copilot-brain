@@ -58,6 +58,31 @@ The engine organizes institutional knowledge into modular, schema-backed domain 
 
 ---
 
+## 2b. How To Use (No Code Needed)
+
+You don't need to know programming. Think of it as **answering 4 questions, then asking anything in plain language**.
+
+```mermaid
+flowchart LR
+    A[Install once] --> B[Run init]
+    B --> C[Answer 4 questions]
+    C --> D[Your Second Brain is born]
+    D --> E[Ask in your language]
+    E --> F[Grounded answer]
+    D -. health check .-> G[doctor]
+    D -. new department .-> H[add-area]
+```
+
+1. **Install once** — one command, done.
+2. **Run `init`** — it asks: company name, industry, tagline, and which areas to install (e.g. sales, marketing).
+3. **Your Second Brain is born** — folders and guides per department. This is the Single Source of Truth.
+4. **Ask in your language** — from Cursor, Claude, or Windsurf: e.g. "how do we handle pricing objections?". The AI cites real files instead of guessing.
+5. **It grows with you** — add calls, cases, pricing. `doctor` checks health, `add-area` adds departments.
+
+> Interactive version: open [`docs/diagrams/uso.html`](./docs/diagrams/uso.html) in your browser (zoom, search, trace the flow).
+
+---
+
 ## 3. Quick Start
 
 ### Installation
