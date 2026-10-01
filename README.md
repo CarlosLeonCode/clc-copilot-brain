@@ -177,7 +177,7 @@ Operational governance playbooks are provided under `playbooks/`:
 
 `org-kernel.json → ecosystemTools` declares optional integrations (not npm dependencies):
 
-- **Archify** (`https://github.com/tt-a1i/archify`) — interactive workflow, sequence, and lifecycle diagrams for sales journey maps. Invoke when you need to visualize funnels or lifecycles.
+- **Archify** (`https://github.com/tt-a1i/archify`) — interactive workflow, sequence, and lifecycle diagrams for sales journey maps. The base template only declares the tool; actual diagrams live in the instantiated project, not here.
 
 ---
 
