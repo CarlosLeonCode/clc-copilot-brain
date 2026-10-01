@@ -39,12 +39,22 @@ The engine organizes institutional knowledge into modular, schema-backed domain 
 
 | Area | Purpose | Key Subdirectories & Contents |
 | :--- | :--- | :--- |
-| **`sales`** (Core) | Revenue Enablement & Deal Strategy | `icps/`, `battlecards/` (JSON + MD), `objections/`, `scripts/`, `case-studies/` |
+| **`sales`** (Core) | Revenue Enablement & Deal Strategy | `icps/`, `battlecards/` (JSON + MD), `objections/`, `scripts/`, `case-studies/`, `calls/`, `win-loss/`, `qualification/`, `stages/` |
 | **`marketing`** | Decoupled Brand & Messaging | `brand/`, `messaging/`, `content/`, `distribution/` |
 | **`product`** | Product Lifecycle & Specs | `roadmap/`, `specs/` (PRDs & ADRs), `releases/` |
 | **`operations`** | Execution & Continuity | `sops/` (JSON + MD), `tools/`, `vendors/` |
 | **`hr_people`** | Talent & Culture Systems | `handbook/`, `hiring/` (scorecards), `onboarding/` (30-60-90) |
 | **`finance_legal`** | Commercial Governance | `pricing/` (discount matrix), `compliance/` (NDAs, privacy) |
+
+### Sales Intelligence (Closed-Loop)
+
+`sales/` is a first-class citizen with partitioned memory and post-mortems:
+
+- `sales/calls/YYYY-MM/`: analyzed call logs with structured frontmatter (rep, stage, outcome, detected objections, strengths, improvements). See `sales/calls/README.md`.
+- `sales/win-loss/`: 4-dimension post-mortems (product, sales process, commercial, competitive) plus a reusable template.
+- `sales/qualification/qualification-matrix.md`: MEDDPICC with disqualify-fast triggers.
+- `sales/stages/pipeline-stages.md`: 5 stages with canonical exit-gate criteria.
+- LLM prompts in `skills/skill_call_analyzer.md` and `skills/skill_monthly_retrospective.md` are exportable to ChatGPT/Claude — not an automatic pipeline.
 
 ---
 
@@ -143,6 +153,46 @@ Operational governance playbooks are provided under `playbooks/`:
 
 ---
 
-## 7. License
+## 7. Claude Code & Agent Skills
 
-MIT © [Carlos Leon Code Pro](https://github.com/carlosleoncodepro)
+### Slash Commands (`.claude/commands/`)
+
+- `/brain` — master dashboard (areas, health, tools)
+- `/brain:onboarding` — 8-step interview, 1 question at a time
+- `/brain:sales` — live sales copilot (objections, battlecards, talk tracks)
+- `/brain:doctor` — in-chat repo health audit
+- `/brain:add-area` — scaffold new domains or assets
+
+### LLM Skills (`skills/` + `.agents/skills/`)
+
+- `skill_brain_onboarding.md` — organizational interview
+- `skill_sales_copilot.md` — objection handling & competitor positioning
+- `skill_call_analyzer.md` — transcript → structured `sales/calls/` log
+- `skill_monthly_retrospective.md` — month-end trends + closed-loop updates
+- `skill_brain_doctor.md` — audit protocol
+- `skill_area_scaffolder.md` — schema-compliant scaffolding
+- `.agents/skills/` — `brain-search.md`, `sales-assist.md`, `sop-auditor.md` for autonomous agents
+
+### Ecosystem Tools
+
+`org-kernel.json → ecosystemTools` declares optional integrations (not npm dependencies):
+
+- **Archify** (`https://github.com/tt-a1i/archify`) — interactive workflow, sequence, and lifecycle diagrams for sales journey maps. Invoke when you need to visualize funnels or lifecycles.
+
+---
+
+## 8. Development & Testing
+
+```bash
+npm test   # node --test tests/**/*.test.js — 58 tests
+```
+
+Suites: `cli` (lifecycle), `schemas` (positive + negative validation), `areas-integrity` (6 areas + 7 playbooks), `sales-intelligence` (calls, win-loss, qualification, stages, Archify), `ide-adapters` (SSOT symlinks, slash commands, skills).
+
+`copilot-brain doctor` is CI-safe: validates JSON against `schemas/`, checks symlinks, and detects missing skills/commands.
+
+---
+
+## 9. License
+
+MIT © [Carlos Leon Code Pro](https://github.com/carlosleoncodepro) — see [LICENSE](./LICENSE).
