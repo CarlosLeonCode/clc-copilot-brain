@@ -21,8 +21,29 @@
   ],
   "author": "Carlos Leon Code Pro",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carlosleoncodepro/clc-copilot-brain.git"
+  },
+  "homepage": "https://github.com/carlosleoncodepro/clc-copilot-brain#readme",
+  "bugs": {
+    "url": "https://github.com/carlosleoncodepro/clc-copilot-brain/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin/",
+    "templates/",
+    "schemas/",
+    "playbooks/",
+    "skills/",
+    "AGENTS.md",
+    "org-kernel.json",
+    "company-profile.md"
+  ],
   "scripts": {
-    "test": "node --test test/cli.test.js"
+    "test": "node --test tests/**/*.test.js"
   },
   "dependencies": {
     "@clack/prompts": "^1.8.1",
