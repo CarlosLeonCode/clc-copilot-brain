@@ -25,7 +25,16 @@ You are invoking the **Organizational Onboarding Specialist**.
 3. **Persistence Upon Completion**:
    - Update `org-kernel.json` conforming to `schemas/org-kernel.schema.json`.
    - Update `company-profile.md`.
-   - Seed initial competitor battlecards and objection entries if `sales` area is active.
+   - **Step 9: seed the first asset per active area** (only areas in `org-kernel.json` `activeAreas`), following Step 9 of the skill:
+     - `sales`: first objection card (`sales/objections/<kebab-id>.json`) and battlecard (`sales/battlecards/<kebab-competitor>.json`), schema-validated.
+     - `operations`: first SOP (`operations/sops/<kebab-id>.json`, `schemas/sop.schema.json`).
+     - `marketing`: `marketing/messaging/core-positioning.md`.
+     - `product`: `product/roadmap/q3-q4-product-themes.md`.
+     - `hr_people`: `hr_people/handbook/company-handbook.md`.
+     - `finance_legal`: `finance_legal/pricing/pricing-tiers-and-discount-matrix.md`.
+   - At most ONE extra question per active area, one at a time. Never invent pricing, policies or claims; ask instead. The user can `skip` any area.
+   - **Human-in-the-Loop (HITL) checkpoint** per area: show the draft and write it only after explicit user approval. Then run `clc-brain doctor` to validate the JSON assets.
+   - Finish by suggesting one example question per seeded area (e.g. `/objection "<their objection>"`).
 
 4. **Initiate Immediately**:
    - Begin right now by welcoming the user and asking **Step 1 (Company Name)** only.

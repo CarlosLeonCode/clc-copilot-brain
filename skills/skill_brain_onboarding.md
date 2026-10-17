@@ -14,7 +14,9 @@
    - Briefly acknowledge and validate the user's answer (1 concise sentence) before presenting the next question.
 3. **PERSISTENCE**:
    - Once all 8 questions are completed, immediately write or update `org-kernel.json` and `company-profile.md`.
-   - If the user selects the `sales` area, seed initial competitor battlecards and objection entries based on their responses.
+   - Then run **Step 9** to draft the first real asset for each active area. Write each one only after explicit user approval.
+4. **NEVER INVENT FACTS**:
+   - Never fabricate pricing, metrics, customer names, or competitive claims. If a required field was not covered by the user's answers, ask for it (one question at a time) instead of guessing.
 
 ---
 
@@ -78,11 +80,107 @@ Once Question 8 is answered:
 2. **Update `company-profile.md`**:
    - Reflect company name, industry, tagline, core value proposition, primary offer, competitors, and governance.
 
-3. **Seed Initial Sales Knowledge (if `sales` is active)**:
-   - For competitors mentioned in Step 6, verify or scaffold JSON files in `sales/battlecards/` conforming to `schemas/sales-battlecard.schema.json`.
-   - For objections mentioned in Step 7, verify or scaffold JSON files in `sales/objections/` conforming to `schemas/sales-objection.schema.json`.
+3. **Seed the First Asset per Active Area**: run **Step 9** below.
 
 4. **Final Summary & Next Steps**:
    - Provide a concise summary of all updated files.
-   - Recommend the user run `/brain:doctor` (or `copilot-brain doctor`) to verify integrity.
-   - Inform the user they can now ask domain questions or trigger `/brain:sales`.
+   - Recommend the user run `/brain:doctor` (or `clc-brain doctor`) to verify integrity.
+   - Close by suggesting **one example question per seeded area**, built from the user's own data (see 9.5).
+   - Mention `/brain` as the dashboard for everything else.
+
+---
+
+## STEP 9: SEED THE FIRST ASSET PER ACTIVE AREA (HITL)
+
+Goal: every active area leaves onboarding with one real asset, so the copilot answers from the user's own data immediately, not from template samples.
+
+### 9.1 Rules
+- **Only active areas**: read `org-kernel.json` -> `activeAreas`. Skip any area not listed (custom areas: skip and note it).
+- **Light interview**: reuse answers from Steps 1-8 first. Ask **at most ONE extra question per active area**, one question at a time.
+- **Never fabricate**: never invent pricing, metrics, policies, names, or claims. If a required field is still missing after the extra question, leave the section as a clearly marked `TODO` (Markdown) or ask the user (JSON) instead of guessing.
+- **The user can skip any area**: say "Reply `skip` to leave this area for later."
+- **Replace samples**: the Markdown templates ship with example content from another company. Rewrite the target sections with the user's data; keep the headings.
+
+### 9.2 Per-area targets
+
+| Area | File | Source answers | Extra question (max one) |
+|------|------|----------------|--------------------------|
+| `sales` | `sales/objections/<kebab-id>.json` + `sales/battlecards/<kebab-competitor>.json` | Step 7 (first objection), Step 6 (first competitor) | "How does your team answer that objection today, and what do you suggest as next step?" |
+| `operations` | `operations/sops/<kebab-id>.json` | Step 8 owner | "Which recurring procedure should be documented first, and what are its main steps and who does each?" |
+| `marketing` | `marketing/messaging/core-positioning.md` | Steps 2-4, Step 6 edge | "What 2-3 messages do you want every prospect to remember, with one proof point each?" |
+| `product` | `product/roadmap/q3-q4-product-themes.md` | Step 4 offer | "What are the 1-2 product themes for this half, with their objective and key deliverables?" |
+| `hr_people` | `hr_people/handbook/company-handbook.md` | Step 3 mission | "What are your core values, working norms (hours, remote), and time-off policy?" |
+| `finance_legal` | `finance_legal/pricing/pricing-tiers-and-discount-matrix.md` | Step 4 business model | "What are your pricing tiers, and who can approve which discount levels?" |
+
+### 9.3 Required fields
+
+**Sales objection card** (`schemas/sales-objection.schema.json`)
+
+| Field | Rule |
+|-------|------|
+| `$schema` | `"../../schemas/sales-objection.schema.json"` |
+| `id` | kebab-case, `^[a-z0-9-]+$`, same as the file name (e.g. `pricing-too-high`) |
+| `title` | at least 3 characters |
+| `category` | one of `pricing`, `timing`, `authority`, `competitor`, `trust`, `technical_fit` |
+| `severity` | one of `low`, `medium`, `high`, `blocker` |
+| `triggerPhrases` | array, at least 1 item — what buyers literally say |
+| `rootCause` | at least 10 characters — why the buyer really says it |
+| `pivotScript` | at least 15 characters — the verbatim reply the team uses |
+| `counterArguments` | array, at least 1 item |
+| `suggestedNextStep` | at least 5 characters |
+| `proofPoints` | optional array — include only proof the user actually gave |
+
+**Sales battlecard** (`schemas/sales-battlecard.schema.json`)
+
+| Field | Rule |
+|-------|------|
+| `$schema` | `"../../schemas/sales-battlecard.schema.json"` |
+| `id` | kebab-case competitor name, `^[a-z0-9-]+$`, same as the file name |
+| `competitorName` | at least 1 character |
+| `competitorTier` | one of `direct`, `indirect`, `emerging` |
+| `overview` | at least 10 characters |
+| `lastUpdated` | today's date, `YYYY-MM-DD` |
+| `keyStrengths` | array, at least 1 item |
+| `keyWeaknesses` | array, at least 1 item |
+| `ourSilverBullets` | array, at least 1 item — the edge the user named in Step 6 |
+| `pricingComparison`, `commonObjections`, `winLossStats`, `targetMarket` | optional — omit unless the user provided the data |
+
+**Operations SOP** (`schemas/sop.schema.json`)
+
+| Field | Rule |
+|-------|------|
+| `$schema` | `"../../schemas/sop.schema.json"` |
+| `id` | kebab-case, `^[a-z0-9-]+$`, same as the file name |
+| `title` | at least 3 characters |
+| `area` | `"operations"` |
+| `owner` | role or name, at least 2 characters (default: the Step 8 owner) |
+| `version` | `"1.0.0"` (pattern `^[0-9]+\.[0-9]+(\.[0-9]+)?$`) |
+| `effectiveDate` | today's date, `YYYY-MM-DD` |
+| `purpose` | at least 10 characters |
+| `scope` | at least 5 characters |
+| `steps` | array, at least 1 item; each step needs `stepNumber` (integer >= 1), `title` (>= 3 chars), `description` (>= 10 chars), `responsibleRole` |
+| `reviewFrequencyMonths`, `prerequisites`, `toolsRequired`, `auditChecklist`, step `verificationCriteria` / `fallbackOrEscalation` | optional — only if the user provided them |
+
+**Markdown targets** — rewrite these sections, keep the headings:
+- `core-positioning.md`: 1. Category Definition, 2. The 30-Second Elevator Pitch, 3. Core Messaging Pillars (claim + proof point each).
+- `q3-q4-product-themes.md`: one theme per section with Objective, Key Deliverables, Target Outcome; set the title to the current half.
+- `company-handbook.md`: 1. Operating Manifesto & Core Values, 2. Remote Work Norms & Collaboration, 3. Time Off & Leave Policies.
+- `pricing-tiers-and-discount-matrix.md`: 1. Commercial Packaging Tiers, 2. Discount Approval Governance Matrix.
+
+### 9.4 HITL checkpoint per area: draft -> approve -> write
+For each active area, in order:
+1. Show the draft (JSON code block, or the rewritten Markdown sections) with its target path.
+2. Ask: "Should I save this as shown, change something, or `skip` this area?"
+3. **Do not write any file until the user explicitly approves.** Apply edits and confirm again.
+4. Write the approved file. For sales objections, optionally add a short human-readable `.md` companion, as `/objection` does.
+
+After all areas, run `clc-brain doctor` (or `/brain:doctor`) and confirm the JSON assets pass schema validation. If validation fails, fix the reported fields, show the change, and re-run.
+
+### 9.5 Close with one example question per seeded area
+Build each from the user's data, for example:
+- sales: `/objection "<their objection>"`
+- operations: "Walk me through our <SOP title> procedure."
+- marketing: "What is our elevator pitch?"
+- product: "What are we building this half?"
+- hr_people: "What is our time-off policy?"
+- finance_legal: "Can I give a 25% discount, and who approves it?"
