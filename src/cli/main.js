@@ -13,6 +13,7 @@ import { runInit } from './commands/init.js';
 import { runListAreas } from './commands/list-areas.js';
 import { runMcp } from './commands/mcp.js';
 import { runUpgrade } from './commands/upgrade.js';
+import { runView } from './commands/view.js';
 
 const COMMANDS = {
   init: runInit,
@@ -21,7 +22,8 @@ const COMMANDS = {
   doctor: runDoctorCommand,
   'list-areas': runListAreas,
   mcp: runMcp,
-  upgrade: runUpgrade
+  upgrade: runUpgrade,
+  view: runView
 };
 
 export async function main(argv = process.argv.slice(2)) {

@@ -143,7 +143,7 @@ test('doctor without --fix and without a TTY does not prompt and exits 1 on erro
 test('--help documents every flag the commands accept', () => {
   const { stdout, status } = cli('--help');
   assert.equal(status, 0);
-  for (const flag of ['--name', '--industry', '--tagline', '--areas', '--demo', '--clean', '--yes', '--preset', '--custom', '--fix', '--dry-run', 'upgrade']) {
+  for (const flag of ['--name', '--industry', '--tagline', '--areas', '--demo', '--clean', '--yes', '--preset', '--custom', '--fix', '--dry-run', 'upgrade', 'view', '--open']) {
     assert.ok(stdout.includes(flag), `help is missing ${flag}`);
   }
 });
@@ -178,5 +178,32 @@ test('init next steps are tailored to the installed areas, not only sales', () =
     assert.match(stdout, /onboarding plan/i);
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test('view writes the sales system page and prints its path in plain words', () => {
+  const outer = sandbox();
+  try {
+    const brain = path.join(outer, 'brain');
+    initBrain(brain, ['--clean', '--yes']);
+    const page = path.join(brain, 'sales', 'sales-system.html');
+    fs.rmSync(page, { force: true });
+    const { stdout, status } = cli('view', brain);
+    assert.equal(status, 0);
+    assert.ok(fs.existsSync(page), 'view must write sales/sales-system.html');
+    assert.match(stdout, /Your sales system page is ready/);
+    assert.ok(stdout.includes(page), 'the absolute path of the page is printed');
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test('view outside a brain exits 1', () => {
+  const empty = sandbox();
+  try {
+    assert.equal(cli('view', empty).status, 1);
+    assert.equal(fs.existsSync(path.join(empty, 'sales', 'sales-system.html')), false);
+  } finally {
+    fs.rmSync(empty, { recursive: true, force: true });
   }
 });
