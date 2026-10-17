@@ -23,9 +23,9 @@ ${pc.bold('INIT OPTIONS:')}
   --tagline <text>    Core tagline or mission
   --areas <list>      Comma-separated area ids (sales,marketing,product,operations,hr_people,finance_legal)
   --demo              Include demo samples (mock battlecards, objections, calls)
-  --clean             No demo samples (empty folders and blank templates)
+  --clean             No demo samples (empty folders and blank templates, the default)
   -y, --yes           Accept defaults for anything not passed as a flag
-                      (all areas; demo samples unless --clean)
+                      (all areas, clean brain unless --demo)
 
 ${pc.bold('ADD-AREA OPTIONS:')}
   --preset <id>       Install an uninstalled preset area

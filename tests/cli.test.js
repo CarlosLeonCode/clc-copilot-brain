@@ -43,7 +43,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
 
   await t.test('Scaffolding a new second brain via init with interactive defaults and flags', async (sub) => {
     await sub.test('init scaffolds target with explicit flags', () => {
-      const initCmd = `"${process.execPath}" ./bin/cli.js init "${TEST_DIR}" --yes --name "TestOrg" --industry "Developer Tools" --tagline "Test Tagline" --areas "sales,marketing,product"`;
+      const initCmd = `"${process.execPath}" ./bin/cli.js init "${TEST_DIR}" --yes --demo --name "TestOrg" --industry "Developer Tools" --tagline "Test Tagline" --areas "sales,marketing,product"`;
       const output = execSync(initCmd, { cwd: PKG_DIR }).toString();
       assert.match(output, /Second Brain initialized successfully/);
 
@@ -80,6 +80,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
       assert.ok(kernelData.activeAreas.length >= 6, 'Default init should install all 6 preset areas');
       assert.ok(fs.existsSync(path.join(TEST_DIR_DEFAULTS, 'finance_legal')), 'finance_legal area should exist');
       assert.ok(fs.existsSync(path.join(TEST_DIR_DEFAULTS, 'hr_people')), 'hr_people area should exist');
+      assert.ok(!fs.existsSync(path.join(TEST_DIR_DEFAULTS, 'sales', 'battlecards', 'competitor-alpha.json')), '--yes must default to a clean brain (no demo samples)');
     });
   });
 

@@ -29,8 +29,7 @@ async function chooseAreas(options) {
 
 async function chooseDemo(options) {
   if (options.demo === true) return true;
-  if (options.clean) return false;
-  if (options.yes) return true;
+  if (options.clean || options.yes) return false;
   const mode = await ask(p.select({
     message: 'How would you like to initialize your knowledge base?',
     options: [
