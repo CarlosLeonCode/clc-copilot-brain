@@ -4,6 +4,8 @@
  * The repo root dogfoods the same commands and skills that `templates/base/`
  * scaffolds into new projects. Files under `.claude/commands/` and `skills/`
  * must exist on both sides and be byte-identical.
+ * Managed sales skills in `templates/areas/sales/skills/*.md` must also be
+ * byte-identical to the matching `skills/*.md`.
  * Intentionally NOT compared (filled-in at root): AGENTS.md, org-kernel.json,
  * `.agents/skills/`.
  * Self-contained: uses only Node.js built-ins.
@@ -17,6 +19,7 @@ const path = require('path');
 const NAME = 'check_template_sync';
 const SYNCED_DIRS = ['.claude/commands', 'skills'];
 const TEMPLATE_BASE = 'templates/base';
+const SALES_SKILLS_DIR = 'templates/areas/sales/skills';
 
 function listFiles(baseDir, relDir) {
   const out = [];
@@ -61,6 +64,20 @@ const check = async function checkTemplateSync(targetDir) {
       if (!rootFiles.has(rel)) {
         violations.push({ file: `${TEMPLATE_BASE}/${rel}`, message: 'Missing from repo root' });
       }
+    }
+  }
+
+  for (const rel of listFiles(dir, SALES_SKILLS_DIR)) {
+    if (!rel.endsWith('.md') || rel.slice(SALES_SKILLS_DIR.length + 1).includes('/')) continue;
+    const rootRel = `skills/${rel.slice(SALES_SKILLS_DIR.length + 1)}`;
+    const rootAbs = path.join(dir, rootRel);
+    if (!fs.existsSync(rootAbs)) {
+      violations.push({ file: rel, message: `Missing from repo root (${rootRel})` });
+      continue;
+    }
+    compared++;
+    if (!fs.readFileSync(path.join(dir, rel)).equals(fs.readFileSync(rootAbs))) {
+      violations.push({ file: rel, message: `Content drift between ${rootRel} and ${SALES_SKILLS_DIR}/` });
     }
   }
 

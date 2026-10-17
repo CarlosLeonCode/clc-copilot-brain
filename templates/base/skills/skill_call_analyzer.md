@@ -17,6 +17,9 @@ When provided with a call transcript, recording summary, or raw conversation not
      - `Discovery` | `Validation` | `Business Case` | `Negotiation` | `Closed Won` | `Closed Lost`
    - **Call Type**: `Initial Discovery` | `Technical Deep-Dive` | `Executive Business Review` | `Commercial Negotiation`
    - **Outcome**: `Advanced` | `Stalled` | `Disqualified` | `Closed Won` | `Closed Lost`
+   - **Play**: The conversation play that was run, matching a file in `sales/plays/` (e.g., `discovery-call`). Read `sales/system.md` to find it. If none fits, leave `play` out and flag it for the rep.
+   - **Branch**: The branch ID in that play's decision tree (e.g., `B3`) where the call went off-script or broke. Use the last branch reached if the call ended cleanly.
+   - **Gate Advanced**: `true` only if the evidence for the stage exit gate in `sales/stages/pipeline-stages.md` was captured on this call, otherwise `false`.
    - **Deal Value / ARR**: Estimated or contracted ARR (e.g., `$120,000 ARR`).
 
 2. **File Path Convention**:
@@ -71,12 +74,15 @@ Generate the final output strictly conforming to this Markdown and YAML frontmat
 call_id: "CALL-YYYY-MM-DD-01"
 date: "YYYY-MM-DD"
 rep: "{{REP_NAME}}"
-prospect_company: "{{COMPANY_NAME}}"
+prospect_company: "{{PROSPECT_COMPANY}}"
 contact_name: "{{CONTACT_NAME}}"
 contact_role: "{{CONTACT_ROLE}}"
 deal_stage: "{{STAGE}}"
 call_type: "{{CALL_TYPE}}"
 outcome: "{{OUTCOME}}"
+play: "{{PLAY_ID}}"
+branch: "{{BRANCH_ID}}"
+gate_advanced: true | false
 deal_size: "{{ESTIMATED_ARR}}"
 detected_objections:
   - id: "{{OBJECTION_ID}}"
@@ -140,6 +146,14 @@ next_meeting: "YYYY-MM-DDTHH:MM:SSZ"
 | {{ACTION_ITEM_1}} | {{OWNER}} | {{TARGET_DATE}} | Pending |
 | {{ACTION_ITEM_2}} | {{OWNER}} | {{TARGET_DATE}} | Pending |
 ```
+
+---
+
+## 3b. PLAY ATTRIBUTION & HITL REVIEW CHECKPOINT
+
+- Use the exact frontmatter keys above (`prospect_company`, `deal_stage`, `play`, `branch`, `gate_advanced`). They match the keys written by `brain_capture_call`, so `/retro` can aggregate them.
+- `{{PROSPECT_COMPANY}}` is the prospect's name, never your own organization's name.
+- Human-in-the-Loop (HITL) checkpoint: show the full call log, including `play`, `branch`, and `gate_advanced`, and wait for the rep's confirmation before saving.
 
 ---
 

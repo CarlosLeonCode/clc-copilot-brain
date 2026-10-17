@@ -16,4 +16,6 @@ You are invoking the **Monthly RevOps Retrospective Engine**.
      - **Top Recurring Buyer Objections** (and whether current scripts resolved them)
      - **Competitor Win/Loss Trends**
      - **Pipeline Stage Conversion Bottlenecks**
+     - **Play performance & proposed play edits** (per play/branch counts and drop-off, an Unattributed bucket for logs without `play`; read legacy and canonical keys)
    - Propose concrete closed-loop updates to `sales/objections/`, `sales/battlecards/`, and `sales/scripts/`, pausing at a **Human-in-the-Loop (HITL) checkpoint** before writing changes.
+   - Apply a proposed edit to a play only after explicit approval from whoever runs `/retro`; then append a Learnings Log entry in `sales/system.md` and bump the play's `version`.

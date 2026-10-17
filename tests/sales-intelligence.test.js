@@ -144,3 +144,64 @@ test('Sales Intelligence Suite: Revenue Enablement & Closed-Loop Assets', async 
     assert.strictEqual(templateKernel.ecosystemTools.salesFlowDiagrams.tool, 'Archify');
   });
 });
+
+test('Sales plays loop: call attribution and retro play performance', async (t) => {
+  const { getPrompt } = await import('../src/mcp/prompts.js');
+  const read = (...p) => fs.readFileSync(path.join(PKG_DIR, ...p), 'utf8');
+  const skillCopies = (name) => [
+    read('skills', name),
+    read('templates', 'base', 'skills', name),
+    read('templates', 'areas', 'sales', 'skills', name),
+  ];
+  const cmdCopies = (name) => [
+    read('.claude', 'commands', name),
+    read('templates', 'base', '.claude', 'commands', name),
+  ];
+
+  await t.test('call analyzer records play, branch, gate_advanced with canonical keys', () => {
+    for (const c of skillCopies('skill_call_analyzer.md')) {
+      assert.match(c, /^play: /m);
+      assert.match(c, /^branch: /m);
+      assert.match(c, /^gate_advanced: /m);
+      assert.match(c, /sales\/plays\//);
+      assert.match(c, /HITL/i);
+    }
+    for (const c of cmdCopies('call.md')) assert.match(c, /play/i), assert.match(c, /gate_advanced/);
+    assert.match(getPrompt('call').messages[0].content.text, /gate_advanced/);
+  });
+
+  await t.test('no managed sales skill uses {{COMPANY_NAME}} for the prospect', () => {
+    for (const name of ['skill_call_analyzer.md', 'skill_monthly_retrospective.md', 'skill_sales_copilot.md']) {
+      const copies = [read('skills', name), read('templates', 'base', 'skills', name)];
+      const salesCopy = path.join(PKG_DIR, 'templates', 'areas', 'sales', 'skills', name);
+      if (fs.existsSync(salesCopy)) copies.push(fs.readFileSync(salesCopy, 'utf8'));
+      for (const c of copies) {
+        assert.doesNotMatch(c, /\{\{COMPANY_NAME\}\}/, `${name} must not use {{COMPANY_NAME}}`);
+      }
+    }
+    assert.match(read('skills', 'skill_call_analyzer.md'), /prospect_company: "\{\{PROSPECT_COMPANY\}\}"/);
+  });
+
+  await t.test('retro covers play performance, unattributed bucket, legacy keys, approval, version bump', () => {
+    for (const c of skillCopies('skill_monthly_retrospective.md')) {
+      assert.match(c, /Play performance & proposed play edits/);
+      assert.match(c, /Unattributed/);
+      assert.match(c, /legacy/i);
+      assert.match(c, /\bstage\b/);
+      assert.match(c, /explicit approval/i);
+      assert.match(c, /Learnings Log/);
+      assert.match(c, /version/);
+      assert.match(c, /HITL/i);
+    }
+    for (const c of cmdCopies('retro.md')) assert.match(c, /Play performance/);
+    assert.match(getPrompt('retro').messages[0].content.text, /Play performance & proposed play edits/);
+  });
+
+  await t.test('demo call log carries play, branch, gate_advanced', () => {
+    const c = read('templates', 'areas', 'sales', 'calls', '2026-09', '2026-09-15_carlos_acme-corp.md');
+    assert.match(c, /^play: "discovery-call"/m);
+    assert.match(c, /^branch: "B\d+"/m);
+    assert.match(c, /^gate_advanced: (true|false)$/m);
+  });
+});
+

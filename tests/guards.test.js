@@ -94,6 +94,35 @@ test('check_template_sync', async (t) => {
   });
 });
 
+test('check_template_sync: managed sales skills', async (t) => {
+  const base = { '.claude/commands/brain.md': '# brain\n', 'templates/base/.claude/commands/brain.md': '# brain\n' };
+
+  await t.test('passes when every sales skill matches its root counterpart', async () => {
+    const result = await runOn(checkTemplateSync, {
+      ...base,
+      'skills/skill_x.md': '# x\n',
+      'templates/base/skills/skill_x.md': '# x\n',
+      'templates/areas/sales/skills/skill_x.md': '# x\n',
+    });
+    assert.strictEqual(result.exitCode, 0, result.data.message);
+  });
+
+  await t.test('fails on drift and on a sales skill with no root counterpart', async () => {
+    const result = await runOn(checkTemplateSync, {
+      ...base,
+      'skills/skill_x.md': '# x\n',
+      'templates/base/skills/skill_x.md': '# x\n',
+      'templates/areas/sales/skills/skill_x.md': '# x drifted\n',
+      'templates/areas/sales/skills/skill_orphan.md': '# orphan\n',
+    });
+    assert.strictEqual(result.exitCode, 1);
+    assert.deepStrictEqual(violationFiles(result).sort(), [
+      'templates/areas/sales/skills/skill_orphan.md',
+      'templates/areas/sales/skills/skill_x.md',
+    ]);
+  });
+});
+
 test('check_clean_architecture', async (t) => {
   const { MAX_BIN_LINES } = checkCleanArchitecture;
 

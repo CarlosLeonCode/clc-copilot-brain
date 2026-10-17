@@ -82,7 +82,7 @@ export function getPrompt(name, args = {}) {
             role: 'user',
             content: {
               type: 'text',
-              text: `Execute the Sales Call Analyzer workflow grounded in \`skills/skill_call_analyzer.md\`:\n\n1. Analyze the sales call transcript or meeting notes.\n2. Cross-reference detected objections against \`sales/objections/\` and competitors against \`sales/battlecards/\`.\n3. Extract Executive Summary, Deal Stage, MEDDPICC signals, Coaching Feedback, and Action Items.\n4. Save the structured call log into \`sales/calls/YYYY-MM/\` (or call \`brain_capture_call\`) after human-in-the-loop confirmation.\n\n${contextLines.length > 0 ? `### Provided Call Context\n${contextLines.join('\n')}` : 'Please ask me to paste the call transcript or meeting notes if not already provided.'}`
+              text: `Execute the Sales Call Analyzer workflow grounded in \`skills/skill_call_analyzer.md\`:\n\n1. Analyze the sales call transcript or meeting notes.\n2. Cross-reference detected objections against \`sales/objections/\` and competitors against \`sales/battlecards/\`.\n3. Extract Executive Summary, Deal Stage, MEDDPICC signals, Coaching Feedback, and Action Items.\n4. Record the \`play\` run (a file in \`sales/plays/\`), the \`branch\` ID where the call went or broke, and \`gate_advanced\` (true/false) using the canonical frontmatter keys.\n5. Save the structured call log into \`sales/calls/YYYY-MM/\` (or call \`brain_capture_call\`) after human-in-the-loop confirmation.\n\n${contextLines.length > 0 ? `### Provided Call Context\n${contextLines.join('\n')}` : 'Please ask me to paste the call transcript or meeting notes if not already provided.'}`
             }
           }
         ]
@@ -146,7 +146,7 @@ export function getPrompt(name, args = {}) {
             role: 'user',
             content: {
               type: 'text',
-              text: `Execute the Monthly RevOps Retrospective grounded in \`skills/skill_monthly_retrospective.md\`:\n\n1. Aggregate all call logs in \`sales/calls/${month || 'YYYY-MM'}/\` and post-mortems in \`sales/win-loss/\`.\n2. Compute rep performance metrics, recurring objection frequency, competitor encounter rates, and pipeline stage friction bottlenecks.\n3. Recommend concrete updates to \`sales/objections/\`, \`sales/battlecards/\`, and \`sales/scripts/\` for human-in-the-loop approval.\n\n${month ? `### Target Month\n${month}` : 'Run the retrospective for the most recent month in `sales/calls/` or ask me which `YYYY-MM` partition to analyze.'}`
+              text: `Execute the Monthly RevOps Retrospective grounded in \`skills/skill_monthly_retrospective.md\`:\n\n1. Aggregate all call logs in \`sales/calls/${month || 'YYYY-MM'}/\` and post-mortems in \`sales/win-loss/\`.\n2. Compute rep performance metrics, recurring objection frequency, competitor encounter rates, and pipeline stage friction bottlenecks.\n3. Recommend concrete updates to \`sales/objections/\`, \`sales/battlecards/\`, and \`sales/scripts/\` for human-in-the-loop approval.\n4. Play performance & proposed play edits: per play/branch counts and drop-off, an Unattributed bucket for logs without \`play\` (read legacy and canonical keys). Apply a play edit only after explicit approval from whoever runs the retro, then append a Learnings Log entry and bump the play's \`version\`.\n\n${month ? `### Target Month\n${month}` : 'Run the retrospective for the most recent month in `sales/calls/` or ask me which `YYYY-MM` partition to analyze.'}`
             }
           }
         ]

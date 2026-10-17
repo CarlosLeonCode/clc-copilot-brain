@@ -10,7 +10,8 @@ When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-
 
 1. **Scan Historical Memory**:
    - Collect and parse all call logs in `sales/calls/YYYY-MM/*.md`.
-   - Read YAML frontmatter metadata: `deal_stage`, `rep`, `detected_objections`, `competitors_mentioned`, `outcome`, `deal_size`.
+   - Read YAML frontmatter metadata: `deal_stage`, `rep`, `detected_objections`, `competitors_mentioned`, `outcome`, `deal_size`, `play`, `branch`, `gate_advanced`.
+   - Read both key generations. Legacy logs use `stage` and `prospect`; canonical logs use `deal_stage` and `prospect_company`. Treat `deal_stage ?? stage` and `prospect_company ?? prospect` as the same field.
 2. **Scan Closed Outcomes**:
    - Collect all deal post-mortems in `sales/win-loss/` closed during the target month.
    - Categorize into **Closed Won** vs. **Closed Lost**.
@@ -46,6 +47,13 @@ When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-
 - Tabulate competitor win/loss ratios.
 - Highlight emerging competitors appearing in discovery calls that lack a formal battlecard in `sales/battlecards/`.
 - Validate whether our **Silver Bullets** are winning in the field or losing relevance against updated competitor messaging.
+
+### E. Play performance & proposed play edits
+- Group the month's calls by `play`, then by `branch`. For each play report: calls run, `gate_advanced: true` rate, and the branch where calls most often ended without advancing (drop-off).
+- Put every log with no `play` in an **Unattributed** bucket and show its count. Never guess a play for it.
+- Compare the drop-off branches with the play file in `sales/plays/<play-id>.md` (decision tree, talk tracks) and propose concrete edits: reword a talk track, add a branch, or split a play. Cite the call IDs as evidence.
+- Proposals are text only. Do not edit any play until whoever runs `/retro` gives explicit approval for that specific edit (Human-in-the-Loop, HITL).
+- On approval: apply the edit, append an entry to the Learnings Log in `sales/system.md` (`- YYYY-MM-DD vN->vN+1: change (evidence: CALL-...)`), and bump the play's frontmatter `version` by one.
 
 ---
 
@@ -118,17 +126,24 @@ flowchart LR
 
 ---
 
-## 5. Competitive Intelligence & Battlecard Health
+## 5. Play Performance & Proposed Play Edits
+| Play | Calls | Gate Advanced % | Top Drop-off Branch | Proposed Edit (pending approval) |
+| :--- | :--- | :--- | :--- | :--- |
+| `{{PLAY_ID}}` | {{CALLS}} | {{ADVANCED_PCT}}% | `{{BRANCH_ID}}` | {{PROPOSED_EDIT_OR_NONE}} |
+| **Unattributed** (no `play` in log) | {{UNATTRIBUTED_COUNT}} | n/a | n/a | Ask reps to log `play` |
+
+## 6. Competitive Intelligence & Battlecard Health
 - **Active Competitors Observed**: `{{COMPETITOR_LIST}}`
 - **Displacement Win Rate**: {{DISPLACEMENT_RATE}}%
 - **FUD Encountered in Field**: {{FIELD_FUD_NOTES}}
 
 ---
 
-## 6. Closed-Loop Action Items
+## 7. Closed-Loop Action Items
 - [ ] **Battlecard Update**: Scaffold `sales/battlecards/{{NEW_COMPETITOR}}.json` using `skill_area_scaffolder.md`.
 - [ ] **Objection Matrix Update**: Enhance `sales/objections/pricing-too-high.json` with multi-year ROI calculator link.
 - [ ] **Journey Diagram Refinement**: Update sales flow diagram in **Archify** (`https://github.com/tt-a1i/archify`) to formalize pre-demo qualification step.
+- [ ] **Play Edit** (only after explicit approval): update `sales/plays/{{PLAY_ID}}.md`, bump `version`, append a Learnings Log entry in `sales/system.md`.
 - [ ] **Coaching Drill**: Run 45-minute workshop on Economic Buyer discovery.
 ```
 

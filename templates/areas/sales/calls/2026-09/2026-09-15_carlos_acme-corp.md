@@ -8,6 +8,9 @@ contact_role: "VP of Engineering"
 deal_stage: "Discovery"
 call_type: "Discovery & Qualification"
 outcome: "Advanced"
+play: "discovery-call"
+branch: "B5"
+gate_advanced: true
 deal_size: "$120,000 ARR"
 detected_objections:
   - id: "pricing-too-high"
