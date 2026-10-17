@@ -59,3 +59,18 @@ test('queryBrain validates query and area', () =>
     assert.throws(() => queryBrain(dir, { query: ' ' }), (e) => e instanceof BrainError && e.code === 'VALIDATION');
     assert.throws(() => queryBrain(dir, { query: 'x', area: 'private' }), (e) => e instanceof BrainError && e.code === 'INVALID_AREA');
   }));
+
+test('isDemoTemplateAsset keeps system.md and plays, removes sample- play (S2.2)', () => {
+  assert.equal(isDemoTemplateAsset('/x/sales/system.md'), false);
+  assert.equal(isDemoTemplateAsset('/x/sales/plays/cold-call.md'), false);
+  assert.equal(isDemoTemplateAsset('/x/sales/plays/sample-cold-call.md'), true);
+  assert.ok(!demoAssetPaths().some((p) => /system\.md$|plays[\\/](?!sample-)/.test(p)));
+});
+
+test('clean init keeps system.md and starter plays (S2.3)', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'], demo: false });
+    assert.ok(fs.existsSync(path.join(dir, 'sales', 'system.md')));
+    assert.ok(fs.existsSync(path.join(dir, 'sales', 'plays', 'cold-call.md')));
+    assert.ok(fs.existsSync(path.join(dir, 'sales', 'plays', 'discovery-call.md')));
+  }));

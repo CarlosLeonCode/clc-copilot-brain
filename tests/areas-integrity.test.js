@@ -96,3 +96,69 @@ test('Areas Integrity Suite: 6 Enterprise Areas & Framework Playbooks', async (t
     });
   });
 });
+
+// --- Sales system: system map + starter plays (slice 1a) ---
+const SALES_DIR = path.join(PKG_DIR, 'templates', 'areas', 'sales');
+const PLAYS_DIR = path.join(SALES_DIR, 'plays');
+const PLAY_KEYS = ['play', 'stages', 'goal', 'gate_unlocked', 'version', 'status'];
+const listPlays = () => (fs.existsSync(PLAYS_DIR) ? fs.readdirSync(PLAYS_DIR).filter((f) => f.endsWith('.md')).sort() : []);
+const frontmatterOf = (text) => {
+  const m = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return null;
+  return Object.fromEntries(
+    m[1].split('\n').map((l) => l.match(/^([a-z_]+):\s*(.*?)\s*(#.*)?$/)).filter(Boolean).map((x) => [x[1], x[2]])
+  );
+};
+
+test('sales template ships system.md referencing every play in plays/ (S1.1)', () => {
+  const systemPath = path.join(SALES_DIR, 'system.md');
+  assert.ok(fs.existsSync(systemPath), 'templates/areas/sales/system.md must exist');
+  const plays = listPlays();
+  assert.ok(plays.length >= 2, 'at least cold-call and discovery-call must ship');
+  assert.ok(plays.includes('cold-call.md') && plays.includes('discovery-call.md'));
+  const system = fs.readFileSync(systemPath, 'utf8');
+  for (const file of plays) {
+    assert.ok(system.includes(`plays/${file}`), `system.md must link plays/${file}`);
+  }
+});
+
+test('play frontmatter has keys play,stages,goal,gate_unlocked,version,status by regex (R3, S3.2)', () => {
+  for (const file of listPlays()) {
+    const fm = frontmatterOf(fs.readFileSync(path.join(PLAYS_DIR, file), 'utf8'));
+    assert.ok(fm, `${file} needs frontmatter`);
+    for (const key of PLAY_KEYS) assert.ok(key in fm && fm[key] !== '', `${file} missing ${key}`);
+    assert.equal(fm.play, file.replace(/\.md$/, ''));
+    assert.match(fm.stages, /^\d+(\s*,\s*\d+)*$/);
+    assert.match(fm.version, /^\d+$/);
+    assert.match(fm.status, /^(active|draft|retired)$/);
+  }
+  const cold = frontmatterOf(fs.readFileSync(path.join(PLAYS_DIR, 'cold-call.md'), 'utf8'));
+  assert.equal(cold.stages.split(',').length, 1);
+});
+
+test('plays have mermaid block, learnings section, existing scripts/ links (S4.1)', () => {
+  for (const file of listPlays()) {
+    const text = fs.readFileSync(path.join(PLAYS_DIR, file), 'utf8');
+    assert.match(text, /```mermaid\n[\s\S]*?```/, `${file} needs a mermaid tree`);
+    assert.match(text, /^## Learnings Log/m, `${file} needs a Learnings Log`);
+    const links = [...text.matchAll(/\]\((\.\.\/scripts\/[^)#]+)\)/g)].map((m) => m[1]);
+    assert.ok(links.length > 0, `${file} must link scripts/`);
+    for (const link of links) {
+      assert.ok(fs.existsSync(path.join(PLAYS_DIR, link)), `${file} links missing ${link}`);
+    }
+  }
+});
+
+test('/flow (command, base mirror, MCP prompt) routes by destination, never defaulting to stages (S6.1-6.3, S7.1)', async () => {
+  const rootCmd = fs.readFileSync(path.join(PKG_DIR, '.claude', 'commands', 'flow.md'), 'utf8');
+  const baseCmd = fs.readFileSync(path.join(PKG_DIR, 'templates', 'base', '.claude', 'commands', 'flow.md'), 'utf8');
+  assert.equal(rootCmd, baseCmd, 'flow.md root and base must be byte-identical');
+  const { getPrompt } = await import('../src/mcp/prompts.js').then((m) => ({ getPrompt: m.getPrompt }));
+  const promptText = JSON.stringify(getPrompt ? getPrompt('flow', {}) : '');
+  for (const [label, text] of [['command', rootCmd], ['prompt', promptText]]) {
+    assert.ok(text.includes('sales/plays/'), `${label} must name sales/plays/`);
+    assert.ok(text.includes('pipeline-stages.md'), `${label} must name pipeline-stages.md`);
+    assert.ok(!text.includes('sales/flows/'), `${label} must not mention sales/flows/`);
+    assert.match(text, /HITL|Human-in-the-Loop/i);
+  }
+});

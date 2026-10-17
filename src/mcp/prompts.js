@@ -44,7 +44,7 @@ export const PROMPTS_DEFINITIONS = [
   },
   {
     name: 'flow',
-    description: 'Inspect or update sales pipeline stages, MEDDPICC qualification criteria, or Mermaid sales flow diagrams in sales/stages/pipeline-stages.md and sales/qualification/qualification-matrix.md.',
+    description: 'Inspect or update the sales pipeline (sales/stages/pipeline-stages.md) or conversation plays (sales/plays/), MEDDPICC criteria, and Mermaid flow diagrams.',
     arguments: [
       {
         name: 'stage',
@@ -124,13 +124,13 @@ export function getPrompt(name, args = {}) {
     case 'flow': {
       const { stage } = args;
       return {
-        description: 'Inspect or update sales pipeline stages, MEDDPICC criteria, and Mermaid flowcharts.',
+        description: 'Inspect or update the sales pipeline, conversation plays, MEDDPICC criteria, and Mermaid flowcharts.',
         messages: [
           {
             role: 'user',
             content: {
               type: 'text',
-              text: `Inspect and manage our Sales Flow & Pipeline Architecture grounded in \`sales/stages/pipeline-stages.md\` and \`sales/qualification/qualification-matrix.md\`:\n\n1. Review the canonical pipeline stages (Discovery, Validation, Business Case, Negotiation, Closed Won/Lost) and mandatory exit gates.\n2. Check MEDDPICC qualification criteria and disqualification triggers.\n3. If the user provides a screenshot, whiteboard image, or updated process description, convert or update the interactive **Mermaid flowchart** inside \`sales/stages/pipeline-stages.md\` (and optional Archify workflow in \`sales/flows/\`).\n\n${stage ? `### Requested Stage / Focus\n${stage}` : 'Show our current pipeline stages and ask if I want to check deal exit criteria or update our Mermaid sales flow diagram.'}`
+              text: `Inspect and manage our Sales System grounded in \`sales/system.md\`, \`sales/stages/pipeline-stages.md\`, \`sales/plays/\`, and \`sales/qualification/qualification-matrix.md\`:\n\n1. Classify before writing and never default to pipeline-stages.md. **Macro pipeline** (nodes are deal stages or gates across the whole deal) goes to \`sales/stages/pipeline-stages.md\`. **Conversation play** (nodes are things said or heard inside one interaction) goes to \`sales/plays/<play-id>.md\`; a tree spanning stages is one play with \`stages: 2, 3, 4\`.\n2. If unclear, ask one question: 'Is this the whole deal pipeline or a single conversation?'\n3. For an existing play, update it, bump \`version\`, and append a Learnings Log entry. For a new play, follow the play contract and add a row to \`sales/system.md\`.\n4. Check MEDDPICC criteria and exit gates when relevant. Show the destination path and proposed change for human-in-the-loop (HITL) review before writing.\n\n${stage ? `### Requested Stage / Focus\n${stage}` : 'Show our sales system map and ask if I want to check exit criteria, review a play, or update a flow diagram.'}`
             }
           }
         ]
