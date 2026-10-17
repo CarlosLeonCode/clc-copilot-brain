@@ -17,11 +17,11 @@ function sandbox() {
 }
 
 function cli(...args) {
-  return spawnSync('node', [CLI, ...args], { encoding: 'utf8' });
+  return spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
 }
 
 function initBrain(dir, extra = []) {
-  execFileSync('node', [CLI, 'init', dir, '--name', 'RegCorp', '--industry', 'tech', '--tagline', 'Reg', '--areas', 'sales', ...extra], { encoding: 'utf8' });
+  execFileSync(process.execPath, [CLI, 'init', dir, '--name', 'RegCorp', '--industry', 'tech', '--tagline', 'Reg', '--areas', 'sales', ...extra], { encoding: 'utf8' });
 }
 
 test('add-area --custom rejects an id outside ^[a-z0-9_-]+$ (path traversal)', () => {
@@ -73,7 +73,7 @@ test('clean-demo removes seeded demo calls but keeps real calls from the same mo
     const realCall = path.join(brain, 'sales', 'calls', demoMonth, `${demoMonth}-28_ana_globex.md`);
     fs.writeFileSync(realCall, '# Real customer call');
 
-    execFileSync('node', [CLI, 'clean-demo', brain], { encoding: 'utf8' });
+    execFileSync(process.execPath, [CLI, 'clean-demo', brain], { encoding: 'utf8' });
 
     assert.ok(fs.existsSync(realCall), 'a real call log must never be removed by clean-demo');
     const remaining = fs.readdirSync(path.dirname(realCall));
@@ -131,7 +131,7 @@ test('doctor exits 1 when the brain has errors and 0 when healthy or warnings-on
 test('doctor without --fix and without a TTY does not prompt and exits 1 on errors', () => {
   const empty = sandbox();
   try {
-    const res = spawnSync('node', [CLI, 'doctor', empty], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 15000 });
+    const res = spawnSync(process.execPath, [CLI, 'doctor', empty], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 15000 });
     assert.equal(res.error, undefined, 'doctor must not hang');
     assert.equal(res.status, 1, 'an empty dir has errors (missing org-kernel.json, AGENTS.md)');
     assert.match(res.stdout, /--fix/, 'non-interactive runs print a hint to use --fix');

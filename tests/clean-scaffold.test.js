@@ -18,7 +18,7 @@ test('Scaffold Integrity: Clean Mode vs Demo Mode & Clean-Demo Command', async (
     fs.mkdirSync(cleanDir);
 
     // Run init in clean mode
-    execSync(`node "${CLI_PATH}" init "${cleanDir}" --clean --name "CleanCorp" --industry "tech" --tagline "Clean" --areas "sales"`, {
+    execSync(`"${process.execPath}" "${CLI_PATH}" init "${cleanDir}" --clean --name "CleanCorp" --industry "tech" --tagline "Clean" --areas "sales"`, {
       encoding: 'utf-8'
     });
 
@@ -38,7 +38,7 @@ test('Scaffold Integrity: Clean Mode vs Demo Mode & Clean-Demo Command', async (
     fs.mkdirSync(dirtyDir);
 
     // Run init with demo mode
-    execSync(`node "${CLI_PATH}" init "${dirtyDir}" --demo --name "DemoCorp" --industry "tech" --tagline "Demo" --areas "sales"`, {
+    execSync(`"${process.execPath}" "${CLI_PATH}" init "${dirtyDir}" --demo --name "DemoCorp" --industry "tech" --tagline "Demo" --areas "sales"`, {
       encoding: 'utf-8'
     });
 
@@ -46,7 +46,7 @@ test('Scaffold Integrity: Clean Mode vs Demo Mode & Clean-Demo Command', async (
     assert.ok(fs.existsSync(demoObjection), 'pricing-too-high.json must exist in demo mode');
 
     // Run clean-demo
-    const cleanOutput = execSync(`node "${CLI_PATH}" clean-demo "${dirtyDir}"`, {
+    const cleanOutput = execSync(`"${process.execPath}" "${CLI_PATH}" clean-demo "${dirtyDir}"`, {
       encoding: 'utf-8'
     });
 

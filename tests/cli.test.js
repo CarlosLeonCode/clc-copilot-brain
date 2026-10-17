@@ -17,33 +17,33 @@ test('CLI Suite: Copilot Brain', async (t) => {
 
   await t.test('CLI help & version output', async (sub) => {
     await sub.test('--help and -h outputs usage and available commands', () => {
-      const helpOutput = execSync('node ./bin/cli.js --help', { cwd: PKG_DIR }).toString();
+      const helpOutput = execSync(`"${process.execPath}" ./bin/cli.js --help`, { cwd: PKG_DIR }).toString();
       assert.match(helpOutput, /Open Source Second Brain Engine/);
       assert.match(helpOutput, /init \[dir\]/);
       assert.match(helpOutput, /doctor \[dir\]/);
       assert.match(helpOutput, /add-area \[dir\]/);
       assert.match(helpOutput, /list-areas \[dir\]/);
 
-      const hOutput = execSync('node ./bin/cli.js -h', { cwd: PKG_DIR }).toString();
+      const hOutput = execSync(`"${process.execPath}" ./bin/cli.js -h`, { cwd: PKG_DIR }).toString();
       assert.match(hOutput, /Open Source Second Brain Engine/);
 
-      const helpCmdOutput = execSync('node ./bin/cli.js help', { cwd: PKG_DIR }).toString();
+      const helpCmdOutput = execSync(`"${process.execPath}" ./bin/cli.js help`, { cwd: PKG_DIR }).toString();
       assert.match(helpCmdOutput, /Open Source Second Brain Engine/);
     });
 
     await sub.test('--version and -v outputs version matching package.json', () => {
       const pkg = JSON.parse(fs.readFileSync(path.join(PKG_DIR, 'package.json'), 'utf8'));
-      const versionOutput = execSync('node ./bin/cli.js --version', { cwd: PKG_DIR }).toString();
+      const versionOutput = execSync(`"${process.execPath}" ./bin/cli.js --version`, { cwd: PKG_DIR }).toString();
       assert.match(versionOutput, new RegExp(`copilot-brain v${pkg.version.replace('.', '\\.')}`));
 
-      const vOutput = execSync('node ./bin/cli.js -v', { cwd: PKG_DIR }).toString();
+      const vOutput = execSync(`"${process.execPath}" ./bin/cli.js -v`, { cwd: PKG_DIR }).toString();
       assert.match(vOutput, new RegExp(`copilot-brain v${pkg.version.replace('.', '\\.')}`));
     });
   });
 
   await t.test('Scaffolding a new second brain via init with interactive defaults and flags', async (sub) => {
     await sub.test('init scaffolds target with explicit flags', () => {
-      const initCmd = `node ./bin/cli.js init "${TEST_DIR}" --yes --name "TestOrg" --industry "Developer Tools" --tagline "Test Tagline" --areas "sales,marketing,product"`;
+      const initCmd = `"${process.execPath}" ./bin/cli.js init "${TEST_DIR}" --yes --name "TestOrg" --industry "Developer Tools" --tagline "Test Tagline" --areas "sales,marketing,product"`;
       const output = execSync(initCmd, { cwd: PKG_DIR }).toString();
       assert.match(output, /Second Brain initialized successfully/);
 
@@ -71,7 +71,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
     });
 
     await sub.test('init scaffolds with default yes parameters when flags are omitted', () => {
-      const initDefaultCmd = `node ./bin/cli.js init "${TEST_DIR_DEFAULTS}" --yes`;
+      const initDefaultCmd = `"${process.execPath}" ./bin/cli.js init "${TEST_DIR_DEFAULTS}" --yes`;
       const output = execSync(initDefaultCmd, { cwd: PKG_DIR }).toString();
       assert.match(output, /Second Brain initialized successfully/);
 
@@ -84,7 +84,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
   });
 
   await t.test('Doctor audit on fresh scaffold and reporting healthy', () => {
-    const output = execSync(`node ./bin/cli.js doctor "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
+    const output = execSync(`"${process.execPath}" ./bin/cli.js doctor "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
     assert.match(output, /All Second Brain health checks passed with zero errors or warnings/);
     assert.match(output, /Errors: 0/);
     assert.match(output, /Warnings: 0/);
@@ -104,14 +104,14 @@ test('CLI Suite: Copilot Brain', async (t) => {
     fs.unlinkSync(skillToRemove);
 
     // Doctor audit without --fix must detect all 3 missing items as warnings
-    const checkOutput = execSync(`node ./bin/cli.js doctor "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
+    const checkOutput = execSync(`"${process.execPath}" ./bin/cli.js doctor "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
     assert.match(checkOutput, /Missing IDE adapter: \.cursorrules/);
     assert.match(checkOutput, /Missing Claude slash command: \.claude\/commands\/brain:sales\.md/);
     assert.match(checkOutput, /Missing LLM operating skill: skills\/skill_sales_copilot\.md/);
     assert.match(checkOutput, /Warnings: 3/);
 
     // Run doctor with --fix
-    const fixOutput = execSync(`node ./bin/cli.js doctor "${TEST_DIR}" --fix`, { cwd: PKG_DIR }).toString();
+    const fixOutput = execSync(`"${process.execPath}" ./bin/cli.js doctor "${TEST_DIR}" --fix`, { cwd: PKG_DIR }).toString();
     assert.match(fixOutput, /Repaired missing and misconfigured IDE adapters, slash commands, and skills/);
 
     // Verify all 3 were restored
@@ -120,14 +120,14 @@ test('CLI Suite: Copilot Brain', async (t) => {
     assert.ok(fs.existsSync(skillToRemove), 'skill_sales_copilot.md skill should be repaired');
 
     // Doctor audit again: must now report 100% healthy
-    const cleanOutput = execSync(`node ./bin/cli.js doctor "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
+    const cleanOutput = execSync(`"${process.execPath}" ./bin/cli.js doctor "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
     assert.match(cleanOutput, /All Second Brain health checks passed with zero errors or warnings/);
     assert.match(cleanOutput, /Errors: 0/);
     assert.match(cleanOutput, /Warnings: 0/);
   });
 
   await t.test('Listing installed vs uninstalled areas (list-areas)', () => {
-    const output = execSync(`node ./bin/cli.js list-areas "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
+    const output = execSync(`"${process.execPath}" ./bin/cli.js list-areas "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
     assert.match(output, /Installed Areas:/);
     assert.match(output, /Sales \(sales\)/);
     assert.match(output, /Marketing \(marketing\)/);
@@ -137,7 +137,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
   });
 
   await t.test('Adding preset areas (add-area)', () => {
-    const output = execSync(`node ./bin/cli.js add-area "${TEST_DIR}" --preset operations`, { cwd: PKG_DIR }).toString();
+    const output = execSync(`"${process.execPath}" ./bin/cli.js add-area "${TEST_DIR}" --preset operations`, { cwd: PKG_DIR }).toString();
     assert.match(output, /installed successfully/);
 
     // Operations area content & playbook should be copied
@@ -150,7 +150,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
   });
 
   await t.test('Adding custom areas with boilerplate (add-area)', () => {
-    const output = execSync(`node ./bin/cli.js add-area "${TEST_DIR}" --custom devops_infra`, { cwd: PKG_DIR }).toString();
+    const output = execSync(`"${process.execPath}" ./bin/cli.js add-area "${TEST_DIR}" --custom devops_infra`, { cwd: PKG_DIR }).toString();
     assert.match(output, /Custom area "devops_infra" created/);
 
     // Boilerplate directories & README created
@@ -164,7 +164,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
   });
 
   await t.test('Doctor stays healthy after adding a custom area', () => {
-    const output = execSync(`node ./bin/cli.js doctor "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
+    const output = execSync(`"${process.execPath}" ./bin/cli.js doctor "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
     assert.match(output, /Errors: 0/);
     assert.match(output, /Active area "devops_infra" verified on disk/);
   });
