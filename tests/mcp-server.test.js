@@ -40,6 +40,7 @@ test('MCP Server Suite: Protocol Handshake & Tool Execution', async (t) => {
 
     assert.equal(res.jsonrpc, '2.0');
     assert.equal(res.id, 1);
+    assert.equal(res.result.protocolVersion, '2024-11-05', 'a supported client version is echoed back');
     assert.equal(res.result.serverInfo.name, 'copilot-brain');
     assert.ok(res.result.capabilities.tools);
     assert.ok(res.result.capabilities.prompts);
