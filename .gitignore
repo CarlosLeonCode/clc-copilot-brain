@@ -5,3 +5,26 @@ test-scaffold/
 start/
 .atl/
 .clckernel.yaml
+
+# CLC Kernel: Local AI IDE Mirror Symlinks (SSOT: AGENTS.md)
+CLAUDE.md
+GEMINI.md
+.cursorrules
+.windsurfrules
+.cursor/
+.antigravity/
+.github/copilot-instructions.md
+
+# CLC Kernel: CLI Agent Skills & Playbooks
+.agents/skills/clckernel_cli/
+.agents/skills/clc_forge_cli/
+
+# CLC Kernel: Local SDD Specs & Ephemeral Harness Artifacts
+sdds/*
+!sdds/.gitkeep
+openspec/*
+!openspec/.gitkeep
+.clckernel.resolved.json
+.clc-forge.resolved.json
+.husky/_/
+.ruff_cache/

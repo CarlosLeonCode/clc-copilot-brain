@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Running CLC Kernel safeguards (tests + 4-lens audit)..."
+
+npm test
+node tools/audit.js
