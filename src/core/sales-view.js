@@ -87,7 +87,9 @@ function section(markdown, heading) {
 function plainSystemSection(systemMd) {
   const body = section(systemMd, 'How your sales system works');
   const cut = body.search(/^-{3,}\s*$/m);
-  return cut === -1 ? body : body.slice(0, cut);
+  const plain = cut === -1 ? body : body.slice(0, cut);
+  // The "Want to see it?" hint points at this very page, so it is dropped here.
+  return plain.split(/\r?\n/).filter((l) => !/^\s*want to see it\?/i.test(l)).join('\n');
 }
 
 /** Stage number -> name, from the system.md stage table, else from its numbered list. */
@@ -162,7 +164,13 @@ function readIfExists(file) {
   return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
 }
 
-const diagram = (code) => `<div class="diagram"><pre class="mermaid">${escapeHtml(code)}</pre></div>`;
+// The wide LR pipeline keeps its natural size (no max-width scaling) and scrolls sideways instead.
+const WIDE_DIRECTIVE = '%%{init: {"flowchart": {"useMaxWidth": false}}}%%';
+
+function diagram(code, { wide = false } = {}) {
+  const source = wide ? `${WIDE_DIRECTIVE}\n${code}` : code;
+  return `<div class="diagram${wide ? ' diagram-wide' : ''}"><pre class="mermaid">${escapeHtml(source)}</pre></div>`;
+}
 
 function renderPlay(play) {
   const steps = play.steps.length > 0 ? `<p class="meta"><span class="label">Used in:</span> ${play.steps.map(escapeHtml).join(', ')}</p>` : '';
@@ -203,6 +211,8 @@ h2{margin:40px 0 12px;font-size:1.4rem}
 .meta{color:var(--muted)}
 .diagram{overflow-x:auto;margin:16px 0;padding:12px;border-radius:10px;background:var(--bg)}
 pre.mermaid{margin:0;white-space:pre-wrap;font-size:.85rem;text-align:center}
+.diagram-wide{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.diagram-wide pre.mermaid{text-align:left;width:max-content;min-width:100%}
 .note{font-size:.9rem;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 12px}
 .diagrams-ready .note{display:none}
 details{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
@@ -268,7 +278,7 @@ ${markdownToHtml(plainSystemSection(systemMd))}
 </section>
 <h2>Your pipeline</h2>
 <section class="card">
-${pipeline ? diagram(pipeline) : '<p>No pipeline diagram yet. Ask your assistant to draw one.</p>'}
+${pipeline ? diagram(pipeline, { wide: true }) : '<p>No pipeline diagram yet. Ask your assistant to draw one.</p>'}
 </section>
 <h2>Your call guides</h2>
 ${plays.map(renderPlay).join('\n')}

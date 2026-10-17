@@ -1,7 +1,7 @@
 ---
 play: demo-call
 stages: 2
-goal: Prove fit with a tailored demo and clear Gate 2
+goal: Show how we solve their problem and agree on the next steps together
 gate_unlocked: Gate 2
 version: 1
 status: active
@@ -17,14 +17,14 @@ status: active
 flowchart TD
     B1["Recap pain and success criteria"] --> B2["Demo tied to their use case"]
     B2 --> B3{"Technical blocker raised?"}
-    B3 -->|"No"| B4{"Economic buyer present?"}
+    B3 -->|"No"| B4{"Budget owner present?"}
     B3 -->|"Yes"| B5["Log blocker, agree owner and date"]
     B5 -->|"Resolved"| B4
     B5 -->|"Unresolved"| B7["Pause and escalate internally"]
-    B4 -->|"Yes"| B6["Propose mutual action plan"]
-    B4 -->|"No"| B8["Ask champion to arrange buyer meeting"]
+    B4 -->|"Yes"| B6["Propose a shared plan with dates"]
+    B4 -->|"No"| B8["Ask your contact to bring the budget owner"]
     B8 -->|"Agreed"| B6
-    B6 -->|"Dates agreed"| B9["Gate 2 cleared"]
+    B6 -->|"Dates agreed"| B9["Next steps agreed"]
 ```
 
 ## Branches
@@ -36,10 +36,10 @@ flowchart TD
 | B3 | Prospect asks a technical question | Answer from verified material only; never invent features. | [Discovery framework](../scripts/discovery-call-framework.md) |
 | B4 | No blockers | "Who else should see this before a decision?" | [Discovery framework](../scripts/discovery-call-framework.md) |
 | B5 | Blocker raised | "What would you need to see to be comfortable? Who owns that and by when?" | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B6 | Buyer engaged | Propose a mutual action plan with dates working back from their decision date. | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B6 | Budget owner engaged | Propose a shared plan with dates, working back from the day they want to decide. | [Discovery framework](../scripts/discovery-call-framework.md) |
 | B7 | Blocker unresolved | Pause new work, log the reason, escalate internally. | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B8 | No buyer on the call | "Could you bring the budget owner to a 20-minute session?" | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B9 | Plan agreed | Record gate evidence in the call log (`gate_advanced: true`). | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B8 | Budget owner not on the call | "Could you bring the budget owner to a 20-minute session?" | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B9 | Plan agreed | Note in the call log that the deal moved forward. | [Discovery framework](../scripts/discovery-call-framework.md) |
 
 ## Learnings Log
 

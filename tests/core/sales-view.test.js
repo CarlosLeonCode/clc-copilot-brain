@@ -11,7 +11,7 @@ const STARTER_PLAYS = Object.freeze([
   ['Cold Call', 'Book a discovery meeting'],
   ['Discovery Call', null],
   ['Demo Call', null],
-  ['Follow-up', 'Keep momentum between meetings and move the deal to the next gate']
+  ['Follow-up', 'Keep the deal moving between meetings until the next step is agreed']
 ]);
 
 const countOf = (text, needle) => text.split(needle).length - 1;
@@ -98,4 +98,31 @@ test('writeSalesView writes the page into sales/sales-system.html', () =>
     initBrain(dir, { areas: ['sales'] });
     const { outputPath } = writeSalesView(dir);
     assert.ok(fs.readFileSync(outputPath, 'utf8').startsWith('<!doctype html>'));
+  }));
+
+test('the pipeline diagram keeps a readable size and scrolls sideways; decision trees still scale', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const { html } = buildSalesView(dir);
+    assert.equal(countOf(html, '<div class="diagram diagram-wide"><pre class="mermaid">%%{init: {&quot;flowchart&quot;: {&quot;useMaxWidth&quot;: false}}}%%'), 1);
+    assert.equal(countOf(html, 'useMaxWidth'), 1, 'only the pipeline opts out of max-width scaling');
+    assert.match(html, /\.diagram-wide\{[^}]*overflow-x:auto/);
+  }));
+
+test('the page omits the "Want to see it?" hint copied from the sales map', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    assert.ok(fs.readFileSync(path.join(dir, 'sales', 'system.md'), 'utf8').includes('Want to see it?'));
+    const { html } = buildSalesView(dir);
+    assert.ok(!html.includes('Want to see it?'));
+    assert.ok(!html.includes('Show me my sales process'));
+  }));
+
+test('starter plays read in plain words on the page (no gate jargon or field names outside diagrams)', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const text = buildSalesView(dir).html.replace(/<pre class="mermaid">[\s\S]*?<\/pre>/g, '').replace(/<style>[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/g, '');
+    for (const jargon of [/\bgates?\b/i, /gate_advanced/, /\bchampion\b/i, /mutual action plan/i, /\bnurture\b/i]) {
+      assert.doesNotMatch(text, jargon);
+    }
   }));
