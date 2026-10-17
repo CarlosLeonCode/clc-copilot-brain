@@ -34,12 +34,12 @@ test('upgrade on an up-to-date brain says there is nothing to do', () => {
   });
 });
 
-test('upgrade without a TTY and without --yes prints the plan and writes nothing', () => {
+test('upgrade without a TTY and without --yes prints the plan, writes nothing and exits non-zero (S13.2)', () => {
   withBrain((brain) => {
     const file = path.join(brain, FLOW);
     fs.writeFileSync(file, '# my edit\n');
     const res = cli('upgrade', brain);
-    assert.equal(res.status, 0);
+    assert.equal(res.status, 1);
     assert.match(res.stdout, /flow\.md/);
     assert.match(res.stdout, /--yes/);
     assert.equal(fs.readFileSync(file, 'utf8'), '# my edit\n');
@@ -95,4 +95,15 @@ test('upgrade outside a brain exits 1 with a clear message', () => {
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('upgrade without a folder argument targets the current directory (S17.2)', () => {
+  withBrain((brain) => {
+    const file = path.join(brain, FLOW);
+    fs.writeFileSync(file, '# my edit\n');
+    const res = spawnSync(process.execPath, [CLI, 'upgrade', '--yes'], { encoding: 'utf8', input: '', cwd: brain });
+    assert.equal(res.status, 0);
+    assert.notEqual(fs.readFileSync(file, 'utf8'), '# my edit\n');
+    assert.equal(fs.readFileSync(`${file}.bak`, 'utf8'), '# my edit\n');
+  });
 });

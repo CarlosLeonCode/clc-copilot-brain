@@ -15,7 +15,7 @@ Brains are scaffolded from templates and then edited by their owners. When the p
 - **Add if missing**: new base commands and skills, plus `sales/system.md` and `sales/plays/*.md` when `sales` is active. Existing sales files are user data and are never replaced.
 - **No-clobber backups**: an existing `.bak` is never overwritten; that file is skipped (`backup-exists`) and reported.
 - **Safety skips**: symlinks, non-regular files, templates with unresolved placeholders, and files changed between plan and apply are skipped and reported.
-- **Plan first**: `planUpgrade` is pure; `applyUpgrade` re-validates each action against disk. The CLI shows adds, compact diffs, and skips, and writes only with `--yes` or an interactive confirmation. Without a TTY and without `--yes` it prints the plan and writes nothing; `--dry-run` never writes.
+- **Plan first**: `planUpgrade` is pure; `applyUpgrade` re-validates each action against disk. The CLI shows adds, compact diffs, and skips, and writes only with `--yes` or an interactive confirmation. Without a TTY and without `--yes` it prints the plan, writes nothing and exits 1 so scripts notice the pending upgrade; `--dry-run` never writes and exits 0.
 
 ## Consequences
 

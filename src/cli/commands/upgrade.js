@@ -45,8 +45,9 @@ export async function runUpgrade(targetDir, options) {
   }
   let apply = options.yes === true;
   if (!apply && !process.stdin.isTTY) {
+    // Non-zero so scripts and CI notice a pending upgrade that was not applied (spec S13.2).
     console.log(pc.yellow('\nNo changes written. Re-run with --yes to apply this plan.'));
-    return 0;
+    return 1;
   }
   if (!apply) {
     apply = await p.confirm({ message: 'Apply these changes? (replaced files keep a .bak copy)', initialValue: false });

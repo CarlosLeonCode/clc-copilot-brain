@@ -87,7 +87,7 @@ src/
 | Directory / File | Layer | Responsibility |
 | :--- | :--- | :--- |
 | `src/core/` | Domain / Use Cases | Pure functions taking explicit inputs (`rootDir`, options) and returning data. Errors are `BrainError` with a stable `code`. |
-| `src/cli/` | Adapter (CLI) | Prompts and rendering; maps `BrainError` to a red message and exit code 1. `doctor` exits 1 when errors remain (after `--fix`, if applied); without a TTY and without `--fix` it never prompts and only prints a `--fix` hint. `upgrade [dir] [--yes] [--dry-run]` previews a plan (adds, diffs, skips); it writes only with `--yes` or an interactive confirmation, and `NOT_A_BRAIN` exits 1. |
+| `src/cli/` | Adapter (CLI) | Prompts and rendering; maps `BrainError` to a red message and exit code 1. `doctor` exits 1 when errors remain (after `--fix`, if applied); without a TTY and without `--fix` it never prompts and only prints a `--fix` hint. `upgrade [dir] [--yes] [--dry-run]` previews a plan (adds, diffs, skips); it writes only with `--yes` or an interactive confirmation; a pending plan without a TTY and without `--yes` exits 1, as does `NOT_A_BRAIN`. |
 | `src/mcp/` | Adapter (MCP) | Validates MCP arguments via core and maps `BrainError` to `isError` tool results. |
 | `schemas/` | Core Contracts | JSON Schema definitions (Draft 2020-12) defining valid data shapes for all structured records. |
 | `templates/` | Scaffolding Source | Templates copied during `init` and `add-area`; also the source of truth for expected slash commands, skills, and demo assets. |
