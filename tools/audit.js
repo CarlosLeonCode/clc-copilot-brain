@@ -54,12 +54,8 @@ const LENS_MAP = {
   check_observability: 'performance',
 };
 
+// Lens assignment comes only from LENS_MAP: this repo's src/ is product code, not a guard catalog.
 function getLensForGuard(guardName) {
-  try {
-    const { lensFor } = require('../src/catalog');
-    const lens = lensFor(guardName);
-    if (lens) return lens;
-  } catch {}
   return LENS_MAP[guardName] || 'architecture';
 }
 

@@ -1,0 +1,39 @@
+rules:
+  - id: tdd_mandatory
+    description: "Every feature or bug fix must have a corresponding test (Red -> Green)."
+    enforcement: strict
+  - id: clean_architecture
+    description: "Domain logic must be isolated from the CLI interface."
+    enforcement: strict
+  - id: no_ai_attribution
+    description: "AI attribution in commits is forbidden. Use conventional commits."
+    enforcement: strict
+  - id: mandatory_audit
+    description: "All changes must pass 'clckernel audit' before commit."
+    enforcement: strict
+framework: "node"
+language: "javascript"
+project_type: "cli"
+test_runner: "node --test"
+safeguards:
+  - name: "check_package_files"
+    type: "correctness"
+    path: "tools/check_package_files.js"
+  - name: "check_schema_usage"
+    type: "correctness"
+    path: "tools/check_schema_usage.js"
+  - name: "check_symlinks"
+    type: "architecture"
+    path: "tools/check_symlinks.js"
+  - name: "check_hitl"
+    type: "architecture"
+    path: "tools/check_hitl.js"
+  - name: "check_template_sync"
+    type: "architecture"
+    path: "tools/check_template_sync.js"
+  - name: "check_clean_architecture"
+    type: "architecture"
+    path: "tools/check_clean_architecture.js"
+  - name: "scan_secrets"
+    type: "security"
+    path: "tools/scan_secrets.js"

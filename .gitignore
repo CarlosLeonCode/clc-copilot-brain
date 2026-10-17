@@ -4,13 +4,9 @@ node_modules/
 test-scaffold/
 start/
 .atl/
-.clckernel.yaml
 
-# CLC Kernel: Local AI IDE Mirror Symlinks (SSOT: AGENTS.md)
-CLAUDE.md
-GEMINI.md
-.cursorrules
-.windsurfrules
+# CLC Kernel: Local AI IDE mirrors (SSOT: AGENTS.md).
+# CLAUDE.md, GEMINI.md, .cursorrules and .windsurfrules are tracked symlinks.
 .cursor/
 .antigravity/
 .github/copilot-instructions.md
