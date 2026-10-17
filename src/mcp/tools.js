@@ -52,7 +52,7 @@ export const TOOLS_DEFINITIONS = [
         },
         stage: {
           type: 'string',
-          description: 'Pipeline stage (Discovery, Validation, Business Case, Negotiation, Closed Won, Closed Lost).'
+          description: 'Pipeline stage (Discovery, Validation, Proposal, Negotiation, Closed Won, Closed Lost).'
         },
         outcome: {
           type: 'string',

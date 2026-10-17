@@ -56,7 +56,7 @@ NexaPay operates a PCI-DSS certified global payments gateway with 650+ engineers
   - *Metrics*: Quantified 10.5-week onboarding time down to targeted 4-week goal, saving 180 hours/month across new hires.
   - *Economic Buyer*: Carlos met with CIO Michael Chang on day 22 after Danielle Brooks arranged the introduction following a successful technical architecture review.
   - *Champion Strength*: Danielle was an exceptional champion who pre-wired security objections and shared NexaPay's internal procurement checklist with us weeks in advance.
-- **Stage Progression Velocity**: Transition from Discovery to Validation took 14 days; Validation to Business Case took 18 days; Legal and InfoSec took 28 days (standard enterprise FinTech compliance review).
+- **Stage Progression Velocity**: Transition from Discovery to Validation took 14 days; Validation to Proposal took 18 days; Legal and InfoSec took 28 days (standard enterprise FinTech compliance review).
 
 ---
 
@@ -67,7 +67,7 @@ NexaPay operates a PCI-DSS certified global payments gateway with 650+ engineers
 2. **Pre-emptive InfoSec Package**: Supplying the complete schema specifications, local Git architecture diagram, and SOC2 readiness documentation upfront saved at least 3 weeks of back-and-forth during Stage 4.
 
 ### What We Must Change (Correction Plan)
-1. **Procurement Timeline Forecasting**: InfoSec redlining took 10 days longer than initial forecast because NexaPay required vendor SOC3 questionnaires. We should furnish standard compliance attestations on day 1 of Stage 3 (Business Case).
+1. **Procurement Timeline Forecasting**: InfoSec redlining took 10 days longer than initial forecast because NexaPay required vendor SOC3 questionnaires. We should furnish standard compliance attestations on day 1 of Stage 3 (Proposal).
 
 ---
 

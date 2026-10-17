@@ -38,8 +38,8 @@ When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-
 ### C. Deal Friction & Stage Bottlenecks
 - Map conversion velocity across stages defined in `sales/stages/pipeline-stages.md`:
   - Discovery ➔ Validation
-  - Validation ➔ Business Case
-  - Business Case ➔ Negotiation
+  - Validation ➔ Proposal
+  - Proposal ➔ Negotiation
   - Negotiation ➔ Closed Won
 - Pinpoint where deals spend the most dwell time and why (e.g., InfoSec review, unconfirmed Economic Buyer, pricing pushback).
 
@@ -120,8 +120,8 @@ Tell me the numbers you want (for example "1 and 3"), or "none". If you want the
 | Step | Deals | Moved on |
 | :--- | :--- | :--- |
 | Discovery -> Validation | {{DISC_COUNT}} | {{CR_1}}% |
-| Validation -> Business Case | {{VAL_COUNT}} | {{CR_2}}% |
-| Business Case -> Negotiation | {{BC_COUNT}} | {{CR_3}}% |
+| Validation -> Proposal | {{VAL_COUNT}} | {{CR_2}}% |
+| Proposal -> Negotiation | {{BC_COUNT}} | {{CR_3}}% |
 | Negotiation -> Closed Won | {{NEG_COUNT}} | {{CR_4}}% |
 
 Main bottleneck: {{STAGE_NAME}}, because {{BOTTLENECK_ROOT_CAUSE}}. Suggested fix: {{PROCESS_FIX}}.

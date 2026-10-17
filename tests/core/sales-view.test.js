@@ -81,7 +81,7 @@ test('buildSalesView maps play stage numbers to pipeline step names', () =>
     initBrain(dir, { areas: ['sales'] });
     const { plays } = buildSalesView(dir);
     const followUp = plays.find((p) => p.id === 'follow-up');
-    assert.deepEqual(followUp.steps, ['Validation', 'Business Case', 'Negotiation']);
+    assert.deepEqual(followUp.steps, ['Validation', 'Proposal', 'Negotiation']);
     assert.equal(followUp.title, 'Follow-up');
   }));
 

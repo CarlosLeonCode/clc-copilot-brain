@@ -56,7 +56,7 @@ On the first business day of every calendar month, RevOps executes an automated 
 ### The 4 Monthly Diagnostic Pillars:
 1. **Objection Frequency Trends**: Track which objections are rising or falling in severity; isolate uncataloged hesitations for immediate matrix addition.
 2. **Rep Win Rates & Coaching Ledgers**: Measure deal velocity, qualification rigor, and objection handling effectiveness per rep.
-3. **Pipeline Chokepoint Analysis**: Diagnose friction stages (e.g. Discovery ➔ Validation vs Validation ➔ Business Case).
+3. **Pipeline Chokepoint Analysis**: Diagnose friction stages (e.g. Discovery ➔ Validation vs Validation ➔ Proposal).
 4. **Competitor Emergence**: Track new competitors entering deals and measure battlecard displacement rates.
 
 ### Closed-Loop Action Protocol:
@@ -83,9 +83,9 @@ Every deal above the Tier 1 ($100k ARR) or Tier 2 ($25k ARR) threshold triggers 
 Deals cannot advance on optimism or gut feeling. Every stage transition requires verifying documented exit criteria:
 
 - **Stage 1 (Discovery)**: Quantified pain, ICP match, identified champion, economic buyer mapped.
-- **Stage 2 (Validation)**: Technical architecture sign-off, direct EB meeting held, decision criteria influenced.
-- **Stage 3 (Business Case)**: Formal ROI presentation approved, proposal submitted, preferred vendor selected.
-- **Stage 4 (Negotiation)**: InfoSec clearance, legal redlines resolved, executable contract issued.
+- **Stage 2 (Validation)**: Fit confirmed with no open blockers, decision maker met, shared plan agreed.
+- **Stage 3 (Proposal)**: Value and budget confirmed, written proposal sent, preferred option selected.
+- **Stage 4 (Negotiation)**: Buyer approvals granted, contract terms agreed, contract sent for signature.
 - **Stage 5 (Closed)**: Closed Won handoff to CS or Closed Lost post-mortem executed within 5 days.
 
 ### Disqualify-Fast Rule:

@@ -1,6 +1,6 @@
-# Canonical Sales Pipeline Stages & Gate Criteria (`sales/stages/`)
+# Sales Pipeline Stages & Gate Criteria (`sales/stages/`)
 
-> **Operating Standard:** Pipeline integrity is the bedrock of predictable revenue forecasting. An opportunity **cannot advance** to the next stage unless every mandatory exit criterion has been validated and documented in the repository.
+> **Operating Standard:** A deal moves to the next stage only when every exit criterion of its current stage is met and noted in the repository. This keeps the forecast honest.
 
 ---
 
@@ -8,107 +8,104 @@
 
 ```mermaid
 flowchart LR
-    S1["Stage 1: Discovery<br>• Initial Qualification<br>• Pain Mapping"] -->|"Gate 1 Passed"| S2["Stage 2: Validation<br>• Technical Architecture<br>• Proof of Value"]
-    S2 -->|"Gate 2 Passed"| S3["Stage 3: Business Case<br>• ROI Presentation<br>• Economic Buyer Buy-in"]
-    S3 -->|"Gate 3 Passed"| S4["Stage 4: Negotiation<br>• Commercial Terms<br>• InfoSec & Legal"]
-    S4 -->|"Gate 4 Passed"| S5["Stage 5: Closed<br>• Closed Won (Handoff)<br>• Closed Lost (Post-Mortem)"]
+    S1["1. Discovery<br>Understand their problem"] -->|"ready"| S2["2. Validation<br>Show it works"]
+    S2 -->|"ready"| S3["3. Proposal<br>Agree on value and price"]
+    S3 -->|"ready"| S4["4. Negotiation<br>Terms and signature"]
+    S4 -->|"ready"| S5["5. Closed<br>Won or lost"]
 ```
 
 ---
 
-## 2. Stage Definitions & Mandatory Gate Exit Criteria
+## 2. Stage Definitions & Gate Exit Criteria
 
-### Stage 1: Discovery & Initial Qualification
+### Stage 1: Discovery
 - **Probability Weight**: 10%
 - **Target Cycle Duration**: 10 – 14 calendar days
-- **Objective**: Determine whether the prospect matches our ICP, uncover quantified operational pain, and identify potential Champions.
+- **Objective**: Check that the prospect fits our ideal customer profile, understand the problem and what it costs them, and find out who decides.
 - **Key Activities**:
-  - Run initial discovery call using `sales/scripts/discovery-call-framework.md`.
-  - Log call intelligence into `sales/calls/YYYY-MM/` using `skill_call_analyzer.md`.
-  - Evaluate opportunity against `sales/qualification/qualification-matrix.md`.
-- **Mandatory Gate 1 Exit Criteria (Must satisfy all to advance to Stage 2)**:
-  - [ ] **Quantified Pain**: Documented business problem costing verifiable engineering hours or revenue.
-  - [ ] **ICP Match**: Company profile aligns with enterprise/mid-market developer organization criteria.
-  - [ ] **Identified Champion**: At least one engineering leader (Director, VP, or Lead Architect) committed to resolving the pain.
-  - [ ] **Economic Buyer Identified**: Name and title of the budget holder confirmed.
-  - [ ] **Scheduled Validation Meeting**: Technical deep dive booked on calendar with clear agenda.
+  - Run the discovery call using `sales/scripts/discovery-call-framework.md`.
+  - Log the call in `sales/calls/YYYY-MM/` using `skill_call_analyzer.md`.
+  - Check the deal against `sales/qualification/qualification-matrix.md`.
+- **Gate 1 Exit Criteria (all required to move to Stage 2)**:
+  - [ ] **Problem understood**: The prospect described the problem and what it costs them (time, money, or missed opportunities).
+  - [ ] **Good fit**: The company matches our ideal customer profile in `sales/icps/`.
+  - [ ] **Supporter found**: At least one person on their side wants the problem solved and will help us.
+  - [ ] **Decision maker identified**: Name and role of the person who approves the budget.
+  - [ ] **Next meeting booked**: A follow-up meeting is on the calendar with a clear agenda.
 
 ---
 
-### Stage 2: Technical Validation & Architecture Fit
+### Stage 2: Validation
 - **Probability Weight**: 30%
 - **Target Cycle Duration**: 14 – 21 calendar days
-- **Objective**: Prove architectural compatibility, demonstrate developer productivity workflows, and validate security compliance.
+- **Objective**: Show that our offer solves their problem and meet the decision maker.
 - **Key Activities**:
-  - Conduct hands-on technical demonstration with architecture/platform leads.
-  - Demonstrate Git-native storage, local CLI validation (`copilot-brain doctor`), and IDE rules generation (`.cursorrules`, `CLAUDE.md`, `.windsurfrules`).
-  - Deploy counter-arguments against competitors using `sales/battlecards/`.
-  - Share case study proof points from `sales/case-studies/`.
-- **Mandatory Gate 2 Exit Criteria (Must satisfy all to advance to Stage 3)**:
-  - [ ] **Technical Architecture Sign-off**: Platform Architect or Lead Engineer confirms technical feasibility and zero blocker objections.
-  - [ ] **Economic Buyer Meeting Completed**: Direct conversation held with the confirmed Economic Buyer.
-  - [ ] **Decision Criteria Influenced**: Prospect's evaluation scorecard reflects our core differentiators (GitOps, Markdown SSOT, zero vendor lock-in).
-  - [ ] **Mutual Action Plan (MAP) Initiated**: Joint timeline agreed upon leading to a target decision date.
+  - Run a demo or trial built around their own situation.
+  - Answer comparisons with competitors using `sales/battlecards/`.
+  - Share relevant customer stories from `sales/case-studies/`.
+- **Gate 2 Exit Criteria (all required to move to Stage 3)**:
+  - [ ] **Fit confirmed**: The prospect agrees our offer solves their problem, with no open blockers.
+  - [ ] **Decision maker met**: We spoke directly with the person who approves the budget.
+  - [ ] **What matters to them is clear**: We know how they will choose, and our strengths are on that list.
+  - [ ] **Shared plan agreed**: Both sides agreed on the next steps and a target decision date.
 
 ---
 
-### Stage 3: Business Case & Economic Buyer Alignment
+### Stage 3: Proposal
 - **Probability Weight**: 60%
 - **Target Cycle Duration**: 14 – 20 calendar days
-- **Objective**: Align executive leadership on financial ROI, secure budget allocation, and finalize the commercial package.
+- **Objective**: Agree on the value and the price, and send a written proposal.
 - **Key Activities**:
-  - Present tailored Business Case & ROI Payback model to the Economic Buyer and finance leadership.
-  - Handle commercial or pricing objections using `sales/objections/pricing-too-high.md`.
-  - Multi-thread across procurement, legal, and security contacts.
-  - Issue preliminary Master Services Agreement (MSA) and Order Form draft.
-- **Mandatory Gate 3 Exit Criteria (Must satisfy all to advance to Stage 4)**:
-  - [ ] **Formal Business Case Approved**: Economic Buyer explicitly validates ROI model and confirms budget availability.
-  - [ ] **Commercial Proposal Submitted**: Contract scope, user tiers, ARR, and multi-year options delivered in writing.
-  - [ ] **Vendor Selection Confirmed**: Prospect explicitly selects our solution as the preferred vendor over competitors.
-  - [ ] **InfoSec / Compliance Initiation**: Security review packet (SOC2 / architecture briefs) submitted to customer security team.
+  - Present the value for them (what they save or gain) to the decision maker.
+  - Handle price concerns using `sales/objections/pricing-too-high.md`.
+  - Bring in everyone who must approve the purchase (finance, legal, purchasing).
+- **Gate 3 Exit Criteria (all required to move to Stage 4)**:
+  - [ ] **Budget confirmed**: The decision maker agrees the value is worth it and the budget is available.
+  - [ ] **Proposal sent**: Scope, price, and options are delivered in writing.
+  - [ ] **We are the choice**: The prospect says we are their preferred option.
 
 ---
 
-### Stage 4: Negotiation, InfoSec & Procurement
+### Stage 4: Negotiation
 - **Probability Weight**: 85%
 - **Target Cycle Duration**: 14 – 30 calendar days
-- **Objective**: Execute legal redlines, pass InfoSec vendor assessment, finalize procurement onboarding, and secure signature.
+- **Objective**: Agree on the final terms and get the contract signed.
 - **Key Activities**:
-  - Coordinate legal counsel redlines on terms of service, SLA, and data protection agreements.
-  - Answer InfoSec vendor risk assessments and compliance questionnaires.
-  - Finalize billing terms (quarterly/annual upfront) and signoff workflow.
-- **Mandatory Gate 4 Exit Criteria (Must satisfy all to advance to Stage 5)**:
-  - [ ] **InfoSec Clearance**: Formal security and compliance approval granted in writing.
-  - [ ] **Legal Terms Agreed**: All MSA redlines resolved by both legal counsels.
-  - [ ] **Signer Verified**: Final executable contract sent via DocuSign to authorized signatory.
+  - Work through contract changes with their legal or purchasing team.
+  - Answer any approval checks they need before buying (for example security or compliance questions).
+  - Agree on payment terms and the signing steps.
+- **Gate 4 Exit Criteria (all required to move to Stage 5)**:
+  - [ ] **Approvals done**: Every internal approval the prospect needs is granted.
+  - [ ] **Terms agreed**: Both sides accept the contract terms.
+  - [ ] **Contract sent for signature**: The final contract is with the person authorized to sign.
 
 ---
 
 ### Stage 5: Closed (Won or Lost)
 - **Closed Won (100%)**:
-  - Executable contract signed by both parties.
-  - Kickoff meeting scheduled with Customer Success / Solutions Engineering.
-  - Deal win post-mortem committed to `sales/win-loss/` within 5 business days.
+  - Contract signed by both sides.
+  - Kickoff meeting booked with the team that will serve the customer.
+  - Win review saved in `sales/win-loss/` within 5 business days.
 - **Closed Lost (0%)**:
-  - Opportunity disqualified, cancelled, or won by competitor.
-  - Clear loss reason categorized (Product Gap, Competitor Displacement, Budget Freeze, Champion Loss).
-  - Closed Lost post-mortem committed to `sales/win-loss/` within 5 business days.
+  - The deal was lost, cancelled, or went to a competitor.
+  - Main reason recorded (missing feature, competitor, no budget, lost our supporter, other).
+  - Loss review saved in `sales/win-loss/` within 5 business days.
 
 ---
 
-## 3. Stage Velocity & Chokepoint SLA Alerts
+## 3. Stage Velocity & Stuck-Deal Alerts
 
-| Stage | Normal Duration | Chokepoint Warning Trigger | Required Remediation Action |
+| Stage | Normal Duration | Warning Sign | What to Do |
 | :--- | :--- | :--- | :--- |
-| **Stage 1: Discovery** | 10 days | > 21 days with no second call | Send Disqualification Script C or archive opportunity. |
-| **Stage 2: Validation** | 18 days | > 35 days without EB access | Execute Disqualification Script A; pause technical resources. |
-| **Stage 3: Business Case** | 15 days | > 30 days without commercial proposal sign-off | Re-examine Identified Pain with Champion; verify budget vitality. |
-| **Stage 4: Negotiation** | 20 days | > 45 days in InfoSec/Legal | Request executive sponsor intervention call between CRO/CEO and prospect CIO. |
+| **Stage 1: Discovery** | 10 days | > 21 days with no second meeting | Ask directly whether this is still a priority, or close it for now. |
+| **Stage 2: Validation** | 18 days | > 35 days without meeting the decision maker | Ask your supporter for an introduction; pause extra effort until it happens. |
+| **Stage 3: Proposal** | 15 days | > 30 days without an answer to the proposal | Recheck the problem and the budget with your supporter. |
+| **Stage 4: Negotiation** | 20 days | > 45 days in approvals or contract review | Ask a senior leader on our side to call their decision maker. |
 
 ---
 
 ## 4. Visual Journey Mapping via Archify
 
-Per `org-kernel.json` -> `ecosystemTools.salesFlowDiagrams`, sales engineers and RevOps maintain interactive sequence, lifecycle, and journey maps using **Archify** (`https://github.com/tt-a1i/archify`). 
+Per `org-kernel.json` -> `ecosystemTools.salesFlowDiagrams`, the team can keep richer journey maps with **Archify** (`https://github.com/tt-a1i/archify`). This is optional: the sales system page already draws this pipeline and every call guide without internet.
 
-Whenever a recurring chokepoint or friction pattern is detected during the monthly retrospective (`skill_monthly_retrospective.md`), the Archify sales journey diagram must be adjusted to re-sequence gates or introduce pre-qualification steps.
+When the monthly retrospective (`skill_monthly_retrospective.md`) finds a stage where deals keep getting stuck, update this file (and the journey map, if you use one) to add or reorder steps.

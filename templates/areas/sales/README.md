@@ -11,7 +11,7 @@ Welcome to the **Sales** area of the Organizational Second Brain. This directory
 - [qualification/](./qualification/): MEDDPICC qualification matrix, red flags, and disqualify-fast conversational scripts.
 - [system.md](./system.md): The sales system map. Pipeline stage -> exit gate -> the plays that apply. Start here.
 - [plays/](./plays/): One play per kind of conversation (`cold-call`, `discovery-call`, `demo-call`, `follow-up`): decision tree, talk track per branch, and a learnings log. A play can span several stages (`stages: 2, 3, 4`).
-- [stages/](./stages/): Canonical pipeline stages (Discovery, Validation, Business Case, Negotiation, Closed) with mandatory exit criteria. Gate criteria only, no conversation trees.
+- [stages/](./stages/): Canonical pipeline stages (Discovery, Validation, Proposal, Negotiation, Closed) with mandatory exit criteria. Gate criteria only, no conversation trees.
 - [skills/](./skills/): Specialized revenue intelligence prompts (`skill_call_analyzer.md`, `skill_monthly_retrospective.md`).
 - [battlecards/](./battlecards/): Field-tested competitor intelligence with strengths, weaknesses, and silver bullets (JSON + Markdown).
 - [objections/](./objections/): Root-cause objection matrices and conversational pivot scripts (JSON + Markdown).

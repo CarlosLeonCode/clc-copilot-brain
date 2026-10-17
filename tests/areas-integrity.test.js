@@ -179,6 +179,32 @@ test('system.md has a row for every pipeline stage 1-5 (R1)', () => {
   }
 });
 
+test('stage names agree across the pipeline diagram, system.md and the sales playbook', () => {
+  const system = fs.readFileSync(path.join(SALES_DIR, 'system.md'), 'utf8');
+  const pipeline = fs.readFileSync(path.join(SALES_DIR, 'stages', 'pipeline-stages.md'), 'utf8');
+  const playbook = fs.readFileSync(path.join(PKG_DIR, 'playbooks', '01-SALES-PLAYBOOK.md'), 'utf8');
+  const listed = [...system.matchAll(/^(\d)\. \*\*([^*]+)\*\*/gm)].map((m) => m[2]);
+  const rows = [...system.matchAll(/^\| (\d)\. ([^|]+?) \|/gm)].map((m) => m[2]);
+  const diagram = /```mermaid\r?\n([\s\S]*?)```/.exec(pipeline)[1];
+  const drawn = [...diagram.matchAll(/"(\d)\. ([^<"]+)</g)].map((m) => m[2].trim());
+  assert.deepEqual(listed, ['Discovery', 'Validation', 'Proposal', 'Negotiation', 'Closed']);
+  assert.deepEqual(rows, listed, 'AI stage table matches the plain list');
+  assert.deepEqual(drawn, listed, 'pipeline diagram matches the plain list');
+  for (const [i, name] of listed.entries()) {
+    assert.match(pipeline, new RegExp(`### Stage ${i + 1}: ${name}`), `pipeline section for stage ${i + 1}`);
+    assert.match(playbook, new RegExp(`Stage ${i + 1} \\(${name}\\)`), `playbook names stage ${i + 1}`);
+  }
+});
+
+test('the template pipeline is written in plain, industry-neutral words', () => {
+  const pipeline = fs.readFileSync(path.join(SALES_DIR, 'stages', 'pipeline-stages.md'), 'utf8');
+  const diagram = /```mermaid\r?\n([\s\S]*?)```/.exec(pipeline)[1];
+  assert.doesNotMatch(diagram, /Gate \d|Passed|•/, 'diagram labels stay short and plain');
+  for (const term of [/engineering/i, /Technical Architecture/i, /InfoSec/i, /SOC2/i, /Git-native/i, /CLI/, /IDE/, /DocuSign/i, /\bARR\b/, /\bMSA\b/, /Business Case/]) {
+    assert.doesNotMatch(pipeline, term);
+  }
+});
+
 test('follow-up stages yields [2,3,4] (S3.1)', () => {
   const fm = frontmatterOf(fs.readFileSync(path.join(PLAYS_DIR, 'follow-up.md'), 'utf8'));
   assert.deepEqual(fm.stages.split(',').map((s) => Number(s.trim())), [2, 3, 4]);

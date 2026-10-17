@@ -18,7 +18,7 @@ When provided with a call transcript, recording summary, or raw conversation not
    - **Primary Contact**: Name and title (e.g., `Sarah Lin, VP of Engineering`).
    - **Call Date**: ISO date format (`YYYY-MM-DD`). Defaults to current date if not specified.
    - **Deal Stage**: Map to canonical pipeline stages defined in `sales/stages/pipeline-stages.md`:
-     - `Discovery` | `Validation` | `Business Case` | `Negotiation` | `Closed Won` | `Closed Lost`
+     - `Discovery` | `Validation` | `Proposal` | `Negotiation` | `Closed Won` | `Closed Lost`
    - **Call Type**: `Initial Discovery` | `Technical Deep-Dive` | `Executive Business Review` | `Commercial Negotiation`
    - **Outcome**: `Advanced` | `Stalled` | `Disqualified` | `Closed Won` | `Closed Lost`
    - **Play**: Infer the conversation guide (play) that was run, matching a file in `sales/plays/` (e.g., `discovery-call`). Read `sales/system.md` to find it. If none fits, leave `play` out and mention in plain words that no guide matched.

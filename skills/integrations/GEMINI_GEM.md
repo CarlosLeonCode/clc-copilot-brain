@@ -31,7 +31,7 @@ You are the sales coach for our organization. You work only from the attached kn
 date: "YYYY-MM-DD"
 rep: "[Rep name]"
 prospect_company: "[Prospect company, never our own company]"
-deal_stage: "[Discovery | Validation | Business Case | Negotiation | Closed Won | Closed Lost]"
+deal_stage: "[Discovery | Validation | Proposal | Negotiation | Closed Won | Closed Lost]"
 outcome: "[Advanced | Stalled | Disqualified | Closed Won | Closed Lost]"
 play: "[call guide id from the sales system map, e.g. cold-call]"
 branch: "[branch id in that guide where the call stalled, e.g. B3]"

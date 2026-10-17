@@ -6,8 +6,8 @@ Every deal moves through the same five steps:
 
 1. **Discovery**: find out what hurts and who decides.
 2. **Validation**: show it works and meet the person who signs off on the budget.
-3. **Business Case**: agree on the value and send the proposal.
-4. **Negotiation**: security review, legal terms, and who signs.
+3. **Proposal**: agree on the value and the price, and send the proposal.
+4. **Negotiation**: agree on the final terms and get the signature.
 5. **Closed**: won or lost, and what we learned.
 
 How to use it day to day:
@@ -30,10 +30,10 @@ Want to see it? Ask your assistant: "Show me my sales process".
 
 | Stage | Exit gate | Plays |
 | :--- | :--- | :--- |
-| 1. Discovery | Gate 1: pain quantified, champion and economic buyer identified, validation meeting booked | [cold-call](./plays/cold-call.md), [discovery-call](./plays/discovery-call.md) |
-| 2. Validation | Gate 2: technical sign-off, economic buyer met, mutual action plan started | [demo-call](./plays/demo-call.md), [follow-up](./plays/follow-up.md) |
-| 3. Business Case | Gate 3: business case approved, proposal submitted, vendor selected | [follow-up](./plays/follow-up.md) |
-| 4. Negotiation | Gate 4: InfoSec cleared, legal terms agreed, signer verified | [follow-up](./plays/follow-up.md) |
+| 1. Discovery | Gate 1: problem and its cost understood, supporter and decision maker identified, next meeting booked | [cold-call](./plays/cold-call.md), [discovery-call](./plays/discovery-call.md) |
+| 2. Validation | Gate 2: fit confirmed, decision maker met, shared plan agreed | [demo-call](./plays/demo-call.md), [follow-up](./plays/follow-up.md) |
+| 3. Proposal | Gate 3: budget confirmed, proposal sent, we are the preferred option | [follow-up](./plays/follow-up.md) |
+| 4. Negotiation | Gate 4: approvals done, terms agreed, contract sent for signature | [follow-up](./plays/follow-up.md) |
 | 5. Closed | Contract signed or loss reason logged, post-mortem in `win-loss/` | No play yet. Add one with the `/flow` rules. |
 
 Gate criteria live in [stages/pipeline-stages.md](./stages/pipeline-stages.md). Add a row (or a play link) here whenever you add a play.

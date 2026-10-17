@@ -150,7 +150,7 @@ The Second Brain provides a native MCP server executing over standard I/O (`stdi
   - `prospect` (`string`, required): Target company name.
   - `date` (`string`, required): ISO format `YYYY-MM-DD`.
   - `summary` (`string`, required): 3-5 bullet executive summary.
-  - `stage` (`string`, required): Pipeline stage (`Discovery`, `Validation`, `Business Case`, `Negotiation`, `Closed Won`, `Closed Lost`).
+  - `stage` (`string`, required): Pipeline stage (`Discovery`, `Validation`, `Proposal`, `Negotiation`, `Closed Won`, `Closed Lost`).
   - `outcome` (`string`, required): Immediate outcome or next scheduled milestone.
   - `notes` (`string`, optional): Raw transcript notes or coaching points.
   - `objections` (`array<string>`, optional): List of buyer objections raised.
@@ -242,7 +242,7 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 
 ### 2. Qualification & Pipeline Gate Enforcement
 - `sales/qualification/qualification-matrix.md`: Implements a MEDDPICC framework with 6 immediate disqualification triggers.
-- `sales/stages/pipeline-stages.md`: Canonical definition of 5 pipeline stages (Discovery, Validation, Business Case, Negotiation, Closed Won/Lost) with mandatory exit criteria before stage progression.
+- `sales/stages/pipeline-stages.md`: Canonical definition of 5 pipeline stages (Discovery, Validation, Proposal, Negotiation, Closed Won/Lost) with mandatory exit criteria before stage progression.
 
 ### 3. Sales System: Map and Plays
 - `sales/system.md`: the map from pipeline stage to exit gate to the plays that apply.
