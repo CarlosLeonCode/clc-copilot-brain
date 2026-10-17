@@ -53,7 +53,7 @@ When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-
 - Put every log with no `play` in an **Unattributed** bucket and show its count. Never guess a play for it.
 - Compare the drop-off branches with the play file in `sales/plays/<play-id>.md` (decision tree, talk tracks) and propose concrete edits: reword a talk track, add a branch, or split a play. Cite the call IDs as evidence.
 - Proposals are text only. Do not edit any play until whoever runs `/retro` gives explicit approval for that specific edit (Human-in-the-Loop, HITL).
-- On approval: apply the edit, append an entry to the Learnings Log in `sales/system.md` (`- YYYY-MM-DD vN->vN+1: change (evidence: CALL-...)`), and bump the play's frontmatter `version` by one.
+- On approval: apply the edit, append an entry to that play's Learnings Log section (`- YYYY-MM-DD vN->vN+1: change (evidence: CALL-...)`), and bump the play's frontmatter `version` by one.
 
 ---
 
@@ -143,7 +143,7 @@ flowchart LR
 - [ ] **Battlecard Update**: Scaffold `sales/battlecards/{{NEW_COMPETITOR}}.json` using `skill_area_scaffolder.md`.
 - [ ] **Objection Matrix Update**: Enhance `sales/objections/pricing-too-high.json` with multi-year ROI calculator link.
 - [ ] **Journey Diagram Refinement**: Update sales flow diagram in **Archify** (`https://github.com/tt-a1i/archify`) to formalize pre-demo qualification step.
-- [ ] **Play Edit** (only after explicit approval): update `sales/plays/{{PLAY_ID}}.md`, bump `version`, append a Learnings Log entry in `sales/system.md`.
+- [ ] **Play Edit** (only after explicit approval): update `sales/plays/{{PLAY_ID}}.md`, bump `version`, append a Learnings Log entry in that play file.
 - [ ] **Coaching Drill**: Run 45-minute workshop on Economic Buyer discovery.
 ```
 

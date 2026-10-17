@@ -205,3 +205,11 @@ test('Sales plays loop: call attribution and retro play performance', async (t) 
   });
 });
 
+
+test('retro records approved play edits in the play file, not in sales/system.md', () => {
+  for (const rel of ['skills/skill_monthly_retrospective.md', '.claude/commands/retro.md']) {
+    const text = fs.readFileSync(path.join(PKG_DIR, rel), 'utf8');
+    assert.doesNotMatch(text, /Learnings Log[^\n]*sales\/system\.md/, `${rel} must log play edits in the play itself`);
+    assert.match(text, /Learnings Log/);
+  }
+});
