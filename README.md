@@ -1,223 +1,169 @@
-# @clc/copilot-brain
+# Copilot Brain 🧠
 
-> **Open Source Second Brain Engine for Organizations & AI Coding Copilots**
+> **The Living Memory for Your Business & Your AI Assistants.**  
+> Keep your sales call notes, buyer objections, competitor battlecards, sales flow diagrams, and company policies in one organized folder — so your AI assistant gives you real, accurate answers instead of guessing.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green.svg)](https://nodejs.org/)
-[![Multi-IDE](https://img.shields.io/badge/AI%20Adapters-Cursor%20%7C%20Windsurf%20%7C%20Claude%20%7C%20Gemini-purple.svg)](./AGENTS.md)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22-green.svg)](https://nodejs.org/)
+[![MCP Ready](https://img.shields.io/badge/MCP-Tools_%26_Prompts-purple.svg)](./TECHNICAL.md#3-model-context-protocol-mcp-specification)
 
 ---
 
-## 1. Why Copilot Brain?
-
-Modern engineering teams rapidly deploy AI coding assistants like **Cursor**, **Windsurf**, and **Claude Code**, only to run into a critical wall: **AI Hallucinations and Tribal Knowledge Silos**.
-
-- **SaaS Wikis Die**: Notion, Confluence, and Google Docs drift out of sync with code within weeks.
-- **AI Agents Guess**: Ungrounded AI agents invent non-existent APIs, violate internal security policies, and recommend obsolete libraries.
-- **Seat Licensing Taxes**: Enterprise wiki vendors charge per-seat taxes while trapping your core intellectual property in closed proprietary databases.
-
-**`copilot-brain`** solves this by turning your Git repository into a deterministic **Single Source of Truth (SSOT)** for both human operators and autonomous AI agents.
-
-```
-                           ┌────────────────────────┐
-                           │      AGENTS.md         │
-                           │ (Universal SSOT Kernel)│
-                           └───────────┬────────────┘
-         ┌─────────────────────────────┼─────────────────────────────┐
-         ▼                             ▼                             ▼
-┌──────────────────┐          ┌──────────────────┐          ┌──────────────────┐
-│   .cursorrules   │          │    CLAUDE.md     │          │  .windsurfrules  │
-│   (Cursor IDE)   │          │  (Claude Code)   │          │  (Windsurf IDE)  │
-└──────────────────┘          └──────────────────┘          └──────────────────┘
-```
+<p align="center">
+  <a href="./README.es.md"><strong>🇪🇸 Leer esta guía en Español</strong></a> &bull;
+  <a href="./TECHNICAL.md"><strong>🛠️ Technical Architecture & Developer Docs</strong></a>
+</p>
 
 ---
 
-## 2. Core Architecture & Domains
+## Why Copilot Brain?
 
-The engine organizes institutional knowledge into modular, schema-backed domain areas:
+Every growing team runs into the same three problems:
 
-| Area | Purpose | Key Subdirectories & Contents |
-| :--- | :--- | :--- |
-| **`sales`** (Core) | Revenue Enablement & Deal Strategy | `icps/`, `battlecards/` (JSON + MD), `objections/`, `scripts/`, `case-studies/`, `calls/`, `win-loss/`, `qualification/`, `stages/` |
-| **`marketing`** | Decoupled Brand & Messaging | `brand/`, `messaging/`, `content/`, `distribution/` |
-| **`product`** | Product Lifecycle & Specs | `roadmap/`, `specs/` (PRDs & ADRs), `releases/` |
-| **`operations`** | Execution & Continuity | `sops/` (JSON + MD), `tools/`, `vendors/` |
-| **`hr_people`** | Talent & Culture Systems | `handbook/`, `hiring/` (scorecards), `onboarding/` (30-60-90) |
-| **`finance_legal`** | Commercial Governance | `pricing/` (discount matrix), `compliance/` (NDAs, privacy) |
+1. **Important documents get buried**: Notes in Notion, Google Docs, and Slack are written once and forgotten two weeks later.
+2. **Every rep answers differently**: One salesperson promises a custom feature or discount; another says it is against company policy.
+3. **AI assistants make things up**: When you ask a generic AI to write a sales email or handle an objection, it guesses your pricing and invents features because it does not know your real business rules.
 
-### Sales Intelligence (Closed-Loop)
-
-`sales/` is a first-class citizen with partitioned memory and post-mortems:
-
-- `sales/calls/YYYY-MM/`: analyzed call logs with structured frontmatter (rep, stage, outcome, detected objections, strengths, improvements). See `sales/calls/README.md`.
-- `sales/win-loss/`: 4-dimension post-mortems (product, sales process, commercial, competitive) plus a reusable template.
-- `sales/qualification/qualification-matrix.md`: MEDDPICC with disqualify-fast triggers.
-- `sales/stages/pipeline-stages.md`: 5 stages with canonical exit-gate criteria.
-- LLM prompts in `skills/skill_call_analyzer.md` and `skills/skill_monthly_retrospective.md` are exportable to ChatGPT/Claude — not an automatic pipeline.
+**Copilot Brain** fixes this. It creates a clean, well-organized folder on your computer (or shared team drive) that connects directly to your favorite AI assistant. Whenever you ask a question or type a slash command like `/call` or `/objection`, your AI reads your real company playbook first.
 
 ---
 
-## 2b. How To Use (No Code Needed)
-
-You don't need to know programming. Think of it as **answering 4 questions, then asking anything in plain language**.
+## Quick Start (3 Minutes, No Coding Needed)
 
 ```mermaid
 flowchart LR
-    A[Install once] --> B[Run init]
-    B --> C[Answer 4 questions]
-    C --> D[Your Second Brain is born]
-    D --> E[Ask in your language]
-    E --> F[Grounded answer]
-    D -. health check .-> G[doctor]
-    D -. new department .-> H[add-area]
+    A["1. Install once"] --> B["2. Create your Brain"]
+    B --> C["3. Connect your AI"]
+    C --> D["4. Use Slash Commands"]
 ```
 
-1. **Install once** — one command, done.
-2. **Run `init`** — it asks: company name, industry, tagline, and which areas to install (e.g. sales, marketing).
-3. **Your Second Brain is born** — folders and guides per department. This is the Single Source of Truth.
-4. **Ask in your language** — from Cursor, Claude, or Windsurf: e.g. "how do we handle pricing objections?". The AI cites real files instead of guessing.
-5. **It grows with you** — add calls, cases, pricing. `doctor` checks health, `add-area` adds departments.
-
-> Interactive version: open [`docs/diagrams/uso.html`](./docs/diagrams/uso.html) in your browser (zoom, search, trace the flow).
-
----
-
-## 3. Quick Start
-
-### Installation
-
-Run directly with `npx` or install globally:
+### Step 1: Install the Tool
+Open your computer's terminal (**Terminal** on Mac, or **PowerShell** on Windows) and run:
 
 ```bash
-# Direct execution via npx
-npx @clc/copilot-brain init
-
-# Or install globally
 npm install -g @clc/copilot-brain
 ```
 
-### Initializing Your Brain
-
-Run `init` inside your repository or specify a target folder:
-
-```bash
-copilot-brain init
-```
-
-The interactive CLI will prompt you for:
-1. **Organization Name**
-2. **Industry & Domain**
-3. **Core Tagline / Operating Thesis**
-4. **Active Areas**: Select which departments to install (defaults to `sales` and `marketing`).
-
-### Multi-IDE Symlink Adapters
-`copilot-brain init` automatically creates relative symbolic links pointing directly to the root `AGENTS.md`:
-- `CLAUDE.md` -> `AGENTS.md`
-- `GEMINI.md` -> `AGENTS.md`
-- `.cursorrules` -> `AGENTS.md`
-- `.windsurfrules` -> `AGENTS.md`
-- `.agents/skills/` -> Query and validation skills for autonomous agents
-
----
-
-## 4. CLI Reference
-
-### `copilot-brain doctor [dir] [--fix]`
-Audits repository health, validates data files against schemas, checks symlinks, and offers automated non-destructive repairs.
+### Step 2: Create Your Company Brain
+Create a new folder, open it, and run the setup wizard:
 
 ```bash
-$ copilot-brain doctor
-
-=== Audit Summary ===
-Checks passed: 12
-Warnings: 0
-Errors: 0
-
-✔ All Second Brain health checks passed with zero errors or warnings!
+mkdir my-company-brain
+cd my-company-brain
+clc-brain init
 ```
 
-### `copilot-brain add-area [dir]`
-Interactively add uninstalled preset domains (e.g., `operations`, `product`, `finance_legal`) or scaffold a custom domain with clean boilerplate.
+The assistant will ask 4 simple questions:
+1. **Company Name** (e.g., *Acme Corp*)
+2. **Industry** (e.g., *B2B Software & Automation*)
+3. **Main Value Proposition / Tagline**
+4. **Departments to Include** (Sales, Marketing, Product, Operations, HR, Finance) and whether you want a **Clean Repository** (recommended for real use) or **Demo Samples**.
 
-```bash
-$ copilot-brain add-area
+---
+
+## What Goes Where? (Folder Guide)
+
+You never have to guess where to save a file. You can either drop files directly into these folders, or paste your text in the chat and tell your AI assistant to save it for you:
+
+| Folder or File | What Goes Inside | Everyday Examples |
+| :--- | :--- | :--- |
+| **`company-profile.md`** | Your core business summary | What you sell, who you sell to, and your main value proposition. |
+| **`sales/calls/`** | Meeting notes & call transcripts | Zoom/Meet transcripts, discovery call notes, and customer feedback organized by month (`YYYY-MM`). |
+| **`sales/objections/`** | Responses to buyer pushback | Approved scripts for *"It's too expensive"*, *"We already use Competitor X"*, or *"Send me info next quarter"*. |
+| **`sales/battlecards/`** | Competitor comparisons | Side-by-side sheets showing why you win against specific competitors and what questions expose their weaknesses. |
+| **`sales/stages/`** | **Sales flows & pipeline rules** | Your visual sales process diagram (Mermaid flowcharts) and what must happen before a deal moves to the next stage. |
+| **`sales/icps/`** | Ideal customer profiles | Who your best buyers are (job titles, pain points, budget triggers, and red flags). |
+| **`operations/sops/`** | Step-by-step team checklists | How to onboard a new client, how to handle a support escalation, or internal processes. |
+
+---
+
+## How to Migrate Your Existing Documents & Visual Sales Flows
+
+Already have material in **Notion, Google Docs, Word, PDFs, Miro, or Lucidchart**? Moving it into your Second Brain takes seconds:
+
+### 1. Migrating Written Documents (Notion, Google Docs, CRM Notes)
+- **Option A (Let the AI format it for you)**: Copy the text from your old document, paste it into your AI chat, and say:
+  > *"Save this pricing objection into our Second Brain."* or *"Use `/call` to analyze and save these meeting notes."*
+- **Option B (Drag and Drop)**: Save your notes as Markdown (`.md`) or text files and drop them directly into the matching folder (such as `sales/scripts/` or `operations/sops/`).
+
+### 2. Migrating Visual Flowcharts (Screenshots, Miro, Lucidchart, Whiteboards)
+Do you have a visual diagram of your sales pipeline or customer journey as an image, PDF, or screenshot?
+1. **Take a screenshot** of your flowchart (from Miro, Lucidchart, Figma, slides, or a whiteboard photo).
+2. **Drag and drop the image** directly into your AI assistant chat.
+3. **Type `/flow` or tell the AI**:
+   > *"Convert this screenshot of our sales flow into an interactive Mermaid diagram inside `sales/stages/pipeline-stages.md`."*
+
+Your AI will translate the picture into a clean, editable visual diagram right inside your repository that any team member or AI can read and update anytime.
+
+---
+
+## Instant Slash Commands Reference
+
+Once connected, you don't need to write long instructions. Just type a slash command in your AI chat:
+
+| Slash Command | What It Does | Example Usage |
+| :--- | :--- | :--- |
+| **`/call`** | **Save and analyze a meeting or call transcript.** Extracts deal signals, objections, and action items into `sales/calls/`. | `/call` + paste your Zoom transcript or rough call notes. |
+| **`/objection`** | **Get an instant answer to a buyer objection** or save a new one into `sales/objections/`. | `/objection Prospect says our onboarding takes too long.` |
+| **`/battlecard`** | **Compare against a competitor in seconds** using `sales/battlecards/`. | `/battlecard How do we beat Competitor Alpha on security?` |
+| **`/flow`** | **Check pipeline stage rules or update your sales flow diagram** in `sales/stages/pipeline-stages.md`. | `/flow What is required to move a deal from Discovery to Validation?` |
+| **`/retro`** | **Run your monthly sales retrospective.** Summarizes win/loss trends and top objections across all calls in a month. | `/retro 2026-10` |
+| **`/brain`** | **Open the main Second Brain dashboard** to see active departments and quick actions. | `/brain` |
+| **`/brain:onboarding`** | **Run the guided company interview** (1 question at a time) to fill out your company profile. | `/brain:onboarding` |
+| **`/brain:doctor`** | **Check your Second Brain health** and fix any missing files or formatting issues. | `/brain:doctor` |
+
+---
+
+## Works Everywhere (Universal AI Compatibility)
+
+Copilot Brain is built on open standards. You are never locked into a single AI vendor:
+
+### 1. AI Desktop & Coding Apps (via Model Context Protocol — MCP)
+Works natively with **Claude Desktop, Cursor, OpenAI Codex, Google Antigravity, Windsurf, Zed, and Gentle Dot**.
+Add this block to your app's MCP configuration file (for example, `claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "copilot-brain": {
+      "command": "clc-brain",
+      "args": ["mcp", "/full/path/to/my-company-brain"]
+    }
+  }
+}
 ```
+*(Replace `/full/path/to/my-company-brain` with the actual folder path on your computer. Both MCP tools and MCP slash prompts are automatically enabled!)*
 
-### `copilot-brain list-areas [dir]`
-Displays installed areas versus available preset domains.
+### 2. Workspace AI Assistants (Automatic Rule Mirrors)
+If you open your brain folder directly inside **Claude Code, Cursor, Windsurf, or Gemini CLI**, it works immediately with zero configuration:
+- `AGENTS.md` acts as the master instruction manual.
+- `CLAUDE.md`, `GEMINI.md`, `.cursorrules`, and `.windsurfrules` automatically point to `AGENTS.md`.
+- `.claude/commands/` provides all slash commands (`/call`, `/objection`, `/battlecard`, `/flow`, `/retro`, `/brain`).
 
-```bash
-$ copilot-brain list-areas
-```
-
----
-
-## 5. JSON Schemas & Validation
-
-All mission-critical structured records are defined by JSON Schemas under `schemas/`:
-- `schemas/org-kernel.schema.json`: Organizational profile & area configuration
-- `schemas/sales-battlecard.schema.json`: Competitor intelligence & silver bullets
-- `schemas/sales-objection.schema.json`: Root causes, pivot scripts, and counter-arguments
-- `schemas/sop.schema.json`: Step-by-step procedures with roles and verification criteria
-
-Run `copilot-brain doctor` in your CI/CD pipeline to guarantee no malformed or stale assets are committed to `main`.
+### 3. Web AI Chatbots (ChatGPT Plus/Team & Google Gemini Web)
+Prefer using ChatGPT or Google Gemini in your web browser?
+- Open the **`skills/integrations/`** folder inside your Second Brain.
+- Follow the 2-minute copy-paste guides in `chatgpt-custom-gpt.md` or `gemini-gem.md` to create a Custom GPT or Gemini Gem powered by your Second Brain files.
 
 ---
 
-## 6. Playbooks & Maintenance Cadence
+## Helpful Terminal Commands
 
-Operational governance playbooks are provided under `playbooks/`:
-- [`00-FRAMEWORK-OVERVIEW.md`](./playbooks/00-FRAMEWORK-OVERVIEW.md): Architectural principles & SSOT protocol
-- [`01-SALES-PLAYBOOK.md`](./playbooks/01-SALES-PLAYBOOK.md): Battlecards, objection matrices, win/loss reviews
-- [`02-MARKETING-PLAYBOOK.md`](./playbooks/02-MARKETING-PLAYBOOK.md): Messaging consistency & decoupling from AI generators
-- [`03-PRODUCT-PLAYBOOK.md`](./playbooks/03-PRODUCT-PLAYBOOK.md): PRDs, ADRs, and release communications
-- [`04-OPERATIONS-PLAYBOOK.md`](./playbooks/04-OPERATIONS-PLAYBOOK.md): Creating and auditing SOPs
-- [`05-PEOPLE-PLAYBOOK.md`](./playbooks/05-PEOPLE-PLAYBOOK.md): Culture documentation & hiring scorecards
-- [`06-FINANCE-LEGAL-PLAYBOOK.md`](./playbooks/06-FINANCE-LEGAL-PLAYBOOK.md): Pricing changes & contracts
+- **`clc-brain init`** — Create a new Second Brain (choose Clean mode or Demo mode).
+- **`clc-brain clean-demo`** — Remove sample demo files anytime and keep only your real company files.
+- **`clc-brain add-area`** — Add a new department folder later (e.g., Product, HR, or Finance).
+- **`clc-brain list-areas`** — See which departments are active.
+- **`clc-brain doctor`** — Check repository health and automatically repair missing adapters (`--fix`).
 
 ---
 
-## 7. Claude Code & Agent Skills
+## Technical Documentation
 
-### Slash Commands (`.claude/commands/`)
-
-- `/brain` — master dashboard (areas, health, tools)
-- `/brain:onboarding` — 8-step interview, 1 question at a time
-- `/brain:sales` — live sales copilot (objections, battlecards, talk tracks)
-- `/brain:doctor` — in-chat repo health audit
-- `/brain:add-area` — scaffold new domains or assets
-
-### LLM Skills (`skills/` + `.agents/skills/`)
-
-- `skill_brain_onboarding.md` — organizational interview
-- `skill_sales_copilot.md` — objection handling & competitor positioning
-- `skill_call_analyzer.md` — transcript → structured `sales/calls/` log
-- `skill_monthly_retrospective.md` — month-end trends + closed-loop updates
-- `skill_brain_doctor.md` — audit protocol
-- `skill_area_scaffolder.md` — schema-compliant scaffolding
-- `.agents/skills/` — `brain-search.md`, `sales-assist.md`, `sop-auditor.md` for autonomous agents
-
-### Ecosystem Tools
-
-`org-kernel.json → ecosystemTools` declares optional integrations (not npm dependencies):
-
-- **Archify** (`https://github.com/tt-a1i/archify`) — interactive workflow, sequence, and lifecycle diagrams for sales journey maps. The base template only declares the tool; actual diagrams live in the instantiated project, not here.
+Are you a developer or system administrator looking for JSON Schema contracts, MCP wire protocol details (`tools/list`, `tools/call`, `prompts/list`, `prompts/get`), or AST audit guards?
+👉 **[Read the Technical Architecture Guide (TECHNICAL.md)](./TECHNICAL.md)**
 
 ---
 
-## 8. Development & Testing
+## License
 
-```bash
-npm test   # node --test tests/**/*.test.js — 58 tests
-```
-
-Suites: `cli` (lifecycle), `schemas` (positive + negative validation), `areas-integrity` (6 areas + 7 playbooks), `sales-intelligence` (calls, win-loss, qualification, stages, Archify), `ide-adapters` (SSOT symlinks, slash commands, skills).
-
-`copilot-brain doctor` is CI-safe: validates JSON against `schemas/`, checks symlinks, and detects missing skills/commands.
-
----
-
-## 9. License
-
-MIT © [Carlos Leon Code Pro](https://github.com/carlosleoncodepro) — see [LICENSE](./LICENSE).
+MIT License © [Carlos Leon Code Pro](https://github.com/carlosleoncodepro). Free for personal, commercial, and enterprise use.
