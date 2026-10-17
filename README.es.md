@@ -88,7 +88,7 @@ flowchart LR
 
 ## 👁️ Mira tu proceso de ventas
 
-Tu asistente convierte tus pasos de venta y tus guías de llamada en una página visual sencilla que puedes abrir en tu navegador. Solo pide *"Muéstrame mi proceso de ventas"*. La página se actualiza sola cada vez que cambia una guía.
+Tu asistente convierte tus pasos de venta y tus guías de llamada en una página visual sencilla que puedes abrir en tu navegador. Solo pide *"Muéstrame mi proceso de ventas"*. La página se actualiza sola cada vez que cambia una guía y funciona sin conexión a internet.
 
 <p align="center">
   <img src="docs/assets/sales-system-preview.png" alt="Página del sistema de ventas: los cinco pasos del proceso de ventas en un diagrama, con una tarjeta por cada guía de llamada que muestra su objetivo, su árbol de decisiones y qué decir." width="100%">
