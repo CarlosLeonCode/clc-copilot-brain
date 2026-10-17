@@ -86,7 +86,7 @@ src/
 | Directory / File | Layer | Responsibility |
 | :--- | :--- | :--- |
 | `src/core/` | Domain / Use Cases | Pure functions taking explicit inputs (`rootDir`, options) and returning data. Errors are `BrainError` with a stable `code`. |
-| `src/cli/` | Adapter (CLI) | Prompts and rendering; maps `BrainError` to a red message and exit code 1. |
+| `src/cli/` | Adapter (CLI) | Prompts and rendering; maps `BrainError` to a red message and exit code 1. `doctor` exits 1 when errors remain (after `--fix`, if applied); without a TTY and without `--fix` it never prompts and only prints a `--fix` hint. |
 | `src/mcp/` | Adapter (MCP) | Validates MCP arguments via core and maps `BrainError` to `isError` tool results. |
 | `schemas/` | Core Contracts | JSON Schema definitions (Draft 2020-12) defining valid data shapes for all structured records. |
 | `templates/` | Scaffolding Source | Templates copied during `init` and `add-area`; also the source of truth for expected slash commands, skills, and demo assets. |
@@ -104,9 +104,16 @@ The Second Brain provides a native MCP server executing over standard I/O (`stdi
 ### Lifecycle & Protocol Methods
 
 1. **`initialize`**:
-   - Responds with `protocolVersion: "2024-11-05"`, server identification (`copilot-brain v1.0.0`), and declared capabilities (`tools: {}`, `prompts: {}`).
+   - Negotiates the protocol version: supported versions are `2025-06-18`, `2025-03-26`, `2024-11-05` (latest first). A supported client `params.protocolVersion` is echoed back; anything else gets the latest (`2025-06-18`). Also returns server identification (`copilot-brain v1.0.0`), and declared capabilities (`tools: {}`, `prompts: {}`).
 2. **`notifications/initialized`**:
    - Acknowledged as a no-op notification.
+
+**JSON-RPC 2.0 rules** (`src/mcp/server.js`):
+- A notification is a message without an `id` member; it never gets a response, not even an error. `id: null` is a request and is answered with `id: null`.
+- Unparseable JSON returns `-32700 Parse error` (`id: null`). A message that is not an object, lacks `jsonrpc: "2.0"`, or lacks a string `method` returns `-32600 Invalid Request` (its `id` when it is a string, number, or null; otherwise `null`). Unknown methods return `-32601`.
+- Batching is not supported (removed in MCP 2025-06-18): an array payload returns a single `-32600` with `id: null`.
+- `ping` returns an empty result `{}`.
+- stdio lines are processed sequentially, so responses are written in request order.
 3. **`prompts/list`**:
    - Returns the 5 actionable slash prompts (`call`, `objection`, `battlecard`, `flow`, `retro`) with their optional argument definitions.
 4. **`prompts/get`**:
@@ -245,7 +252,8 @@ Executed via Node.js native test runner (`node --test tests/**/*.test.js`):
 9. **`tests/package.test.js`**: `npm pack --dry-run` contains every runtime module reachable from `bin/`; Node.js engine requirement.
 10. **`tests/guards.test.js`** and **`tests/agents-paths.test.js`**: Governance guards (including crash handling in `audit.js`) and existence of every path referenced in root `AGENTS.md`.
 11. **`tests/core/*.test.js`**: Unit tests for core use cases (scaffold, areas, doctor, calls, demo, query) without subprocesses.
-12. **`tests/regressions.test.js`**: Regressions fixed during the hexagonal split (custom area id validation, custom areas over MCP, package `files`, `clean-demo` safety, adapter backups).
+12. **`tests/regressions.test.js`**: Regressions fixed during the hexagonal split (custom area id validation, custom areas over MCP, package `files`, `clean-demo` safety, adapter backups) and the `doctor` exit code (1 on errors, also after `--fix`; warnings alone exit 0).
+13. **`tests/mcp-jsonrpc.test.js`**: JSON-RPC 2.0 compliance (notifications vs `id: null`, `-32600`/`-32601`/`-32700`, batch rejection, in-order responses) and protocol version negotiation.
 
 CLI tests scaffold into a temporary directory under `os.tmpdir()`; no test writes into the repository. Requires Node.js >= 22.
 

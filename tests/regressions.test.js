@@ -108,3 +108,34 @@ test('MCP tools/list advertises the custom areas declared in org-kernel.json', a
     fs.rmSync(rootDir, { recursive: true, force: true });
   }
 });
+
+test('doctor exits 1 when the brain has errors and 0 when healthy or warnings-only', () => {
+  const outer = sandbox();
+  try {
+    const brain = path.join(outer, 'brain');
+    initBrain(brain, ['--yes']);
+    assert.equal(cli('doctor', brain).status, 0, 'fresh scaffold is healthy');
+
+    fs.unlinkSync(path.join(brain, 'skills', 'skill_sales_copilot.md'));
+    assert.equal(cli('doctor', brain, '--fix').status, 0, 'warnings repaired by --fix leave exit 0');
+
+    fs.rmSync(path.join(brain, 'org-kernel.json'));
+    const broken = cli('doctor', brain);
+    assert.equal(broken.status, 1, 'missing org-kernel.json is an error');
+    assert.equal(cli('doctor', brain, '--fix').status, 1, '--fix cannot repair errors, so exit stays 1');
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test('doctor without --fix and without a TTY does not prompt and exits 1 on errors', () => {
+  const empty = sandbox();
+  try {
+    const res = spawnSync('node', [CLI, 'doctor', empty], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 15000 });
+    assert.equal(res.error, undefined, 'doctor must not hang');
+    assert.equal(res.status, 1, 'an empty dir has errors (missing org-kernel.json, AGENTS.md)');
+    assert.match(res.stdout, /--fix/, 'non-interactive runs print a hint to use --fix');
+  } finally {
+    fs.rmSync(empty, { recursive: true, force: true });
+  }
+});
