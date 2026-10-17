@@ -35,16 +35,33 @@ export function demoAssetPaths(templatesAreasDir = TEMPLATES_AREAS_DIR) {
   return walkFiles(templatesAreasDir).filter((rel) => isDemoTemplateAsset(rel));
 }
 
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** True when `actual` is the template content, allowing any value where the template has {{PLACEHOLDERS}}. */
+function matchesTemplate(actual, template) {
+  if (actual === template) return true;
+  if (!/\{\{[A-Z_]+\}\}/.test(template)) return false;
+  const pattern = template.split(/\{\{[A-Z_]+\}\}/).map(escapeRegExp).join('[\\s\\S]*?');
+  return new RegExp(`^${pattern}$`).test(actual);
+}
+
 /**
  * Remove seeded demo files from a brain, then prune directories emptied by the removal
- * (never the area root). Files not seeded by the templates are never touched.
- * @returns {{ removed: string[] }} paths relative to rootDir
+ * (never the area root). Files not seeded by the templates are never touched, and seeded
+ * files whose content was edited by the user are kept and reported instead of removed.
+ * @returns {{ removed: string[], kept: string[] }} paths relative to rootDir
  */
 export function cleanDemo(rootDir, { templatesAreasDir = TEMPLATES_AREAS_DIR } = {}) {
   const removed = [];
+  const kept = [];
   for (const rel of demoAssetPaths(templatesAreasDir)) {
     const abs = path.join(rootDir, rel);
     if (!fs.existsSync(abs) || !fs.lstatSync(abs).isFile()) continue;
+    const template = fs.readFileSync(path.join(templatesAreasDir, rel), 'utf-8');
+    if (!matchesTemplate(fs.readFileSync(abs, 'utf-8'), template)) {
+      kept.push(rel);
+      continue;
+    }
     fs.unlinkSync(abs);
     removed.push(rel);
 
@@ -55,5 +72,5 @@ export function cleanDemo(rootDir, { templatesAreasDir = TEMPLATES_AREAS_DIR } =
       removed.push(path.relative(rootDir, dir));
     }
   }
-  return { removed };
+  return { removed, kept };
 }

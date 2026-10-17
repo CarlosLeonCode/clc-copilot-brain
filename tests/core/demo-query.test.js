@@ -29,6 +29,18 @@ test('cleanDemo removes only seeded files and prunes emptied directories', () =>
     assert.deepEqual(cleanDemo(dir).removed, []);
   }));
 
+test('cleanDemo keeps demo files the user edited and reports them', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'], demo: true });
+    const edited = path.join('sales', 'objections', 'pricing-too-high.json');
+    fs.appendFileSync(path.join(dir, edited), '\n');
+    const { removed, kept } = cleanDemo(dir);
+    assert.ok(fs.existsSync(path.join(dir, edited)));
+    assert.ok(!removed.includes(edited));
+    assert.deepEqual(kept, [edited]);
+    assert.ok(removed.includes(path.join('sales', 'battlecards', 'competitor-alpha.json')));
+  }));
+
 test('queryBrain searches allowed areas plus playbooks and returns snippets', () =>
   withTmp((dir) => {
     writeFiles(dir, {
