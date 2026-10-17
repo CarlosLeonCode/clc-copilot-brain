@@ -72,22 +72,37 @@ export async function runInit(targetDir, options) {
   spin.stop(pc.green('Second Brain initialized successfully!'));
   reportAdapterBackups(result.adapters);
 
-  p.note(
-    `1. ${pc.cyan('org-kernel.json')} - Core organizational state & active areas\n` +
-    `2. ${pc.cyan('AGENTS.md')} - Universal SSOT for Cursor, Claude, Windsurf & Gemini\n` +
-    `3. ${pc.cyan('.cursorrules, .windsurfrules, CLAUDE.md, GEMINI.md')} - Symlinked adapters\n` +
-    `4. ${pc.cyan('.claude/commands/')} - Claude Code slash commands (/brain, /brain:sales, etc.)\n` +
-    `5. ${pc.cyan('skills/')} - LLM skills & exportable prompts for ChatGPT/Gemini (skills/integrations/)\n` +
-    `6. ${pc.cyan(areas.join(', '))} - Installed operational areas\n\n` +
-    `Run ${pc.bold('copilot-brain doctor')} to audit repository health.`,
-    'Scaffolded Artifacts'
-  );
-  p.note(
-    `• ${pc.bold('With MCP (Cursor, Claude Desktop, Antigravity):')} Run ${pc.cyan('clc-brain mcp')}\n` +
-    `• ${pc.bold('With Web AI (ChatGPT Custom GPTs, Gemini Gems):')} Instructions in ${pc.cyan('skills/integrations/')}\n` +
-    `• ${pc.bold('Health check:')} Run ${pc.cyan('clc-brain doctor')} anytime.`,
-    'How to Connect Your AI'
-  );
+  const absDir = path.resolve(targetDir);
+  p.note(renderNextSteps({ absDir, areas, demo }), 'Next steps');
+  // Printed outside the note box so the JSON stays copy-pasteable (the box wraps long lines).
+  console.log(`${pc.bold('Using Claude Desktop or another MCP client?')} Add this to its config:\n`);
+  console.log(JSON.stringify({ mcpServers: { [path.basename(absDir)]: { command: 'clc-brain', args: ['mcp', absDir] } } }, null, 2));
+  console.log(`\nWeb chatbots (ChatGPT, Gemini): see ${pc.cyan('skills/integrations/')}. Health check: ${pc.cyan('clc-brain doctor')}.\n`);
   p.outro(pc.bold(pc.green(`Welcome to your new Second Brain, ${companyName}! 🚀`)));
   return 0;
+}
+
+// One example question per preset area, answered from that area's files once onboarding seeds them.
+const AREA_EXAMPLES = Object.freeze({
+  sales: '/objection "it\'s too expensive"',
+  marketing: '"How do we position ourselves against the market leader?"',
+  product: '"What are this quarter\'s product themes?"',
+  operations: '"A P1 incident just started, what do I do?"',
+  hr_people: '"What is the onboarding plan for a new engineer?"',
+  finance_legal: '"Can I give a customer a 25% discount?"'
+});
+const MAX_EXAMPLES = 3;
+
+/** The guided path from an empty brain to a first grounded answer, tailored to the installed areas. */
+function renderNextSteps({ absDir, areas, demo }) {
+  const examples = areas.filter((a) => AREA_EXAMPLES[a]).slice(0, MAX_EXAMPLES).map((a) => `   • ${pc.bold(AREA_EXAMPLES[a])}`);
+  const steps = [
+    `1. Open this folder in Claude Code, Cursor, Windsurf or Gemini CLI:\n   ${pc.cyan(absDir)}`,
+    `2. Run ${pc.bold('/brain:onboarding')}, a short interview that fills your profile\n   and drafts a first asset for each area you installed.`,
+    examples.length > 0
+      ? `3. Ask your copilot; answers cite the source file in this brain:\n${examples.join('\n')}`
+      : '3. Ask your copilot about your company;\n   answers cite the files in this brain.'
+  ];
+  if (demo) steps.push(`\nDemo samples installed. Remove them with ${pc.cyan('clc-brain clean-demo')}.`);
+  return steps.join('\n');
 }

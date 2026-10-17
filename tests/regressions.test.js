@@ -147,3 +147,33 @@ test('--help documents every flag the commands accept', () => {
     assert.ok(stdout.includes(flag), `help is missing ${flag}`);
   }
 });
+
+test('init ends with concrete next steps: onboarding, first objection and an MCP config for this brain', () => {
+  const outer = sandbox();
+  try {
+    const brain = path.join(outer, 'acme brain');
+    const { stdout, status } = cli('init', brain, '--yes', '--areas', 'sales');
+    assert.equal(status, 0);
+    assert.match(stdout, /Next steps/);
+    assert.match(stdout, /\/brain:onboarding/);
+    assert.match(stdout, /\/objection/);
+    const config = JSON.parse(stdout.slice(stdout.indexOf('{\n  "mcpServers"'), stdout.indexOf('\n}\n') + 2));
+    assert.deepEqual(config.mcpServers['acme brain'], { command: 'clc-brain', args: ['mcp', path.resolve(brain)] }, 'MCP snippet must be valid JSON with the absolute brain path');
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test('init next steps are tailored to the installed areas, not only sales', () => {
+  const outer = sandbox();
+  try {
+    const brain = path.join(outer, 'ops-brain');
+    const { stdout, status } = cli('init', brain, '--yes', '--areas', 'operations,hr_people');
+    assert.equal(status, 0);
+    assert.doesNotMatch(stdout, /\/objection/);
+    assert.match(stdout, /incident/i);
+    assert.match(stdout, /onboarding plan/i);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
