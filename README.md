@@ -50,6 +50,8 @@
 
 If a document doesn't exist yet, the assistant says so and offers to help you write it.
 
+You can also ask to *see* things: *"Show me my sales process"* opens your sales steps and call guides as a simple visual page.
+
 ## 🗂️ What you can keep in it
 
 <table align="center">
@@ -69,7 +71,7 @@ If a document doesn't exist yet, the assistant says so and offers to help you wr
 
 1. 🧰 **Someone on your team sets it up once** (about 10 minutes).
 2. 💬 **A guided interview with your AI assistant** fills it with your company's information and drafts your first documents for each area. You approve everything before it's saved.
-3. 🙋 **Everyone asks questions in plain language** and gets answers with their source.
+3. 🙋 **Everyone asks questions in plain language** and gets answers with their source, and can see the sales flows as a simple visual page.
 
 ```mermaid
 flowchart LR
@@ -83,6 +85,14 @@ flowchart LR
 ```
 
 🎨 See the visual guide (in Spanish): [How to use Copilot Brain](./docs/diagrams/uso.html).
+
+## 👁️ See your sales process
+
+Your assistant turns your sales steps and call guides into a simple visual page you can open in your browser. Just ask *"Show me my sales process"*. The page updates itself whenever a guide changes.
+
+<p align="center">
+  <img src="docs/assets/sales-system-preview.png" alt="Sales system page: the five steps of the sales process as a diagram, with a card for each call guide showing its goal, decision tree and what to say." width="100%">
+</p>
 
 ## 🤝 Works with the AI tools you already use
 
@@ -170,6 +180,8 @@ Open only the one you use.
 
 Open your brain folder. That's it: the rules in `AGENTS.md` load automatically through `CLAUDE.md`, `GEMINI.md`, `.cursorrules` and `.windsurfrules`.
 
+The sales process page works in any tool: when you ask *"Show me my sales process"*, the assistant runs `clc-brain view --open` for you. If it can't run commands, open `sales/sales-system.html` in your browser.
+
 </details>
 
 <details>
@@ -248,6 +260,7 @@ For any area, just ask in plain language. These shortcuts speed up common tasks:
 | `clc-brain list-areas [folder]` | See installed and available areas. |
 | `clc-brain clean-demo [folder]` | Remove sample documents, keep yours. |
 | `clc-brain upgrade [folder]` | Update an existing brain to the latest commands and skills; your edits are kept as `.bak` copies. Add `--dry-run` to preview. |
+| `clc-brain view [folder] [--open]` | Build the visual page of your sales process; add `--open` to open it in your browser. |
 | `clc-brain mcp [folder]` | Connect MCP apps (used by the config above). |
 
 `clc-brain --help` lists every option.
@@ -263,6 +276,7 @@ For any area, just ask in plain language. These shortcuts speed up common tasks:
 | :--- | :--- |
 | `company-profile.md` | Who you are and what you sell. |
 | `sales/` | Customer profiles, objections, competitor comparisons, scripts, calls, pipeline stages, won/lost reviews. |
+| `sales/sales-system.html` | The visual page of your sales process (created for you; open it in any browser). |
 | `marketing/` | Brand, messaging, content calendar, distribution. |
 | `product/` | Roadmap, specs, release notes. |
 | `operations/` | Step-by-step procedures, tools, vendors. |

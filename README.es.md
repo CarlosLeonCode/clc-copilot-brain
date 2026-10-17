@@ -50,6 +50,8 @@
 
 Si un documento aún no existe, el asistente lo indica y ofrece ayudarte a redactarlo.
 
+También puedes pedirle que te *muestre* cosas: *"Muéstrame mi proceso de ventas"* abre tus pasos de venta y tus guías de llamada como una página visual sencilla.
+
 ## 🗂️ Qué puedes guardar
 
 <table align="center">
@@ -69,7 +71,7 @@ Si un documento aún no existe, el asistente lo indica y ofrece ayudarte a redac
 
 1. 🧰 **Alguien de tu equipo lo configura una sola vez** (unos 10 minutos).
 2. 💬 **Una entrevista guiada con tu asistente de IA** lo llena con la información de tu empresa y redacta tus primeros documentos de cada área. Tú apruebas todo antes de que se guarde.
-3. 🙋 **Todos hacen preguntas en lenguaje natural** y reciben respuestas con su fuente.
+3. 🙋 **Todos hacen preguntas en lenguaje natural** y reciben respuestas con su fuente, y pueden ver los flujos de venta como una página visual sencilla.
 
 ```mermaid
 flowchart LR
@@ -83,6 +85,14 @@ flowchart LR
 ```
 
 🎨 Consulta la guía visual: [Cómo usar Copilot Brain](./docs/diagrams/uso.html).
+
+## 👁️ Mira tu proceso de ventas
+
+Tu asistente convierte tus pasos de venta y tus guías de llamada en una página visual sencilla que puedes abrir en tu navegador. Solo pide *"Muéstrame mi proceso de ventas"*. La página se actualiza sola cada vez que cambia una guía.
+
+<p align="center">
+  <img src="docs/assets/sales-system-preview.png" alt="Página del sistema de ventas: los cinco pasos del proceso de ventas en un diagrama, con una tarjeta por cada guía de llamada que muestra su objetivo, su árbol de decisiones y qué decir." width="100%">
+</p>
 
 ## 🤝 Funciona con las herramientas de IA que ya usas
 
@@ -170,6 +180,8 @@ Abre solo la que usas.
 
 Abre la carpeta de tu cerebro. Eso es todo: las reglas de `AGENTS.md` se cargan solas a través de `CLAUDE.md`, `GEMINI.md`, `.cursorrules` y `.windsurfrules`.
 
+La página de tu proceso de ventas funciona en cualquier herramienta: cuando pides *"Muéstrame mi proceso de ventas"*, el asistente ejecuta `clc-brain view --open` por ti. Si no puede ejecutar comandos, abre `sales/sales-system.html` en tu navegador.
+
 </details>
 
 <details>
@@ -248,6 +260,7 @@ Para cualquier área, pregunta en lenguaje natural. Estos atajos agilizan las ta
 | `clc-brain list-areas [carpeta]` | Muestra las áreas instaladas y disponibles. |
 | `clc-brain clean-demo [carpeta]` | Elimina los documentos de ejemplo y conserva los tuyos. |
 | `clc-brain upgrade [carpeta]` | Actualiza un cerebro existente a los últimos comandos y skills; tus ediciones quedan como copias `.bak`. Agrega `--dry-run` para previsualizar. |
+| `clc-brain view [carpeta] [--open]` | Crea la página visual de tu proceso de ventas; añade `--open` para abrirla en tu navegador. |
 | `clc-brain mcp [carpeta]` | Conecta apps MCP (lo usa la configuración de arriba). |
 
 `clc-brain --help` muestra todas las opciones.
@@ -263,6 +276,7 @@ Para cualquier área, pregunta en lenguaje natural. Estos atajos agilizan las ta
 | :--- | :--- |
 | `company-profile.md` | Quiénes son y qué venden. |
 | `sales/` | Perfiles de cliente, objeciones, comparativas con competidores, guiones, llamadas, etapas de venta, análisis de negocios ganados y perdidos. |
+| `sales/sales-system.html` | La página visual de tu proceso de ventas (se crea sola; ábrela en cualquier navegador). |
 | `marketing/` | Marca, mensajes, calendario de contenidos, distribución. |
 | `product/` | Hoja de ruta, especificaciones, notas de versión. |
 | `operations/` | Procedimientos paso a paso, herramientas, proveedores. |
