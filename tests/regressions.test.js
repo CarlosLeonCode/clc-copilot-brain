@@ -143,7 +143,7 @@ test('doctor without --fix and without a TTY does not prompt and exits 1 on erro
 test('--help documents every flag the commands accept', () => {
   const { stdout, status } = cli('--help');
   assert.equal(status, 0);
-  for (const flag of ['--name', '--industry', '--tagline', '--areas', '--demo', '--clean', '--yes', '--preset', '--custom', '--fix', '--dry-run', 'upgrade', 'view', '--open']) {
+  for (const flag of ['--name', '--industry', '--tagline', '--areas', '--demo', '--clean', '--yes', '--preset', '--custom', '--fix', '--dry-run', 'upgrade', 'view', '--open', '--draft']) {
     assert.ok(stdout.includes(flag), `help is missing ${flag}`);
   }
 });
@@ -193,6 +193,77 @@ test('view writes the sales system page and prints its path in plain words', () 
     assert.ok(fs.existsSync(page), 'view must write sales/sales-system.html');
     assert.match(stdout, /Your sales system page is ready/);
     assert.ok(stdout.includes(page), 'the absolute path of the page is printed');
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+const DRAFT_COLD_CALL = [
+  '---', 'play: cold-call', 'stages: 1', 'goal: Book a discovery meeting', 'gate_unlocked: Stage 1 entry', 'version: 2', 'status: active', '---',
+  '# Play: Cold Call', '', '## Decision Tree', '', '```mermaid', 'flowchart TD',
+  '    B1{"Opener"} -->|"Asks for an email"| B9["Send a two-line email and call back Friday"]', '```', ''
+].join('\n');
+
+test('view --draft writes a preview outside the brain and leaves the saved page alone', () => {
+  const outer = sandbox();
+  try {
+    const brain = path.join(outer, 'brain');
+    initBrain(brain, ['--clean', '--yes']);
+    const page = path.join(brain, 'sales', 'sales-system.html');
+    const before = fs.readFileSync(page, 'utf8');
+    const draft = path.join(outer, 'cold-call-draft.md');
+    fs.writeFileSync(draft, DRAFT_COLD_CALL);
+    const pipeline = path.join(outer, 'pipeline-draft.md');
+    fs.writeFileSync(pipeline, '```mermaid\nflowchart LR\n  A["1. Meet"] --> B["2. Win"]\n```\n');
+    const { stdout, status } = cli('view', brain, '--draft', draft, '--draft', pipeline);
+    assert.equal(status, 0, stdout);
+    assert.match(stdout, /preview/i);
+    assert.match(stdout, /nothing is saved/i);
+    const previewPath = /(\/\S+\.html)/.exec(stdout)[1];
+    try {
+      assert.ok(path.relative(brain, previewPath).startsWith('..'), 'preview lives outside the brain');
+      const html = fs.readFileSync(previewPath, 'utf8');
+      assert.match(html, /Draft — not saved yet/);
+      assert.match(html, /Send a two-line email/);
+      assert.match(html, /1\. Meet/);
+    } finally {
+      fs.rmSync(path.dirname(previewPath), { recursive: true, force: true });
+    }
+    assert.equal(fs.readFileSync(page, 'utf8'), before, 'sales-system.html is unchanged');
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test('view --draft exits 1 with a plain warning when a draft diagram cannot be drawn', () => {
+  const outer = sandbox();
+  try {
+    const brain = path.join(outer, 'brain');
+    initBrain(brain, ['--clean', '--yes']);
+    const page = path.join(brain, 'sales', 'sales-system.html');
+    const before = fs.readFileSync(page, 'utf8');
+    const draft = path.join(outer, 'broken-draft.md');
+    fs.writeFileSync(draft, DRAFT_COLD_CALL.replace('B1{"Opener"}', 'B1{"Opener"'));
+    const res = cli('view', brain, '--draft', draft);
+    assert.equal(res.status, 1);
+    const out = res.stdout + res.stderr;
+    assert.match(out, /broken-draft\.md/);
+    assert.match(out, /can't be drawn/);
+    assert.equal(fs.readFileSync(page, 'utf8'), before);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test('view --draft rejects a file that is neither a call guide nor a pipeline', () => {
+  const outer = sandbox();
+  try {
+    const brain = path.join(outer, 'brain');
+    initBrain(brain, ['--clean', '--yes']);
+    const draft = path.join(outer, 'notes.md');
+    fs.writeFileSync(draft, 'just notes');
+    assert.equal(cli('view', brain, '--draft', draft).status, 1);
+    assert.equal(cli('view', brain, '--draft').status, 1, 'a --draft without a file fails');
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
   }

@@ -1,5 +1,7 @@
-// Minimal argv parser: positional args plus known valued flags; other dashes become booleans.
+// Minimal argv parser: positional args plus known valued (and repeatable) flags; other dashes become booleans.
 const VALUED_FLAGS = Object.freeze(['name', 'industry', 'tagline', 'areas', 'preset', 'custom']);
+// Valued flags that may repeat; their values are collected into an array.
+const REPEATABLE_FLAGS = Object.freeze(['draft']);
 
 export function parseArgs(rawArgs) {
   const args = [];
@@ -9,6 +11,8 @@ export function parseArgs(rawArgs) {
     const flag = arg.replace(/^-+/, '');
     if (arg === '--yes' || arg === '-y') {
       options.yes = true;
+    } else if (arg.startsWith('--') && REPEATABLE_FLAGS.includes(flag) && i + 1 < rawArgs.length) {
+      options[flag] = [...(Array.isArray(options[flag]) ? options[flag] : []), rawArgs[++i]];
     } else if (arg.startsWith('--') && VALUED_FLAGS.includes(flag) && i + 1 < rawArgs.length) {
       options[flag] = rawArgs[++i];
     } else if (arg.startsWith('-')) {

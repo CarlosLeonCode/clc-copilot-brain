@@ -1,12 +1,15 @@
 // Visual, plain-language HTML page of a brain's sales system (pipeline + call guides).
 // Reads brain files and returns a self-contained HTML string; every file-sourced text is escaped.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { BrainError } from './errors.js';
 import { parseFrontmatter } from './plays.js';
 import { FLOWCHART_CSS, layoutFlowchart, parseFlowchart, renderFlowchartSvg } from './flowchart.js';
 
 export const SALES_VIEW_FILE = 'sales-system.html';
+export const SALES_PREVIEW_FILE = 'sales-system-preview.html';
+export const DRAFT_BADGE = 'Draft — not saved yet';
 
 const MERMAID_FENCE = /```mermaid\r?\n([\s\S]*?)```/;
 const FRONTMATTER_BLOCK = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
@@ -131,9 +134,10 @@ function humanize(id) {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-function parsePlay(fileName, text, names) {
-  const id = fileName.replace(/\.md$/, '');
+function parsePlay(fileName, text, names, { draft = false } = {}) {
   const fm = parseFrontmatter(text) || {};
+  const fromName = path.basename(fileName).replace(/\.md$/, '');
+  const id = draft && typeof fm.play === 'string' && fm.play.trim() ? fm.play.trim() : fromName;
   const body = String(text).replace(FRONTMATTER_BLOCK, '');
   const heading = /^#\s+(.+)$/m.exec(body)?.[1]?.trim();
   const stageNumbers = String(fm.stages ?? fm.stage ?? '').split(',').map((s) => s.trim()).filter((s) => /^\d+$/.test(s));
@@ -147,7 +151,8 @@ function parsePlay(fileName, text, names) {
     steps: stageNumbers.map((n) => names.get(n) || `Step ${n}`),
     diagram: MERMAID_FENCE.exec(body)?.[1]?.trim() || '',
     branches: parseBranches(body),
-    learnings: parseLearnings(body)
+    learnings: parseLearnings(body),
+    draft
   };
 }
 
@@ -179,21 +184,27 @@ function stepsList(graph) {
   return `<div class="diagram-text"><p class="note">This diagram could not be drawn, so here are its steps. Ask your assistant to fix the diagram.</p><ol>${items.join('')}</ol></div>`;
 }
 
-/** Inline SVG for a Mermaid flowchart (no scripts, works offline); a text list if it cannot be drawn. */
+/**
+ * Inline SVG for a Mermaid flowchart (no scripts, works offline); a text list if it cannot be drawn.
+ * @returns {{ html: string, ok: boolean, error?: string }}
+ */
 function diagram(code, { wide = false, title, idPrefix }) {
   let graph;
   try {
     graph = parseFlowchart(code);
-  } catch {
+  } catch (err) {
     const partial = parseFlowchart(code, { lenient: true });
-    return partial.nodes.length > 0
+    const html = partial.nodes.length > 0
       ? stepsList(partial)
       : '<div class="diagram-text"><p class="note">This diagram could not be drawn. Ask your assistant to fix it.</p></div>';
+    return { html, ok: false, error: err.message };
   }
   const layout = layoutFlowchart(graph);
   const minWidth = wide ? undefined : Math.min(layout.width, Math.max(MIN_TREE_WIDTH, layout.width * MIN_TREE_SCALE));
-  return `<div class="diagram${wide ? ' diagram-wide' : ''}">${renderFlowchartSvg(graph, layout, { title, idPrefix, minWidth })}</div>`;
+  return { html: `<div class="diagram${wide ? ' diagram-wide' : ''}">${renderFlowchartSvg(graph, layout, { title, idPrefix, minWidth })}</div>`, ok: true };
 }
+
+const draftBadge = (draft) => (draft ? `<span class="badge badge-draft">${DRAFT_BADGE}</span>` : '');
 
 function renderPlay(play) {
   const steps = play.steps.length > 0 ? `<p class="meta"><span class="label">Used in:</span> ${play.steps.map(escapeHtml).join(', ')}</p>` : '';
@@ -206,17 +217,17 @@ function renderPlay(play) {
     ? `<details><summary>What we've learned</summary><ul>${play.learnings.map((l) => `<li>${inline(l)}</li>`).join('')}</ul></details>`
     : '';
   return `<section class="card" id="${play.anchor}">
-<div class="card-head"><h3>${escapeHtml(play.title)}</h3>${version}</div>
+<div class="card-head"><h3>${escapeHtml(play.title)}</h3>${version}${draftBadge(play.draft)}</div>
 ${goal}
 ${steps}
-${play.diagram ? diagram(play.diagram, { title: `${play.title}: decision tree`, idPrefix: play.anchor }) : ''}
+${play.rendered ? play.rendered.html : ''}
 ${say}
 ${learned}
 </section>`;
 }
 
-const STYLE = `:root{--bg:#f7f7f5;--card:#fff;--text:#1f2328;--muted:#5b6470;--border:#e3e3de;--accent:#2f6fde;--soft:#eef3fc;--fc-node:#fff;--fc-stroke:#2f6fde;--fc-decision:#fff8e6;--fc-decision-stroke:#c98a00;--fc-text:#1f2328;--fc-line:#8a929c;--fc-label-bg:#eef3fc;--fc-label:#3d4550}
-@media (prefers-color-scheme:dark){:root{--bg:#16181c;--card:#1f2227;--text:#e8e8e6;--muted:#a3a9b2;--border:#33373e;--accent:#7aa7ff;--soft:#232a36;--fc-node:#1f2227;--fc-stroke:#7aa7ff;--fc-decision:#2e2715;--fc-decision-stroke:#e0b04a;--fc-text:#e8e8e6;--fc-line:#7d848e;--fc-label-bg:#232a36;--fc-label:#c9ced6}}
+const STYLE = `:root{--bg:#f7f7f5;--card:#fff;--text:#1f2328;--muted:#5b6470;--border:#e3e3de;--accent:#2f6fde;--soft:#eef3fc;--fc-node:#fff;--fc-stroke:#2f6fde;--fc-decision:#fff8e6;--fc-decision-stroke:#c98a00;--fc-text:#1f2328;--fc-line:#8a929c;--fc-label-bg:#eef3fc;--fc-label:#3d4550;--draft-bg:#fff4d6;--draft-text:#7a4b00;--draft-border:#e8c46a}
+@media (prefers-color-scheme:dark){:root{--bg:#16181c;--card:#1f2227;--text:#e8e8e6;--muted:#a3a9b2;--border:#33373e;--accent:#7aa7ff;--soft:#232a36;--fc-node:#1f2227;--fc-stroke:#7aa7ff;--fc-decision:#2e2715;--fc-decision-stroke:#e0b04a;--fc-text:#e8e8e6;--fc-line:#7d848e;--fc-label-bg:#232a36;--fc-label:#c9ced6;--draft-bg:#3a2f12;--draft-text:#f3d58a;--draft-border:#6b5520}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 main{max-width:960px;margin:0 auto;padding:32px 16px 64px}
@@ -230,6 +241,8 @@ h2{margin:40px 0 12px;font-size:1.4rem}
 .card-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
 .card-head h3{margin:0;font-size:1.25rem}
 .badge{font-size:.8rem;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:2px 10px}
+.badge-draft{color:var(--draft-text);background:var(--draft-bg);border-color:var(--draft-border);font-weight:600}
+.preview-note{background:var(--draft-bg);color:var(--draft-text);border:1px solid var(--draft-border)}
 .label{font-weight:600}
 .meta{color:var(--muted)}
 .diagram{overflow-x:auto;margin:16px 0;padding:12px;border-radius:10px;background:var(--bg)}
@@ -248,11 +261,43 @@ ul.talk li{margin:12px 0;padding-left:12px;border-left:3px solid var(--soft)}
 footer{margin-top:48px;color:var(--muted);font-size:.9rem}
 ${FLOWCHART_CSS}`;
 
+const FLOWCHART_START = /^\s*(?:flowchart|graph)\b/m;
+
+/** 'play' when the draft has play frontmatter, 'pipeline' when it holds a flowchart, else null. */
+export function detectDraftKind(content) {
+  const fm = parseFrontmatter(content);
+  if (fm && typeof fm.play === 'string' && fm.play.trim()) return 'play';
+  const text = String(content ?? '');
+  if (MERMAID_FENCE.test(text) || FLOWCHART_START.test(text)) return 'pipeline';
+  return null;
+}
+
+/** Read a draft file for a preview. */
+export function loadDraft(file) {
+  let content;
+  try {
+    content = fs.readFileSync(file, 'utf8');
+  } catch {
+    throw new BrainError('DRAFT_INVALID', `Cannot read the draft ${file}.`);
+  }
+  const kind = detectDraftKind(content);
+  if (!kind) {
+    throw new BrainError('DRAFT_INVALID', `The draft ${file} is neither a call guide (no "play:" line at the top) nor a pipeline (no flowchart diagram).`);
+  }
+  return { kind, path: file, content };
+}
+
+function draftPipelineSource(content) {
+  return (MERMAID_FENCE.exec(content)?.[1] ?? content).trim();
+}
+
 /**
- * Build the sales system page for a brain.
- * @returns {{ html: string, plays: object[], outputPath: string }}
+ * Build the sales system page for a brain. `drafts` ([{ kind, path, content }]) are previewed
+ * on top of the saved files: a draft play replaces the saved play with the same id (or is added),
+ * a draft pipeline replaces the pipeline diagram. Nothing is written.
+ * @returns {{ html: string, plays: object[], diagrams: object[], drafts: object[], outputPath: string }}
  */
-export function buildSalesView(rootDir, { now = new Date() } = {}) {
+export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) {
   const kernelPath = path.join(rootDir, 'org-kernel.json');
   if (!fs.existsSync(kernelPath)) {
     throw new BrainError('NOT_A_BRAIN', `${rootDir} is not a brain (no org-kernel.json). Run "clc-brain init" first.`);
@@ -266,36 +311,70 @@ export function buildSalesView(rootDir, { now = new Date() } = {}) {
   }
 
   const names = stageNames(systemMd);
-  const plays = playFiles
-    .map((f) => parsePlay(f, fs.readFileSync(path.join(playsDir, f), 'utf8'), names))
-    .sort((a, b) => a.firstStage - b.firstStage || a.id.localeCompare(b.id));
+  const byId = new Map(playFiles.map((f) => {
+    const play = parsePlay(f, fs.readFileSync(path.join(playsDir, f), 'utf8'), names);
+    return [play.id, play];
+  }));
   const pipelineMd = readIfExists(path.join(salesDir, 'stages', 'pipeline-stages.md'));
-  const pipeline = pipelineMd ? MERMAID_FENCE.exec(pipelineMd)?.[1]?.trim() : '';
+  let pipeline = pipelineMd ? MERMAID_FENCE.exec(pipelineMd)?.[1]?.trim() || '' : '';
+  let pipelineDraft = false;
+  const draftIds = drafts.map((d) => {
+    if (d.kind !== 'play') return 'pipeline';
+    const play = parsePlay(d.path || 'draft.md', d.content, names, { draft: true });
+    byId.set(play.id, play);
+    return play.id;
+  });
+  for (const d of drafts) {
+    if (d.kind === 'pipeline') {
+      pipeline = draftPipelineSource(d.content);
+      pipelineDraft = true;
+    }
+  }
+  const plays = [...byId.values()].sort((a, b) => a.firstStage - b.firstStage || a.id.localeCompare(b.id));
+  const diagrams = [];
+  for (const play of plays) {
+    play.rendered = play.diagram ? diagram(play.diagram, { title: `${play.title}: decision tree`, idPrefix: play.anchor }) : null;
+    diagrams.push({
+      kind: 'play', id: play.id, title: play.title, draft: play.draft,
+      ok: Boolean(play.rendered?.ok), error: play.rendered ? play.rendered.error : 'No diagram found.'
+    });
+  }
+  const pipelineRendered = pipeline ? diagram(pipeline, { wide: true, title: 'Your pipeline', idPrefix: 'pipeline' }) : null;
+  diagrams.unshift({
+    kind: 'pipeline', id: 'pipeline', title: 'Your pipeline', draft: pipelineDraft,
+    ok: Boolean(pipelineRendered?.ok), error: pipelineRendered ? pipelineRendered.error : 'No diagram found.'
+  });
+  const draftStatus = drafts.map((d, i) => {
+    const status = diagrams.find((x) => x.kind === (d.kind === 'play' ? 'play' : 'pipeline') && x.id === draftIds[i]);
+    return { path: d.path, kind: d.kind, id: draftIds[i], ok: status.ok, error: status.error };
+  });
+  const preview = drafts.length > 0;
   const company = readCompanyName(kernelPath);
   const date = now.toISOString().slice(0, 10);
+  const heading = `${escapeHtml(company)} · Sales system${preview ? ' (Preview)' : ''}`;
 
   const html = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(company)} · Sales system</title>
+<title>${heading}</title>
 <style>${STYLE}</style>
 </head>
 <body>
 <main>
 <header>
-<h1>${escapeHtml(company)} · Sales system</h1>
+<h1>${heading}</h1>
 <p>Updated ${date}</p>
 </header>
-<nav aria-label="Call guides">${plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`).join('')}</nav>
+${preview ? '<p class="note preview-note">This is a preview. Parts marked as drafts are not saved yet.</p>\n' : ''}<nav aria-label="Call guides">${plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`).join('')}</nav>
 <h2>How your sales system works</h2>
 <section class="card">
 ${markdownToHtml(plainSystemSection(systemMd))}
 </section>
 <h2>Your pipeline</h2>
 <section class="card">
-${pipeline ? diagram(pipeline, { wide: true, title: 'Your pipeline', idPrefix: 'pipeline' }) : '<p>No pipeline diagram yet. Ask your assistant to draw one.</p>'}
+${pipelineDraft ? `<div class="card-head">${draftBadge(true)}</div>\n` : ''}${pipelineRendered ? pipelineRendered.html : '<p>No pipeline diagram yet. Ask your assistant to draw one.</p>'}
 </section>
 <h2>Your call guides</h2>
 ${plays.map(renderPlay).join('\n')}
@@ -304,7 +383,16 @@ ${plays.map(renderPlay).join('\n')}
 </body>
 </html>
 `;
-  return { html, plays, outputPath: path.join(salesDir, SALES_VIEW_FILE) };
+  return { html, plays, diagrams, drafts: draftStatus, outputPath: path.join(salesDir, SALES_VIEW_FILE) };
+}
+
+/** Build a preview with drafts and write it to a new OS temp folder (never inside the brain). */
+export function writeSalesPreview(rootDir, { drafts = [], now, tmpRoot = os.tmpdir() } = {}) {
+  const view = buildSalesView(rootDir, { drafts, now });
+  const dir = fs.mkdtempSync(path.join(tmpRoot, 'clc-brain-preview-'));
+  const outputPath = path.join(dir, SALES_PREVIEW_FILE);
+  fs.writeFileSync(outputPath, view.html);
+  return { ...view, outputPath };
 }
 
 /** Build and write the page to sales/sales-system.html. */

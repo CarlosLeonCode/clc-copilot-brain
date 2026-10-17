@@ -42,6 +42,8 @@ ${pc.bold('UPGRADE OPTIONS:')}
 
 ${pc.bold('VIEW OPTIONS:')}
   --open              Open the page in your default browser after building it
+  --draft <file>      Preview a draft call guide or pipeline without saving it (repeatable);
+                      the preview goes to a temp file and sales/sales-system.html is untouched
 
 ${pc.bold('GLOBAL OPTIONS:')}
   -v, --version       Show version number
@@ -57,5 +59,6 @@ ${pc.bold('EXAMPLES:')}
   $ copilot-brain mcp ./acme-brain
   $ copilot-brain upgrade ./acme-brain --dry-run
   $ copilot-brain view ./acme-brain --open
+  $ copilot-brain view ./acme-brain --draft /tmp/cold-call-draft.md --open
 `;
 }

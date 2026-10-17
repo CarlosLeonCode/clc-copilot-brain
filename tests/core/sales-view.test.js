@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { buildSalesView, escapeHtml, markdownToHtml, writeSalesView } from '../../src/core/sales-view.js';
+import { buildSalesView, detectDraftKind, escapeHtml, loadDraft, markdownToHtml, writeSalesPreview, writeSalesView } from '../../src/core/sales-view.js';
 import { initBrain } from '../../src/core/scaffold.js';
 import { BrainError } from '../../src/core/errors.js';
 import { withTmp, writeFiles } from './helpers.js';
@@ -173,4 +173,97 @@ test('starter plays read in plain words on the page (no gate jargon or field nam
     for (const jargon of [/\bgates?\b/i, /gate_advanced/, /\bchampion\b/i, /mutual action plan/i, /\bnurture\b/i]) {
       assert.doesNotMatch(text, jargon);
     }
+  }));
+
+const draftPlay = (id, title, tree) => [
+  '---', `play: ${id}`, 'stages: 1', 'goal: Draft goal', 'gate_unlocked: Gate 1', 'version: 2', 'status: active', '---',
+  `# Play: ${title}`, '', '## Decision Tree', '', '```mermaid', tree, '```', ''
+].join('\n');
+
+test('detectDraftKind: play frontmatter means a call guide, a bare flowchart means the pipeline', () => {
+  assert.equal(detectDraftKind(draftPlay('cold-call', 'Cold Call', 'flowchart TD\nA --> B')), 'play');
+  assert.equal(detectDraftKind('# Pipeline\n\n```mermaid\nflowchart LR\nA --> B\n```\n'), 'pipeline');
+  assert.equal(detectDraftKind('flowchart LR\nA --> B'), 'pipeline');
+  assert.equal(detectDraftKind('just some notes'), null);
+});
+
+test('loadDraft reads a draft file and rejects one that is neither a guide nor a pipeline', () =>
+  withTmp((dir) => {
+    writeFiles(dir, { 'a.md': draftPlay('x', 'X', 'flowchart TD\nA --> B'), 'b.txt': 'hello' });
+    assert.deepEqual(loadDraft(path.join(dir, 'a.md')).kind, 'play');
+    assert.throws(() => loadDraft(path.join(dir, 'b.txt')), (err) => err instanceof BrainError && err.code === 'DRAFT_INVALID');
+    assert.throws(() => loadDraft(path.join(dir, 'missing.md')), (err) => err instanceof BrainError && err.code === 'DRAFT_INVALID');
+  }));
+
+test('a draft play replaces the saved play with the same id and is marked as a draft preview', () =>
+  withTmp((dir) => {
+    initBrain(dir, { companyName: 'Acme', areas: ['sales'] });
+    const content = draftPlay('cold-call', 'Cold Call', 'flowchart TD\n    A{"Opener"} -->|"Asks for email"| B["Send a two-line email"]');
+    const { html, plays, diagrams } = buildSalesView(dir, { drafts: [{ kind: 'play', path: '/tmp/cold-call.md', content }] });
+    assert.equal(plays.length, 4, 'replaced, not added');
+    assert.match(html, /<title>[^<]*Preview/);
+    assert.match(html, /<h1>[^<]*Preview/);
+    const card = /<section class="card" id="play-cold-call">[\s\S]*?<\/section>/.exec(html)[0];
+    assert.match(card, /Draft — not saved yet/);
+    assert.match(card, /Send a two-line email/);
+    assert.equal(countOf(html, 'Draft — not saved yet'), 1, 'only the draft card carries the badge');
+    const status = diagrams.find((d) => d.id === 'cold-call');
+    assert.deepEqual({ kind: status.kind, draft: status.draft, ok: status.ok }, { kind: 'play', draft: true, ok: true });
+    assert.equal(diagrams.length, 5);
+  }));
+
+test('a new draft play is added and a draft pipeline replaces the pipeline', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const { html, plays, diagrams } = buildSalesView(dir, {
+      drafts: [
+        { kind: 'play', path: 'renewal.md', content: draftPlay('renewal-call', 'Renewal Call', 'flowchart TD\nA[Check usage] --> B[Offer renewal]') },
+        { kind: 'pipeline', path: 'pipe.md', content: 'flowchart LR\nS1["1. Meet"] --> S2["2. Win"]' }
+      ]
+    });
+    assert.equal(plays.length, 5);
+    assert.match(html, /Renewal Call/);
+    assert.match(html, /1\. Meet/);
+    assert.doesNotMatch(html, /Agree on value and price/, 'the saved pipeline diagram is replaced');
+    assert.equal(countOf(html, 'Draft — not saved yet'), 2);
+    assert.ok(diagrams.find((d) => d.kind === 'pipeline').draft);
+  }));
+
+test('diagram status reports drafts that cannot be drawn', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const { diagrams } = buildSalesView(dir, { drafts: [{ kind: 'play', path: 'x.md', content: draftPlay('cold-call', 'Cold Call', 'flowchart TD\nA[open --> B') }] });
+    const status = diagrams.find((d) => d.id === 'cold-call');
+    assert.equal(status.ok, false);
+    assert.ok(status.error);
+    assert.ok(diagrams.filter((d) => d.id !== 'cold-call').every((d) => d.ok), 'saved diagrams all draw');
+  }));
+
+test('writeSalesPreview writes outside the brain and leaves the saved page untouched', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    writeSalesView(dir);
+    const saved = path.join(dir, 'sales', 'sales-system.html');
+    const before = fs.readFileSync(saved, 'utf8');
+    const content = draftPlay('cold-call', 'Cold Call', 'flowchart TD\nA --> B');
+    const { outputPath } = writeSalesPreview(dir, { drafts: [{ kind: 'play', path: 'x.md', content }] });
+    try {
+      assert.ok(path.relative(dir, outputPath).startsWith('..'), 'preview lives outside the brain');
+      assert.match(fs.readFileSync(outputPath, 'utf8'), /Draft — not saved yet/);
+      assert.equal(fs.readFileSync(saved, 'utf8'), before);
+    } finally {
+      fs.rmSync(path.dirname(outputPath), { recursive: true, force: true });
+    }
+  }));
+
+test('buildSalesView reports the status of each draft', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const { drafts } = buildSalesView(dir, {
+      drafts: [
+        { kind: 'play', path: 'good.md', content: draftPlay('renewal', 'Renewal', 'flowchart TD\nA --> B') },
+        { kind: 'play', path: 'bad.md', content: draftPlay('cold-call', 'Cold Call', 'flowchart TD\nA[x --> B') }
+      ]
+    });
+    assert.deepEqual(drafts.map((d) => [d.path, d.id, d.ok]), [['good.md', 'renewal', true], ['bad.md', 'cold-call', false]]);
   }));
