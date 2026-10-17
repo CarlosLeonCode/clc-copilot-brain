@@ -102,3 +102,13 @@ test('the sales system map tells people how to see it', () => {
   const plain = read('templates/areas/sales/system.md').split('## For your AI assistant')[0];
   assert.match(plain, /Want to see it\? Ask your assistant: "Show me my sales process"\./);
 });
+
+test('the "here is my sales flow" intent imports, previews and waits for approval', () => {
+  const rows = FILES.map((rel) => read(rel).split('\n').find((l) => /here's my sales flow/i.test(l)) || '');
+  for (const row of rows) {
+    assert.match(row, /te paso mi diagrama/i);
+    assert.match(row, /preview/i);
+    assert.match(row, /\.claude\/commands\/flow\.md/);
+  }
+  assert.equal(rows[0], rows[1], 'root and template rows stay identical');
+});

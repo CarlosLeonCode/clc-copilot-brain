@@ -114,3 +114,24 @@ test('agent skills carry a name/description header and sales-assist knows call g
     assert.match(sales, /never show internal IDs/i);
   }
 });
+
+test('flow imports any drawing, explains it back, previews a draft and saves only after a yes', () => {
+  for (const text of [...cmdCopies('flow.md').map(read), promptText('flow')]) {
+    for (const input of [/photo/i, /screenshot/i, /PDF/, /HTML/, /Mermaid text/i, /description/i, /Archify/, /Miro/, /Lucidchart/]) {
+      assert.match(text, input, `flow must accept ${input}`);
+    }
+    assert.match(text, /explain back/i);
+    assert.match(text, /one question at a time/i);
+    assert.match(text, /never invent steps/i);
+    assert.match(text, /only the Mermaid subset the page can draw/i);
+    for (const piece of [/flowchart TD/, /flowchart LR/, /-->\|label\|/, /-- label -->/, /classDef/]) assert.match(text, piece);
+    assert.match(text, /clc-brain view --draft/);
+    assert.match(text, /Nothing is saved yet/);
+    assert.match(text, /exits with 1/i, 'a draft that cannot be drawn is fixed before showing it');
+    assert.match(text, /¿Lo guardo así\?/);
+    const preview = text.indexOf('clc-brain view --draft');
+    const save = text.search(/\*\*Save\*\*/);
+    assert.ok(save > preview && preview !== -1, 'the preview comes before saving');
+    assert.match(text, /checkpoint/i, 'human review checkpoint stays explicit');
+  }
+});

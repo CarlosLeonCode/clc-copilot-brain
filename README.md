@@ -90,6 +90,8 @@ flowchart LR
 
 Your assistant turns your sales steps and call guides into a simple visual page you can open in your browser. Just ask *"Show me my sales process"*. The page updates itself whenever a guide changes, and it works without an internet connection.
 
+Already have your process drawn somewhere? Share a photo, PDF or file with your assistant: it explains what it understood, shows you a preview, and saves it only when you say yes.
+
 <p align="center">
   <img src="docs/assets/sales-system-preview.png" alt="Sales system page: the five steps of the sales process as a diagram, with a card for each call guide showing its goal, decision tree and what to say." width="100%">
 </p>
@@ -260,7 +262,7 @@ For any area, just ask in plain language. These shortcuts speed up common tasks:
 | `clc-brain list-areas [folder]` | See installed and available areas. |
 | `clc-brain clean-demo [folder]` | Remove sample documents, keep yours. |
 | `clc-brain upgrade [folder]` | Update an existing brain to the latest commands and skills; your edits are kept as `.bak` copies. Add `--dry-run` to preview. |
-| `clc-brain view [folder] [--open]` | Build the visual page of your sales process; add `--open` to open it in your browser. |
+| `clc-brain view [folder] [--open] [--draft <file>]` | Build the visual page of your sales process; add `--open` to open it in your browser, or `--draft <file>` to preview a change without saving it. |
 | `clc-brain mcp [folder]` | Connect MCP apps (used by the config above). |
 
 `clc-brain --help` lists every option.

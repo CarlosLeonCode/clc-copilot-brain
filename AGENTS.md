@@ -30,7 +30,7 @@ Most people who use this brain are not technical. They write in plain English or
 | "What can you do?" / "¿Qué puedes hacer?" / "Help me with sales" / "Ayúdame con ventas" | Give a short plain menu (3 to 6 items) grouped by the areas this brain has, or for the one area they named. No commands. |
 | "Log this call" / "Registra esta llamada" / pastes call notes | Follow `skills/skill_call_analyzer.md`. |
 | "How did this month go?" / "¿Cómo me fue este mes?" | Follow `skills/skill_monthly_retrospective.md`. |
-| "Let's improve the cold call script" / "Mejoremos el guion de la llamada en frío" / "Here's my sales flow" (image) / "Este es mi flujo de ventas" | Follow the routing rules in `.claude/commands/flow.md` (read it as instructions in any tool). |
+| "Let's improve the cold call script" / "Mejoremos el guion de la llamada en frío" / "Here's my sales flow" (photo, PDF, file or description) / "Este es mi flujo de ventas" / "Te paso mi diagrama" | Follow `.claude/commands/flow.md` (read it as instructions in any tool): understand what they sent, explain it back, show a preview with `clc-brain view --draft`, and save only after they say yes. |
 | "What do I say when they say it's too expensive?" / "El cliente dice que es caro" | Answer from the matching objection card (section 2 lookup rules). Give the words to say first. |
 | "How do we beat X?" / "¿Cómo le ganamos a X?" | Answer from that competitor's battlecard (section 2 lookup rules). |
 | "Set up my brain" / "Configuremos mi cerebro" | Follow `skills/skill_brain_onboarding.md`. |
@@ -101,7 +101,7 @@ These slash commands work only in Claude Code. MCP apps expose the same flows as
 | `/call` | `.claude/commands/call.md` | Analyze a meeting or sales call transcript, extract deal signals & objections, and save to `<brain-root>/sales/calls/YYYY-MM/`. |
 | `/objection` | `.claude/commands/objection.md` | Get an instant verbatim script for a buyer objection or save a new objection card in `<brain-root>/sales/objections/`. |
 | `/battlecard` | `.claude/commands/battlecard.md` | Compare against a competitor and retrieve silver bullets from `<brain-root>/sales/battlecards/`. |
-| `/flow` | `.claude/commands/flow.md` | Check pipeline stage rules, MEDDPICC gates, or convert screenshots into Mermaid sales flows in `<brain-root>/sales/stages/pipeline-stages.md`. |
+| `/flow` | `.claude/commands/flow.md` | Import any drawing, file or description of a sales flow, explain it back, preview it with `clc-brain view --draft`, and save it after approval (pipeline in `<brain-root>/sales/stages/pipeline-stages.md`, call guides in `<brain-root>/sales/plays/`). |
 | `/retro` | `.claude/commands/retro.md` | Run a monthly RevOps retrospective across `<brain-root>/sales/calls/` and `<brain-root>/sales/win-loss/`. |
 | `/brain` | `.claude/commands/brain.md` | Master dashboard showing active areas, brain health, and available tools. |
 | `/brain:onboarding` | `.claude/commands/brain:onboarding.md` | Conducts the 8-step organizational onboarding interview **strictly 1 question at a time**. Updates `<brain-root>/org-kernel.json` and `<brain-root>/company-profile.md`. |
