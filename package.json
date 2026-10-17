@@ -30,23 +30,28 @@
     "url": "https://github.com/carlosleoncodepro/clc-copilot-brain/issues"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "files": [
     "bin/",
+    "src/",
     "templates/",
     "schemas/",
     "playbooks/",
     "skills/",
     "AGENTS.md",
-    "org-kernel.json",
-    "company-profile.md"
+    "org-kernel.json"
   ],
   "scripts": {
-    "test": "node --test tests/**/*.test.js"
+    "test": "node --test \"tests/**/*.test.js\""
   },
   "dependencies": {
     "@clack/prompts": "^1.8.1",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "clckernel": "^1.2.19"
   }
 }

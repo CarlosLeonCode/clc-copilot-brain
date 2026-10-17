@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { validateSchema } from './helpers/schema-validator.js';
+import { validateAgainstSchema } from '../src/core/schema-validator.js';
 
 const PKG_DIR = path.resolve('.');
 
@@ -13,15 +13,10 @@ function loadJson(relPath) {
 }
 
 test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
-  const orgKernelSchema = loadJson('schemas/org-kernel.schema.json');
-  const battlecardSchema = loadJson('schemas/sales-battlecard.schema.json');
-  const objectionSchema = loadJson('schemas/sales-objection.schema.json');
-  const sopSchema = loadJson('schemas/sop.schema.json');
-
   await t.test('Positive validation: repo root and template JSON files conform to schemas', async (sub) => {
     await sub.test('repo root org-kernel.json conforms to org-kernel.schema.json', () => {
       const orgKernel = loadJson('org-kernel.json');
-      const errors = validateSchema(orgKernel, orgKernelSchema);
+      const errors = validateAgainstSchema('org-kernel', orgKernel).errors;
       assert.deepStrictEqual(errors, [], `org-kernel.json validation errors: ${errors.join(', ')}`);
     });
 
@@ -37,7 +32,7 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
         .replaceAll('{{UPDATED_AT}}', nowIso);
 
       const parsed = JSON.parse(interpolated);
-      const errors = validateSchema(parsed, orgKernelSchema);
+      const errors = validateAgainstSchema('org-kernel', parsed).errors;
       assert.deepStrictEqual(errors, [], `templates/base/org-kernel.json errors: ${errors.join(', ')}`);
     });
 
@@ -48,7 +43,7 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
 
       for (const file of files) {
         const data = JSON.parse(fs.readFileSync(path.join(battlecardsDir, file), 'utf8'));
-        const errors = validateSchema(data, battlecardSchema);
+        const errors = validateAgainstSchema('sales-battlecard', data).errors;
         assert.deepStrictEqual(errors, [], `Battlecard ${file} has errors: ${errors.join(', ')}`);
       }
     });
@@ -60,7 +55,7 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
 
       for (const file of files) {
         const data = JSON.parse(fs.readFileSync(path.join(objectionsDir, file), 'utf8'));
-        const errors = validateSchema(data, objectionSchema);
+        const errors = validateAgainstSchema('sales-objection', data).errors;
         assert.deepStrictEqual(errors, [], `Objection ${file} has errors: ${errors.join(', ')}`);
       }
     });
@@ -72,7 +67,7 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
 
       for (const file of files) {
         const data = JSON.parse(fs.readFileSync(path.join(sopsDir, file), 'utf8'));
-        const errors = validateSchema(data, sopSchema);
+        const errors = validateAgainstSchema('sop', data).errors;
         assert.deepStrictEqual(errors, [], `SOP ${file} has errors: ${errors.join(', ')}`);
       }
     });
@@ -86,7 +81,7 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
         organization: { industry: 'Tech', tagline: 'Fast' },
         activeAreas: ['sales']
       };
-      const errors1 = validateSchema(invalidKernel1, orgKernelSchema);
+      const errors1 = validateAgainstSchema('org-kernel', invalidKernel1).errors;
       assert.ok(errors1.some((e) => e.includes('governance is required')));
       assert.ok(errors1.some((e) => e.includes('organization.name is required')));
 
@@ -94,12 +89,12 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
       const invalidKernel2 = {
         version: 'v1.0-alpha',
         organization: { name: 'Acme', industry: 'Tech', tagline: 'Fast' },
-        activeAreas: ['unsupported_invalid_domain'],
+        activeAreas: ['Invalid Domain!'],
         governance: { owner: 'CEO' }
       };
-      const errors2 = validateSchema(invalidKernel2, orgKernelSchema);
+      const errors2 = validateAgainstSchema('org-kernel', invalidKernel2).errors;
       assert.ok(errors2.some((e) => e.includes('does not match pattern')));
-      assert.ok(errors2.some((e) => e.includes('not in enum')));
+      assert.ok(errors2.some((e) => e.includes('activeAreas[0]') && e.includes('does not match pattern')));
     });
 
     await sub.test('sales-battlecard rejects missing required fields and invalid enums', () => {
@@ -113,7 +108,7 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
         keyWeaknesses: ['Weak search'],
         ourSilverBullets: ['Git-backed']
       };
-      const errors = validateSchema(invalidBattlecard, battlecardSchema);
+      const errors = validateAgainstSchema('sales-battlecard', invalidBattlecard).errors;
       assert.ok(errors.some((e) => e.includes('does not match pattern')));
       assert.ok(errors.some((e) => e.includes('not in enum [direct, indirect, emerging]')));
       assert.ok(errors.some((e) => e.includes('minLength 10')));
@@ -133,7 +128,7 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
         counterArguments: [],
         suggestedNextStep: 'Do demo'
       };
-      const errors = validateSchema(invalidObjection, objectionSchema);
+      const errors = validateAgainstSchema('sales-objection', invalidObjection).errors;
       assert.ok(errors.some((e) => e.includes('not in enum [pricing, timing, authority, competitor, trust, technical_fit]')));
       assert.ok(errors.some((e) => e.includes('not in enum [low, medium, high, blocker]')));
       assert.ok(errors.some((e) => e.includes('title: string length 2 < minLength 3')));
@@ -157,7 +152,7 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
           }
         ]
       };
-      const errors = validateSchema(invalidSop, sopSchema);
+      const errors = validateAgainstSchema('sop', invalidSop).errors;
       assert.ok(errors.some((e) => e.includes('steps[0].title is required')));
       assert.ok(errors.some((e) => e.includes('steps[0].description is required')));
       assert.ok(errors.some((e) => e.includes('steps[0].responsibleRole is required')));

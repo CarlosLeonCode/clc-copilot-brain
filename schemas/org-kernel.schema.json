@@ -52,14 +52,8 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": [
-          "sales",
-          "marketing",
-          "product",
-          "operations",
-          "hr_people",
-          "finance_legal"
-        ]
+        "description": "Area folder id: a preset (sales, marketing, product, operations, hr_people, finance_legal) or a custom area created with `add-area --custom`.",
+        "pattern": "^[a-z0-9_-]+$"
       },
       "uniqueItems": true
     },
