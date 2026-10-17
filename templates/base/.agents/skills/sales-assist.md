@@ -17,3 +17,6 @@ Empowers agents to draft high-converting cold outreach, live objection pivots, a
    - Specific quantified business impact.
    - Low-friction call to action (e.g., 15-minute intro vs high-pressure demo).
 5. Never invent features or compliance claims not documented in the repository.
+
+## Human-in-the-Loop (HITL) Checkpoint
+- Require human sales rep review and confirmation before sending drafted outreach or applying negotiation strategies to active prospect deals.

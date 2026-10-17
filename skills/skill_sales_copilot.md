@@ -91,3 +91,10 @@ When responding to sales inquiries, adhere strictly to this structured format:
 - `"/brain:sales How do I handle a prospect who says our developer tooling is too expensive?"`
 - `"/brain:sales How do we position against LegacyDocs Cloud?"`
 - `"/brain:sales Draft a 3-question qualification script for an enterprise VP of Engineering."`
+
+---
+
+## 5. HUMAN-IN-THE-LOOP (HITL) CHECKPOINT
+- Before dispatching outreach scripts, custom proposals, or competitor positioning externally, present the drafted output to the human sales rep for explicit review and confirmation.
+- Wait for user approval and validation before finalizing any external communications.
+

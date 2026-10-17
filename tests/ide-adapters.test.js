@@ -49,7 +49,12 @@ test('IDE Adapters Suite: SSOT AGENTS.md, Multi-IDE Adapters & Skills', async (t
       'brain:onboarding.md',
       'brain:sales.md',
       'brain:doctor.md',
-      'brain:add-area.md'
+      'brain:add-area.md',
+      'call.md',
+      'objection.md',
+      'battlecard.md',
+      'flow.md',
+      'retro.md'
     ];
 
     const dirsToCheck = [
@@ -64,7 +69,11 @@ test('IDE Adapters Suite: SSOT AGENTS.md, Multi-IDE Adapters & Skills', async (t
         assert.ok(fs.existsSync(cmdPath), `Slash command ${cmd} must exist at ${cmdPath}`);
         const content = fs.readFileSync(cmdPath, 'utf8');
         assert.ok(content.length > 50, `Command ${cmd} must not be empty`);
-        assert.match(content, /^# \/brain/m, `Command ${cmd} must start with /brain prompt header`);
+        assert.match(
+          content,
+          /^# \/(brain|call|objection|battlecard|flow|retro)/m,
+          `Command ${cmd} must start with a valid slash command header`
+        );
       }
     }
   });

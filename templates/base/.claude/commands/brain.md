@@ -27,6 +27,11 @@ You are invoking the **Organizational Second Brain Master Control**.
    ---
 
    ### ⚡ Available Brain Slash Commands
+   - `/call` - Analyze and save a sales call transcript or meeting notes into `sales/calls/YYYY-MM/`.
+   - `/objection` - Get an instant answer to a buyer objection or save a new one in `sales/objections/`.
+   - `/battlecard` - Compare against a competitor in seconds using `sales/battlecards/`.
+   - `/flow` - Check pipeline stage rules or update your visual Mermaid sales flow diagram.
+   - `/retro` - Run your monthly sales & RevOps retrospective.
    - `/brain:onboarding` - Run guided organizational onboarding interview (strictly 1 question at a time).
    - `/brain:sales` - Sales Enablement Copilot (objection handling, competitor battlecards, discovery scripts).
    - `/brain:doctor` - Run comprehensive health check, validate schemas, and fix issues.

@@ -12,3 +12,7 @@ Enables an agent to intelligently find the exact single source of truth across a
 3. If searching cross-cutting concepts (e.g. "pricing"), inspect both `finance_legal/pricing/` and `sales/objections/`.
 4. Provide answer with direct relative markdown links: `[File Name](./path/to/file.md)`.
 5. If the requested information is absent, flag the missing brain asset and suggest creating it.
+
+## Human-in-the-Loop (HITL) Checkpoint
+- Present retrieved findings to the user for review and confirmation before applying any changes or updates to operational assets.
+

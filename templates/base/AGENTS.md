@@ -44,12 +44,17 @@ When the user asks conversational questions about **sales, operations, marketing
 
 ---
 
-## 3. Claude Code Slash Commands (`.claude/commands/`)
+## 3. Actionable Slash Commands (`.claude/commands/` & MCP Prompts)
 
-This Second Brain includes pre-configured slash commands for Claude Code and compatible agents:
+This Second Brain includes pre-configured slash commands for Claude Code, Cursor, Antigravity, Gentle Dot, and MCP-compatible agents:
 
-| Slash Command | Command File | Purpose & Behavior |
+| Slash Command | Command File / MCP Prompt | Purpose & Behavior |
 | :--- | :--- | :--- |
+| `/call` | `.claude/commands/call.md` | Analyze a meeting or sales call transcript, extract deal signals & objections, and save to `sales/calls/YYYY-MM/`. |
+| `/objection` | `.claude/commands/objection.md` | Get an instant verbatim script for a buyer objection or save a new objection card in `sales/objections/`. |
+| `/battlecard` | `.claude/commands/battlecard.md` | Compare against a competitor and retrieve silver bullets from `sales/battlecards/`. |
+| `/flow` | `.claude/commands/flow.md` | Check pipeline stage rules, MEDDPICC gates, or convert screenshots into Mermaid sales flows in `sales/stages/pipeline-stages.md`. |
+| `/retro` | `.claude/commands/retro.md` | Run a monthly RevOps retrospective across `sales/calls/` and `sales/win-loss/`. |
 | `/brain` | `.claude/commands/brain.md` | Master dashboard showing active areas, brain health, and available tools. |
 | `/brain:onboarding` | `.claude/commands/brain:onboarding.md` | Conducts the 8-step organizational onboarding interview **strictly 1 question at a time**. Updates `org-kernel.json` and `company-profile.md`. |
 | `/brain:sales` | `.claude/commands/brain:sales.md` | Instant Sales Copilot. Resolves buyer objections, surfaces competitor battlecards, and generates talk tracks grounded in `sales/`. |
@@ -94,3 +99,56 @@ Autonomous agents should execute specialized tasks using instructions defined in
 | `skills/` | Standard LLM skill prompts (onboarding, sales copilot, call analyzer, monthly retro, doctor, scaffolder) | Markdown Prompts |
 | `.claude/commands/` | Claude Code slash command definitions | Markdown Slash Commands |
 | `.agents/skills/` | Reusable task execution skills | Native skill prompts |
+| `src/mcp/` | Model Context Protocol (MCP) stdio server & tool handlers | JSON-RPC 2.0 stdio |
+
+---
+
+## 6. Model Context Protocol (MCP) Server (`src/mcp/`)
+
+The Second Brain provides a native MCP server (`clc-brain mcp` / `copilot-brain mcp`) over standard I/O (`stdio`) for Google Antigravity, Claude Desktop, Cursor, Zed, and Gentle Dot.
+
+### Client Configuration (`mcpServers`)
+
+#### Option A: Universal execution via `npx` (Recommended for any client)
+```json
+{
+  "mcpServers": {
+    "copilot-brain": {
+      "command": "npx",
+      "args": ["-y", "@clc/copilot-brain", "mcp"]
+    }
+  }
+}
+```
+
+#### Option B: Global CLI installation (`npm install -g @clc/copilot-brain`)
+```json
+{
+  "mcpServers": {
+    "copilot-brain": {
+      "command": "clc-brain",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+#### Option C: Local repository development
+```json
+{
+  "mcpServers": {
+    "copilot-brain": {
+      "command": "node",
+      "args": ["./bin/cli.js", "mcp"]
+    }
+  }
+}
+```
+
+### Exposed MCP Tools
+- **`brain_query`**: Search and retrieve battlecards, objections, SOPs, and playbooks across all active areas.
+- **`brain_capture_call`**: Ingest and format sales call transcripts into `sales/calls/YYYY-MM/` with structured Frontmatter.
+- **`brain_capture_objection`**: Store validated objection cards in `sales/objections/` conforming to `schemas/sales-objection.schema.json`.
+- **`brain_doctor`**: Audit health and integrity in real-time.
+
+
