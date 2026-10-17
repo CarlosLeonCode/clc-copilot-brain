@@ -15,6 +15,7 @@ ${pc.bold('COMMANDS:')}
   ${pc.green('doctor')} [dir]       Audit repository health, schemas, and repair broken symlinks
   ${pc.green('list-areas')} [dir]   Show installed vs available domain areas
   ${pc.green('mcp')} [dir]          Start the Model Context Protocol (MCP) server over stdio
+  ${pc.green('upgrade')} [dir]      Update template-owned commands and skills of an existing brain (backups kept)
   ${pc.green('help')}               Show this help message
 
 ${pc.bold('INIT OPTIONS:')}
@@ -34,6 +35,10 @@ ${pc.bold('ADD-AREA OPTIONS:')}
 ${pc.bold('DOCTOR OPTIONS:')}
   --fix               Apply non-destructive repairs (without a TTY, doctor never prompts)
 
+${pc.bold('UPGRADE OPTIONS:')}
+  -y, --yes           Apply the plan (without a TTY, upgrade only previews unless --yes)
+  --dry-run           Show the plan and diffs without writing anything
+
 ${pc.bold('GLOBAL OPTIONS:')}
   -v, --version       Show version number
   -h, --help          Show help
@@ -46,5 +51,6 @@ ${pc.bold('EXAMPLES:')}
   $ copilot-brain add-area ./acme-brain --custom legal_ops
   $ copilot-brain list-areas ./acme-brain
   $ copilot-brain mcp ./acme-brain
+  $ copilot-brain upgrade ./acme-brain --dry-run
 `;
 }

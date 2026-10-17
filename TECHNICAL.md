@@ -69,6 +69,7 @@ src/
 │   ├── scaffold.js        initBrain, setupIdeAdapters (backs up regular files), restoreRootSkills
 │   ├── areas.js           PRESET_AREAS, area id rule ^[a-z0-9_-]+$, add/list areas, resolveAllowedAreas
 │   ├── doctor.js          runDoctor (structured results), repairBrain (non-destructive)
+│   ├── upgrade.js         planUpgrade/applyUpgrade (allowlist: replace-with-backup, add-if-missing; ADR 0005), text-diff.js
 │   ├── demo.js            demo assets derived from templates/areas, cleanDemo
 │   ├── calls.js           captureCall (strict date, containment, quoted frontmatter, no overwrite)
 │   ├── objections.js      captureObjection (schema-validated)
@@ -78,7 +79,7 @@ src/
 │   └── errors.js, fs-utils.js, package-paths.js
 ├── cli/                   Adapter: argv parsing, @clack/prompts, picocolors, exit codes
 │   ├── main.js, args.js, help.js, prompt.js, render.js
-│   └── commands/          init, add-area, list-areas, doctor, clean-demo, mcp
+│   └── commands/          init, add-area, list-areas, doctor, clean-demo, upgrade, mcp
 └── mcp/                   Adapter: JSON-RPC 2.0 stdio server + thin tool handlers
     ├── server.js, tools.js, prompts.js
 ```
@@ -86,7 +87,7 @@ src/
 | Directory / File | Layer | Responsibility |
 | :--- | :--- | :--- |
 | `src/core/` | Domain / Use Cases | Pure functions taking explicit inputs (`rootDir`, options) and returning data. Errors are `BrainError` with a stable `code`. |
-| `src/cli/` | Adapter (CLI) | Prompts and rendering; maps `BrainError` to a red message and exit code 1. `doctor` exits 1 when errors remain (after `--fix`, if applied); without a TTY and without `--fix` it never prompts and only prints a `--fix` hint. |
+| `src/cli/` | Adapter (CLI) | Prompts and rendering; maps `BrainError` to a red message and exit code 1. `doctor` exits 1 when errors remain (after `--fix`, if applied); without a TTY and without `--fix` it never prompts and only prints a `--fix` hint. `upgrade [dir] [--yes] [--dry-run]` previews a plan (adds, diffs, skips); it writes only with `--yes` or an interactive confirmation, and `NOT_A_BRAIN` exits 1. |
 | `src/mcp/` | Adapter (MCP) | Validates MCP arguments via core and maps `BrainError` to `isError` tool results. |
 | `schemas/` | Core Contracts | JSON Schema definitions (Draft 2020-12) defining valid data shapes for all structured records. |
 | `templates/` | Scaffolding Source | Templates copied during `init` and `add-area`; also the source of truth for expected slash commands, skills, and demo assets. |

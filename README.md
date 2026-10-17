@@ -153,6 +153,8 @@ clc-brain doctor ../acme-brain
 
 You should see **0 errors**. If something is missing, `clc-brain doctor ../acme-brain --fix` repairs it without touching your documents.
 
+**Already have a brain?** Run `clc-brain upgrade ../acme-brain` to get the latest commands and skills. Nothing is changed until you confirm.
+
 <sub>Once Copilot Brain is published on npm, step 1 becomes a single command: `npm install -g @clc/copilot-brain`.</sub>
 
 </details>
@@ -245,6 +247,7 @@ For any area, just ask in plain language. These shortcuts speed up common tasks:
 | `clc-brain add-area [folder]` | Add an area: `--preset operations` or `--custom legal_ops`. |
 | `clc-brain list-areas [folder]` | See installed and available areas. |
 | `clc-brain clean-demo [folder]` | Remove sample documents, keep yours. |
+| `clc-brain upgrade [folder]` | Update an existing brain to the latest commands and skills; your edits are kept as `.bak` copies. Add `--dry-run` to preview. |
 | `clc-brain mcp [folder]` | Connect MCP apps (used by the config above). |
 
 `clc-brain --help` lists every option.
