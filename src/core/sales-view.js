@@ -4,9 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BrainError } from './errors.js';
 import { parseFrontmatter } from './plays.js';
+import { FLOWCHART_CSS, layoutFlowchart, parseFlowchart, renderFlowchartSvg } from './flowchart.js';
 
 export const SALES_VIEW_FILE = 'sales-system.html';
-export const MERMAID_URL = 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
 
 const MERMAID_FENCE = /```mermaid\r?\n([\s\S]*?)```/;
 const FRONTMATTER_BLOCK = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
@@ -164,12 +164,35 @@ function readIfExists(file) {
   return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
 }
 
-// The wide LR pipeline keeps its natural size (no max-width scaling) and scrolls sideways instead.
-const WIDE_DIRECTIVE = '%%{init: {"flowchart": {"useMaxWidth": false}}}%%';
+// Decision trees shrink to the card width, but never below this share of their natural size.
+const MIN_TREE_SCALE = 0.7;
+const MIN_TREE_WIDTH = 300;
 
-function diagram(code, { wide = false } = {}) {
-  const source = wide ? `${WIDE_DIRECTIVE}\n${code}` : code;
-  return `<div class="diagram${wide ? ' diagram-wide' : ''}"><pre class="mermaid">${escapeHtml(source)}</pre></div>`;
+/** Plain list of the steps, for diagrams the built-in renderer cannot draw. */
+function stepsList(graph) {
+  const names = new Map(graph.nodes.map((n) => [n.id, n.label.replace(/\n/g, ' ')]));
+  const items = graph.nodes.map((n) => {
+    const next = graph.edges.filter((e) => e.from === n.id)
+      .map((e) => `<li>${e.label ? `If ${escapeHtml(e.label)}` : 'Then'} → ${escapeHtml(names.get(e.to))}</li>`);
+    return `<li>${escapeHtml(names.get(n.id))}${next.length > 0 ? `<ul>${next.join('')}</ul>` : ''}</li>`;
+  });
+  return `<div class="diagram-text"><p class="note">This diagram could not be drawn, so here are its steps. Ask your assistant to fix the diagram.</p><ol>${items.join('')}</ol></div>`;
+}
+
+/** Inline SVG for a Mermaid flowchart (no scripts, works offline); a text list if it cannot be drawn. */
+function diagram(code, { wide = false, title, idPrefix }) {
+  let graph;
+  try {
+    graph = parseFlowchart(code);
+  } catch {
+    const partial = parseFlowchart(code, { lenient: true });
+    return partial.nodes.length > 0
+      ? stepsList(partial)
+      : '<div class="diagram-text"><p class="note">This diagram could not be drawn. Ask your assistant to fix it.</p></div>';
+  }
+  const layout = layoutFlowchart(graph);
+  const minWidth = wide ? undefined : Math.min(layout.width, Math.max(MIN_TREE_WIDTH, layout.width * MIN_TREE_SCALE));
+  return `<div class="diagram${wide ? ' diagram-wide' : ''}">${renderFlowchartSvg(graph, layout, { title, idPrefix, minWidth })}</div>`;
 }
 
 function renderPlay(play) {
@@ -186,14 +209,14 @@ function renderPlay(play) {
 <div class="card-head"><h3>${escapeHtml(play.title)}</h3>${version}</div>
 ${goal}
 ${steps}
-${play.diagram ? diagram(play.diagram) : ''}
+${play.diagram ? diagram(play.diagram, { title: `${play.title}: decision tree`, idPrefix: play.anchor }) : ''}
 ${say}
 ${learned}
 </section>`;
 }
 
-const STYLE = `:root{--bg:#f7f7f5;--card:#fff;--text:#1f2328;--muted:#5b6470;--border:#e3e3de;--accent:#2f6fde;--soft:#eef3fc}
-@media (prefers-color-scheme:dark){:root{--bg:#16181c;--card:#1f2227;--text:#e8e8e6;--muted:#a3a9b2;--border:#33373e;--accent:#7aa7ff;--soft:#232a36}}
+const STYLE = `:root{--bg:#f7f7f5;--card:#fff;--text:#1f2328;--muted:#5b6470;--border:#e3e3de;--accent:#2f6fde;--soft:#eef3fc;--fc-node:#fff;--fc-stroke:#2f6fde;--fc-decision:#fff8e6;--fc-decision-stroke:#c98a00;--fc-text:#1f2328;--fc-line:#8a929c;--fc-label-bg:#eef3fc;--fc-label:#3d4550}
+@media (prefers-color-scheme:dark){:root{--bg:#16181c;--card:#1f2227;--text:#e8e8e6;--muted:#a3a9b2;--border:#33373e;--accent:#7aa7ff;--soft:#232a36;--fc-node:#1f2227;--fc-stroke:#7aa7ff;--fc-decision:#2e2715;--fc-decision-stroke:#e0b04a;--fc-text:#e8e8e6;--fc-line:#7d848e;--fc-label-bg:#232a36;--fc-label:#c9ced6}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 main{max-width:960px;margin:0 auto;padding:32px 16px 64px}
@@ -210,25 +233,20 @@ h2{margin:40px 0 12px;font-size:1.4rem}
 .label{font-weight:600}
 .meta{color:var(--muted)}
 .diagram{overflow-x:auto;margin:16px 0;padding:12px;border-radius:10px;background:var(--bg)}
-pre.mermaid{margin:0;white-space:pre-wrap;font-size:.85rem;text-align:center}
+.diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
 .diagram-wide{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.diagram-wide pre.mermaid{text-align:left;width:max-content;min-width:100%}
+.diagram-wide svg{max-width:none;margin:0}
+.diagram-text ol{margin:8px 0 0}
+.diagram-text ul{color:var(--muted)}
 .note{font-size:.9rem;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 12px}
-.diagrams-ready .note{display:none}
 details{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
 summary{cursor:pointer;font-weight:600;color:var(--accent)}
 ul.talk{list-style:none;padding:0}
 ul.talk li{margin:12px 0;padding-left:12px;border-left:3px solid var(--soft)}
 .when{display:block;font-size:.9rem;color:var(--muted)}
 .say{display:block}
-footer{margin-top:48px;color:var(--muted);font-size:.9rem}`;
-
-const SCRIPT = `<script type="module">
-import mermaid from '${MERMAID_URL}';
-const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-mermaid.initialize({ startOnLoad: true, securityLevel: 'strict', theme: dark ? 'dark' : 'default' });
-document.documentElement.classList.add('diagrams-ready');
-</script>`;
+footer{margin-top:48px;color:var(--muted);font-size:.9rem}
+${FLOWCHART_CSS}`;
 
 /**
  * Build the sales system page for a brain.
@@ -271,20 +289,18 @@ export function buildSalesView(rootDir, { now = new Date() } = {}) {
 <p>Updated ${date}</p>
 </header>
 <nav aria-label="Call guides">${plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`).join('')}</nav>
-<p class="note">Diagrams need an internet connection; the text version is shown below.</p>
 <h2>How your sales system works</h2>
 <section class="card">
 ${markdownToHtml(plainSystemSection(systemMd))}
 </section>
 <h2>Your pipeline</h2>
 <section class="card">
-${pipeline ? diagram(pipeline, { wide: true }) : '<p>No pipeline diagram yet. Ask your assistant to draw one.</p>'}
+${pipeline ? diagram(pipeline, { wide: true, title: 'Your pipeline', idPrefix: 'pipeline' }) : '<p>No pipeline diagram yet. Ask your assistant to draw one.</p>'}
 </section>
 <h2>Your call guides</h2>
 ${plays.map(renderPlay).join('\n')}
 <footer>Want a change? Ask your assistant, for example: "Improve the cold call guide".</footer>
 </main>
-${SCRIPT}
 </body>
 </html>
 `;

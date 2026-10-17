@@ -16,7 +16,7 @@ const STARTER_PLAYS = Object.freeze([
 
 const countOf = (text, needle) => text.split(needle).length - 1;
 
-test('buildSalesView renders every starter play, the pipeline and pinned mermaid diagrams', () =>
+test('buildSalesView renders every starter play and the pipeline as inline SVG diagrams', () =>
   withTmp((dir) => {
     initBrain(dir, { companyName: 'Acme', areas: ['sales'] });
     const { html, plays, outputPath } = buildSalesView(dir);
@@ -29,11 +29,51 @@ test('buildSalesView renders every starter play, the pipeline and pinned mermaid
     assert.match(html, /<title>Acme/);
     assert.match(html, /How your sales system works/);
     assert.match(html, /Your pipeline/);
-    assert.match(html, /cdn\.jsdelivr\.net\/npm\/mermaid@11\.4\.1\/dist\/mermaid\.esm\.min\.mjs/);
-    assert.match(html, /securityLevel: 'strict'/);
-    assert.equal(countOf(html, '<pre class="mermaid">'), plays.length + 1);
+    assert.equal(countOf(html, '<svg'), plays.length + 1);
+    assert.equal(countOf(html, 'role="img"'), plays.length + 1);
     assert.match(html, /What to say/);
-    assert.match(html, /Diagrams need an internet connection/);
+    assert.doesNotMatch(html, /internet/i);
+    assert.doesNotMatch(html, /<pre class="mermaid">|flowchart (TD|LR)/, 'raw Mermaid code never reaches the page');
+  }));
+
+test('the page works offline: no scripts, imports, CDNs or external URLs', () =>
+  withTmp((dir) => {
+    initBrain(dir, { companyName: 'Acme', areas: ['sales'] });
+    const { html } = buildSalesView(dir);
+    assert.doesNotMatch(html, /<script/i);
+    assert.doesNotMatch(html, /\bimport\b[^\n]*from/);
+    assert.doesNotMatch(html, /cdn\./i);
+    assert.doesNotMatch(html, /<link\b/i);
+    assert.doesNotMatch(html, /<img\b/i);
+    assert.doesNotMatch(html, /https?:\/\//);
+    assert.doesNotMatch(html, /url\((?!#)/, 'only local url(#marker) references');
+  }));
+
+test('every diagram gets unique marker ids on the page', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const ids = [...buildSalesView(dir).html.matchAll(/<marker id="([^"]+)"/g)].map((m) => m[1]);
+    assert.equal(ids.length, 5);
+    assert.equal(new Set(ids).size, ids.length);
+  }));
+
+test('a diagram that cannot be drawn becomes a readable list of steps, never raw code', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    writeFiles(dir, {
+      'sales/plays/broken.md': [
+        '---', 'play: broken', 'stages: 1', 'goal: Test', 'version: 1', 'status: active', '---',
+        '# Play: Broken guide', '',
+        '## Decision Tree', '', '```mermaid', 'flowchart TD', '    A["Say hello"] -->|"Interested"| B["Book a meeting"]', '    A --> C[[unclosed', '```', ''
+      ].join('\n')
+    });
+    const { html, plays } = buildSalesView(dir);
+    assert.equal(countOf(html, '<svg'), plays.length, 'the broken diagram is not drawn');
+    const card = /<section class="card" id="play-broken">[\s\S]*?<\/section>/.exec(html)[0];
+    assert.match(card, /class="diagram-text"/);
+    assert.match(card, /Say hello/);
+    assert.match(card, /If Interested[^<]*→[^<]*Book a meeting/);
+    assert.doesNotMatch(card, /flowchart|-->|\[\[/);
   }));
 
 test('buildSalesView maps play stage numbers to pipeline step names', () =>
@@ -104,9 +144,17 @@ test('the pipeline diagram keeps a readable size and scrolls sideways; decision 
   withTmp((dir) => {
     initBrain(dir, { areas: ['sales'] });
     const { html } = buildSalesView(dir);
-    assert.equal(countOf(html, '<div class="diagram diagram-wide"><pre class="mermaid">%%{init: {&quot;flowchart&quot;: {&quot;useMaxWidth&quot;: false}}}%%'), 1);
-    assert.equal(countOf(html, 'useMaxWidth'), 1, 'only the pipeline opts out of max-width scaling');
+    assert.equal(countOf(html, '<div class="diagram diagram-wide"><svg'), 1);
     assert.match(html, /\.diagram-wide\{[^}]*overflow-x:auto/);
+    assert.match(html, /\.diagram svg\{[^}]*max-width:100%/);
+    assert.match(html, /\.diagram-wide svg\{[^}]*max-width:none/);
+    const trees = [...html.matchAll(/<div class="diagram"><svg[^>]*>/g)].map((m) => m[0]);
+    assert.equal(trees.length, 4);
+    for (const tag of trees) {
+      const width = Number(/ width="([\d.]+)"/.exec(tag)[1]);
+      const min = Number(/min-width:([\d.]+)px/.exec(tag)[1]);
+      assert.ok(min <= width && min >= Math.min(width, 300), 'decision trees shrink but stay readable');
+    }
   }));
 
 test('the page omits the "Want to see it?" hint copied from the sales map', () =>
@@ -121,7 +169,7 @@ test('the page omits the "Want to see it?" hint copied from the sales map', () =
 test('starter plays read in plain words on the page (no gate jargon or field names outside diagrams)', () =>
   withTmp((dir) => {
     initBrain(dir, { areas: ['sales'] });
-    const text = buildSalesView(dir).html.replace(/<pre class="mermaid">[\s\S]*?<\/pre>/g, '').replace(/<style>[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/g, '');
+    const text = buildSalesView(dir).html.replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<style>[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/g, '');
     for (const jargon of [/\bgates?\b/i, /gate_advanced/, /\bchampion\b/i, /mutual action plan/i, /\bnurture\b/i]) {
       assert.doesNotMatch(text, jargon);
     }
