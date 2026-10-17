@@ -6,6 +6,32 @@ import { restoreRootSkills, setupIdeAdapters } from './scaffold.js';
 import { validateAgainstSchema } from './schema-validator.js';
 import { TEMPLATES_BASE_DIR } from './package-paths.js';
 import { hasDecisionTree, validatePlay } from './plays.js';
+import { parseFlowchart } from './flowchart.js';
+
+const FIRST_MERMAID = /```mermaid\r?\n([\s\S]*?)```/;
+
+/** 'missing' | 'broken' | 'ok' for the first Mermaid block of a markdown file. */
+function diagramState(markdown) {
+  const source = FIRST_MERMAID.exec(markdown)?.[1];
+  if (!source || !source.trim()) return 'missing';
+  try {
+    parseFlowchart(source);
+    return 'ok';
+  } catch {
+    return 'broken';
+  }
+}
+
+/** Plain name of a call guide: its heading ("# Play: Cold Call" -> "cold call"), else its file name. */
+function guideName(file, text) {
+  const heading = /^#\s+(?:play:\s*)?(.+)$/im.exec(String(text).replace(/^---[\s\S]*?\n---\r?\n/, ''))?.[1]?.trim();
+  return (heading || file.replace(/\.md$/, '').replace(/[-_]+/g, ' ')).toLowerCase();
+}
+
+const DIAGRAM_WARNINGS = Object.freeze({
+  missing: (subject) => `${subject} has no diagram; ask your assistant to draw one.`,
+  broken: (subject) => `${subject}'s diagram can't be drawn; ask your assistant to fix it.`
+});
 
 // Structured JSON assets validated against their schema: [directory, schema name, label].
 const SCHEMA_ASSETS = Object.freeze([
@@ -91,12 +117,19 @@ function checkSalesSystem(rootDir, report) {
   const plays = fs.existsSync(playsDir) ? fs.readdirSync(playsDir).filter((f) => f.endsWith('.md') && f !== 'README.md').sort() : [];
   if (plays.length === 0) warn('No plays found in sales/plays/. Run "clc-brain upgrade" to add the starter plays.');
   for (const file of plays) {
-    for (const problem of validatePlay(file, fs.readFileSync(path.join(playsDir, file), 'utf8'))) warn(`Play sales/plays/${problem}`);
+    const text = fs.readFileSync(path.join(playsDir, file), 'utf8');
+    for (const problem of validatePlay(file, text)) warn(`Play sales/plays/${problem}`);
+    const state = diagramState(text);
+    if (state !== 'ok') warn(DIAGRAM_WARNINGS[state](`The ${guideName(file, text)} guide`));
   }
 
   const pipelinePath = path.join(salesDir, 'stages', 'pipeline-stages.md');
-  if (fs.existsSync(pipelinePath) && hasDecisionTree(fs.readFileSync(pipelinePath, 'utf8'))) {
-    warn('sales/stages/pipeline-stages.md contains a conversation decision tree; conversation trees belong in sales/plays/.');
+  if (fs.existsSync(pipelinePath)) {
+    const text = fs.readFileSync(pipelinePath, 'utf8');
+    if (hasDecisionTree(text)) warn('sales/stages/pipeline-stages.md contains a conversation decision tree; conversation trees belong in sales/plays/.');
+    const state = diagramState(text);
+    if (state === 'missing') warn('The pipeline has no diagram; ask your assistant to draw one.');
+    if (state === 'broken') warn("The pipeline diagram can't be drawn; ask your assistant to fix it.");
   }
 
   if (problems === 0) report.pass('Sales system map and plays verified.');

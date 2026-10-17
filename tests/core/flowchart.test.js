@@ -101,6 +101,7 @@ test('parseFlowchart rejects input that is not a flowchart', () => {
   assert.throws(() => parseFlowchart('sequenceDiagram\nA->>B: hi'), /flowchart/i);
   assert.throws(() => parseFlowchart('flowchart TD\nA[unclosed --> B'), /line 2/i);
   assert.throws(() => parseFlowchart('flowchart TD'), /no steps/i);
+  assert.throws(() => parseFlowchart('flowchart TD\nA{"Open" --> B{"Next"}'), /line 2/i, 'a quoted label must close right after its quote');
 });
 
 test('layoutFlowchart gives every node distinct coordinates and ranks follow edges (TD)', () => {

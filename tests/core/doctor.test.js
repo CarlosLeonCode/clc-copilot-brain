@@ -120,3 +120,42 @@ test('doctor skips sales play checks when sales is not active', () =>
     initBrain(dir, { areas: ['operations'] });
     assert.deepEqual(runDoctor(dir).issues, []);
   }));
+
+test('doctor warns in plain words when a call guide diagram cannot be drawn', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const file = path.join(dir, 'sales', 'plays', 'cold-call.md');
+    fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('B1{"Opener: permission-based hook"}', 'B1{"Opener: permission-based hook"'));
+    const result = runDoctor(dir);
+    assert.equal(result.errors, 0);
+    assert.ok(playWarnings(dir).some((i) => i.message === "The cold call guide's diagram can't be drawn; ask your assistant to fix it."));
+  }));
+
+test('doctor warns when a call guide has no diagram', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const file = path.join(dir, 'sales', 'plays', 'follow-up.md');
+    fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/```mermaid[\s\S]*?```/, ''));
+    assert.equal(runDoctor(dir).errors, 0);
+    assert.ok(playWarnings(dir).some((i) => i.message === 'The follow-up guide has no diagram; ask your assistant to draw one.'));
+  }));
+
+test('doctor warns when the pipeline diagram is missing or cannot be drawn', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const file = path.join(dir, 'sales', 'stages', 'pipeline-stages.md');
+    const original = fs.readFileSync(file, 'utf8');
+    fs.writeFileSync(file, original.replace('flowchart LR', 'flowchart LR\n    S9["oops --> S1'));
+    assert.ok(playWarnings(dir).some((i) => i.message === "The pipeline diagram can't be drawn; ask your assistant to fix it."));
+    fs.writeFileSync(file, original.replace(/```mermaid[\s\S]*?```/, ''));
+    assert.ok(playWarnings(dir).some((i) => i.message === 'The pipeline has no diagram; ask your assistant to draw one.'));
+    assert.equal(runDoctor(dir).errors, 0);
+  }));
+
+test('a fresh sales scaffold draws every diagram: no doctor warnings', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'], demo: true });
+    const result = runDoctor(dir);
+    assert.equal(result.errors, 0);
+    assert.equal(result.warnings, 0);
+  }));

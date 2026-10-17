@@ -94,9 +94,12 @@ function parseNode(scanner) {
     let label;
     const rest = scanner.text.slice(scanner.pos);
     const quoted = /^\s*"([^"]*)"\s*/.exec(rest);
-    if (quoted && rest.slice(quoted[0].length).startsWith(close)) {
+    if (quoted) {
+      if (!rest.slice(quoted[0].length).startsWith(close)) throw new Error(`missing "${close}" after the label of step "${id[0]}"`);
       label = quoted[1];
       scanner.pos += quoted[0].length + close.length;
+    } else if (/^\s*"/.test(rest)) {
+      throw new Error(`unclosed quote in the label of step "${id[0]}"`);
     } else {
       const end = rest.indexOf(close);
       if (end === -1) throw new Error(`missing "${close}" after step "${id[0]}"`);
