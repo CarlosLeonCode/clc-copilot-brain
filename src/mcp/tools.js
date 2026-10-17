@@ -58,6 +58,18 @@ export const TOOLS_DEFINITIONS = [
           type: 'string',
           description: 'Immediate outcome or next step scheduled.'
         },
+        play: {
+          type: 'string',
+          description: 'Optional sales play id used on this call (e.g. cold-call, discovery-call). See sales/plays/.'
+        },
+        branch: {
+          type: 'string',
+          description: 'Optional play decision-tree branch reached (e.g. B2).'
+        },
+        gateAdvanced: {
+          type: 'boolean',
+          description: 'Optional: true if this call moved the deal through its pipeline gate.'
+        },
         notes: {
           type: 'string',
           description: 'Detailed call notes, objections raised, or coaching feedback.'

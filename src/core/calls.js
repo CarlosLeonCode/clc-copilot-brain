@@ -3,9 +3,29 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BrainError } from './errors.js';
 import { isInside } from './fs-utils.js';
+import { parseFrontmatter } from './plays.js';
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const REQUIRED = Object.freeze(['rep', 'prospect', 'date', 'summary', 'stage', 'outcome']);
+
+/**
+ * Single source of truth: call input name -> canonical frontmatter key.
+ * MCP inputs keep their short names (`prospect`, `stage`); logs are written with canonical keys.
+ */
+export const CALL_FIELDS = Object.freeze({
+  rep: 'rep',
+  prospect: 'prospect_company',
+  date: 'date',
+  stage: 'deal_stage',
+  outcome: 'outcome',
+  play: 'play',
+  branch: 'branch',
+  gateAdvanced: 'gate_advanced'
+});
+
+// Frontmatter key order. Optional fields are omitted when absent.
+const FRONTMATTER_ORDER = Object.freeze(['rep', 'prospect', 'date', 'stage', 'outcome', 'play', 'branch', 'gateAdvanced']);
+const OPTIONAL = new Set(['play', 'branch', 'gateAdvanced']);
 
 /** Strict YYYY-MM-DD that is also a real calendar date. */
 export function isIsoDate(value) {
@@ -34,14 +54,22 @@ function nextFreeFileName(dir, base, ext) {
   return candidate;
 }
 
-function renderCallLog({ rep, prospect, date, summary, stage, outcome, notes, objections, actionItems, rawTranscript }) {
+function renderFrontmatter(call) {
+  const lines = [];
+  for (const input of FRONTMATTER_ORDER) {
+    const value = call[input];
+    if (OPTIONAL.has(input) && (value === undefined || value === null || value === '')) continue;
+    // Booleans are bare YAML scalars; everything else is a JSON-escaped string.
+    lines.push(`${CALL_FIELDS[input]}: ${typeof value === 'boolean' ? String(value) : yamlString(value)}`);
+  }
+  lines.push(`created_at: ${yamlString(new Date().toISOString())}`);
+  return lines.join('\n');
+}
+
+function renderCallLog(call) {
+  const { rep, prospect, date, summary, stage, outcome, notes, objections, actionItems, rawTranscript } = call;
   return `---
-rep: ${yamlString(rep)}
-prospect: ${yamlString(prospect)}
-date: ${yamlString(date)}
-stage: ${yamlString(stage)}
-outcome: ${yamlString(outcome)}
-created_at: ${yamlString(new Date().toISOString())}
+${renderFrontmatter(call)}
 ---
 
 # Call Intelligence: ${rep} x ${prospect} (${date})
@@ -65,7 +93,7 @@ ${rawTranscript ? `## 6. Raw Call Transcript\n\`\`\`text\n${rawTranscript}\n\`\`
 /**
  * @param {string} rootDir
  * @param {{ rep: string, prospect: string, date: string, summary: string, stage: string, outcome: string,
- *   notes?: string, objections?: string[], actionItems?: string[], rawTranscript?: string }} call
+ *   play?: string, branch?: string, gateAdvanced?: boolean, notes?: string, objections?: string[], actionItems?: string[], rawTranscript?: string }} call
  * @returns {{ relPath: string }} path relative to rootDir (posix separators)
  */
 export function captureCall(rootDir, call) {
@@ -74,6 +102,9 @@ export function captureCall(rootDir, call) {
   }
   if (!isIsoDate(call.date)) {
     throw new BrainError('VALIDATION', 'Error: date must be a real calendar date in YYYY-MM-DD format.');
+  }
+  if (call.gateAdvanced !== undefined && typeof call.gateAdvanced !== 'boolean') {
+    throw new BrainError('VALIDATION', 'Error: gateAdvanced must be a boolean.');
   }
 
   const callsRoot = path.resolve(rootDir, 'sales', 'calls');
@@ -93,4 +124,23 @@ export function captureCall(rootDir, call) {
   // 'wx' fails instead of clobbering if a file appeared after nextFreeFileName checked.
   fs.writeFileSync(filePath, renderCallLog(call), { encoding: 'utf-8', flag: 'wx' });
   return { relPath: `sales/calls/${month}/${fileName}` };
+}
+
+/**
+ * Read a call log's frontmatter into input-style names. Legacy logs (`prospect`, `stage`, no play fields)
+ * and canonical logs (`prospect_company`, `deal_stage`) both load; absent play fields stay undefined.
+ */
+export function readCallLog(text) {
+  const fm = parseFrontmatter(text) ?? {};
+  const record = {
+    rep: fm.rep,
+    prospect: fm.prospect_company ?? fm.prospect,
+    date: fm.date,
+    stage: fm.deal_stage ?? fm.stage,
+    outcome: fm.outcome
+  };
+  if (fm.play !== undefined) record.play = fm.play;
+  if (fm.branch !== undefined) record.branch = fm.branch;
+  if (fm.gate_advanced !== undefined) record.gateAdvanced = fm.gate_advanced === 'true';
+  return record;
 }

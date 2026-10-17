@@ -62,9 +62,9 @@ test('brain_capture_call quotes frontmatter so newlines cannot inject keys', () 
     assert.equal(res.isError, false);
     const [file] = listFiles(path.join(rootDir, 'sales', 'calls'));
     const content = fs.readFileSync(path.join(rootDir, 'sales', 'calls', file), 'utf8');
-    assert.deepEqual(frontmatterKeys(content), ['rep', 'prospect', 'date', 'stage', 'outcome', 'created_at']);
-    assert.ok(content.includes('prospect: "Acme\\nadmin: true"'));
-    assert.ok(content.includes('stage: "Discovery: phase 1"'));
+    assert.deepEqual(frontmatterKeys(content), ['rep', 'prospect_company', 'date', 'deal_stage', 'outcome', 'created_at']);
+    assert.ok(content.includes('prospect_company: "Acme\\nadmin: true"'));
+    assert.ok(content.includes('deal_stage: "Discovery: phase 1"'));
   }));
 
 test('brain_capture_call never overwrites an existing call log', () =>

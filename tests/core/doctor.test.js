@@ -57,3 +57,66 @@ test('repairBrain restores adapters, commands and skills without touching regula
     assert.equal(fs.existsSync(path.join(dir, 'CLAUDE.md.bak')), false);
     assert.equal(runDoctor(dir).healthy, true);
   }));
+
+const playWarnings = (dir) => runDoctor(dir).issues.filter((i) => i.level === 'warning');
+
+test('doctor warns on a play missing gate_unlocked naming file and key, errors unchanged (S12.1)', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const file = path.join(dir, 'sales', 'plays', 'cold-call.md');
+    fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/^gate_unlocked:.*\n/m, ''));
+    const result = runDoctor(dir);
+    assert.equal(result.errors, 0);
+    assert.equal(result.warnings, 1);
+    assert.equal(result.issues[0].level, 'warning');
+    assert.match(result.issues[0].message, /cold-call\.md/);
+    assert.match(result.issues[0].message, /gate_unlocked/);
+  }));
+
+test('doctor emits no play warnings for the starter plays (S12.2)', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    assert.deepEqual(runDoctor(dir).issues, []);
+  }));
+
+test('doctor accepts a play with legacy single stage: (S12.3)', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const file = path.join(dir, 'sales', 'plays', 'cold-call.md');
+    fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(/^stages:/m, 'stage:'));
+    assert.deepEqual(runDoctor(dir).issues, []);
+  }));
+
+test('doctor warns when sales/system.md is missing', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    fs.rmSync(path.join(dir, 'sales', 'system.md'));
+    const result = runDoctor(dir);
+    assert.equal(result.errors, 0);
+    assert.ok(playWarnings(dir).some((i) => /sales\/system\.md/.test(i.message)));
+  }));
+
+test('doctor warns when sales/plays has no plays', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    fs.rmSync(path.join(dir, 'sales', 'plays'), { recursive: true });
+    const result = runDoctor(dir);
+    assert.equal(result.errors, 0);
+    assert.ok(playWarnings(dir).some((i) => /plays/.test(i.message)));
+  }));
+
+test('doctor warns when pipeline-stages.md holds a conversation decision tree', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const file = path.join(dir, 'sales', 'stages', 'pipeline-stages.md');
+    fs.appendFileSync(file, '\n```mermaid\nflowchart TD\n  A[Open] --> B{Interested?}\n```\n');
+    const result = runDoctor(dir);
+    assert.equal(result.errors, 0);
+    assert.ok(playWarnings(dir).some((i) => /sales\/plays/.test(i.message) && /pipeline-stages/.test(i.message)));
+  }));
+
+test('doctor skips sales play checks when sales is not active', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['operations'] });
+    assert.deepEqual(runDoctor(dir).issues, []);
+  }));

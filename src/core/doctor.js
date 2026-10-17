@@ -5,6 +5,7 @@ import { IDE_ADAPTERS, SSOT_FILE, expectedAssets } from './manifest.js';
 import { restoreRootSkills, setupIdeAdapters } from './scaffold.js';
 import { validateAgainstSchema } from './schema-validator.js';
 import { TEMPLATES_BASE_DIR } from './package-paths.js';
+import { hasDecisionTree, validatePlay } from './plays.js';
 
 // Structured JSON assets validated against their schema: [directory, schema name, label].
 const SCHEMA_ASSETS = Object.freeze([
@@ -74,6 +75,33 @@ function checkSchemaAssets(rootDir, report) {
   }
 }
 
+// Soft checks (warnings only) for the sales system: map, plays and pipeline hygiene.
+function checkSalesSystem(rootDir, report) {
+  const salesDir = path.join(rootDir, 'sales');
+  if (!fs.existsSync(salesDir)) return;
+  let problems = 0;
+  const warn = (message) => {
+    report.issue({ level: 'warning', message });
+    problems++;
+  };
+
+  if (!fs.existsSync(path.join(salesDir, 'system.md'))) warn('Missing sales/system.md (sales system map). Run "clc-brain upgrade" to add it.');
+
+  const playsDir = path.join(salesDir, 'plays');
+  const plays = fs.existsSync(playsDir) ? fs.readdirSync(playsDir).filter((f) => f.endsWith('.md') && f !== 'README.md').sort() : [];
+  if (plays.length === 0) warn('No plays found in sales/plays/. Run "clc-brain upgrade" to add the starter plays.');
+  for (const file of plays) {
+    for (const problem of validatePlay(file, fs.readFileSync(path.join(playsDir, file), 'utf8'))) warn(`Play sales/plays/${problem}`);
+  }
+
+  const pipelinePath = path.join(salesDir, 'stages', 'pipeline-stages.md');
+  if (fs.existsSync(pipelinePath) && hasDecisionTree(fs.readFileSync(pipelinePath, 'utf8'))) {
+    warn('sales/stages/pipeline-stages.md contains a conversation decision tree; conversation trees belong in sales/plays/.');
+  }
+
+  if (problems === 0) report.pass('Sales system map and plays verified.');
+}
+
 /**
  * Audit a brain.
  * @returns {{ passed: string[], issues: Array<{ level: 'error'|'warning', message: string, repairable?: boolean }>,
@@ -112,6 +140,8 @@ export function runDoctor(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR } = {
   }
 
   checkSchemaAssets(rootDir, report);
+
+  if (kernel && Array.isArray(kernel.activeAreas) && kernel.activeAreas.includes('sales')) checkSalesSystem(rootDir, report);
 
   const errors = issues.filter((i) => i.level === 'error').length;
   const warnings = issues.filter((i) => i.level === 'warning').length;
