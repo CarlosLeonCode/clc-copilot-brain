@@ -9,6 +9,10 @@
 | Stage | Exit gate | Plays |
 | :--- | :--- | :--- |
 | 1. Discovery | Gate 1: pain quantified, champion and economic buyer identified, validation meeting booked | [cold-call](./plays/cold-call.md), [discovery-call](./plays/discovery-call.md) |
+| 2. Validation | Gate 2: technical sign-off, economic buyer met, mutual action plan started | [demo-call](./plays/demo-call.md), [follow-up](./plays/follow-up.md) |
+| 3. Business Case | Gate 3: business case approved, proposal submitted, vendor selected | [follow-up](./plays/follow-up.md) |
+| 4. Negotiation | Gate 4: InfoSec cleared, legal terms agreed, signer verified | [follow-up](./plays/follow-up.md) |
+| 5. Closed | Contract signed or loss reason logged, post-mortem in `win-loss/` | No play yet. Add one with `/flow`. |
 
 Gate criteria live in [stages/pipeline-stages.md](./stages/pipeline-stages.md). Add a row (or a play link) here whenever you add a play.
 

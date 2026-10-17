@@ -1,0 +1,47 @@
+---
+play: demo-call
+stages: 2
+goal: Prove fit with a tailored demo and clear Gate 2
+gate_unlocked: Gate 2
+version: 1
+status: active
+---
+# Play: Demo Call
+
+> **Goal:** show the prospect's own problem solved, get technical sign-off, and agree a mutual action plan.
+> **Stage:** 2. **Gate:** Gate 2 in [pipeline-stages](../stages/pipeline-stages.md). **Related:** [discovery-call](./discovery-call.md), [follow-up](./follow-up.md).
+
+## Decision Tree
+
+```mermaid
+flowchart TD
+    B1["Recap pain and success criteria"] --> B2["Demo tied to their use case"]
+    B2 --> B3{"Technical blocker raised?"}
+    B3 -->|"No"| B4{"Economic buyer present?"}
+    B3 -->|"Yes"| B5["Log blocker, agree owner and date"]
+    B5 -->|"Resolved"| B4
+    B5 -->|"Unresolved"| B7["Pause and escalate internally"]
+    B4 -->|"Yes"| B6["Propose mutual action plan"]
+    B4 -->|"No"| B8["Ask champion to arrange buyer meeting"]
+    B8 -->|"Agreed"| B6
+    B6 -->|"Dates agreed"| B9["Gate 2 cleared"]
+```
+
+## Branches
+
+| Branch | Trigger | Talk track | Script link |
+| :--- | :--- | :--- | :--- |
+| B1 | Demo starts | "Last time you told us about [pain]. Let me show exactly how that changes. Did I get your priorities right?" | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B2 | Pain confirmed | Show only the workflow tied to their pain; skip unrelated features. | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B3 | Prospect asks a technical question | Answer from verified material only; never invent features. | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B4 | No blockers | "Who else should see this before a decision?" | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B5 | Blocker raised | "What would you need to see to be comfortable? Who owns that and by when?" | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B6 | Buyer engaged | Propose a mutual action plan with dates working back from their decision date. | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B7 | Blocker unresolved | Pause new work, log the reason, escalate internally. | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B8 | No buyer on the call | "Could you bring the budget owner to a 20-minute session?" | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B9 | Plan agreed | Record gate evidence in the call log (`gate_advanced: true`). | [Discovery framework](../scripts/discovery-call-framework.md) |
+
+## Learnings Log
+
+<!-- Format: - YYYY-MM-DD vN->vN+1: change (evidence: CALL-...) -->
+- No entries yet. `/retro` proposes edits here after enough logged calls.

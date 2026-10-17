@@ -222,7 +222,12 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 - `sales/qualification/qualification-matrix.md`: Implements a MEDDPICC framework with 6 immediate disqualification triggers.
 - `sales/stages/pipeline-stages.md`: Canonical definition of 5 pipeline stages (Discovery, Validation, Business Case, Negotiation, Closed Won/Lost) with mandatory exit criteria before stage progression.
 
-### 3. Declarative Ecosystem Tools Manifest
+### 3. Sales System: Map and Plays
+- `sales/system.md`: the map from pipeline stage to exit gate to the plays that apply.
+- `sales/plays/<play>.md`: one play per kind of conversation (`cold-call`, `discovery-call`, `demo-call`, `follow-up`). Flat frontmatter (`play`, `stages`, `goal`, `gate_unlocked`, `version`, `status`) is parsed by regex, with no YAML dependency. `stages` is a comma list, so a play can span stages (`stages: 2, 3, 4`). The body holds a Mermaid decision tree, a talk track per branch linking `sales/scripts/`, and a Learnings Log.
+- `/flow` routes conversation trees to `sales/plays/` and macro pipeline changes to `sales/stages/pipeline-stages.md`.
+
+### 4. Declarative Ecosystem Tools Manifest
 Declared inside `org-kernel.json` under `ecosystemTools`:
 ```json
 "ecosystemTools": {
@@ -233,7 +238,7 @@ Declared inside `org-kernel.json` under `ecosystemTools`:
   }
 }
 ```
-Archify diagrams (`.workflow.json`) are stored declaratively inside `sales/flows/` without adding npm runtime dependencies to the project.
+Archify is optional tooling and adds no npm runtime dependencies. Conversation decision trees do not live in the pipeline file: they are Mermaid diagrams inside plays (see below).
 
 ---
 

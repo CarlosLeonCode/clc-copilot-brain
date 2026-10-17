@@ -25,6 +25,7 @@ When the user asks conversational questions about **sales, operations, marketing
    - For competitor positioning ("How do we beat X?", "Compare vs Y"), inspect `templates/areas/sales/battlecards/` and parse against `schemas/sales-battlecard.schema.json`.
    - For buyer hesitations or objections ("Prospect says too expensive", "No budget"), inspect `templates/areas/sales/objections/` and parse against `schemas/sales-objection.schema.json`.
    - For deal qualification and gate progression, consult `templates/areas/sales/qualification/qualification-matrix.md` and `templates/areas/sales/stages/pipeline-stages.md`.
+   - For how to run a conversation (cold call, discovery, demo, follow-up), consult `templates/areas/sales/system.md` and the matching play in `templates/areas/sales/plays/`. Use `templates/areas/sales/stages/` for gate criteria only.
    - For buyer personas and qualification, consult `templates/areas/sales/icps/`.
    - For call scripts and discovery frameworks, consult `templates/areas/sales/scripts/`.
    - For historical call context and stakeholder history, inspect `templates/areas/sales/calls/YYYY-MM/`.

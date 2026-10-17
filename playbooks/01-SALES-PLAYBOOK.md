@@ -12,6 +12,8 @@ sales/
 ├── calls/          # Historical episodic call intelligence (YYYY-MM/YYYY-MM-DD_rep_prospect.md)
 ├── win-loss/       # 4-dimension deal post-mortems (templates, won/lost case analyses)
 ├── qualification/  # MEDDPICC qualification matrix, red flags, and disqualify-fast scripts
+├── system.md       # Sales system map: stage -> exit gate -> plays
+├── plays/          # One play per conversation type (decision tree, talk tracks, learnings log)
 ├── stages/         # Canonical pipeline stages (Discovery to Closed) with mandatory exit gates
 ├── skills/         # Specialized AI prompts (skill_call_analyzer.md, skill_monthly_retrospective.md)
 ├── icps/           # Ideal Customer Profiles (roles, pain points, triggers, disqualifiers)
@@ -20,6 +22,16 @@ sales/
 ├── scripts/        # Cold outreach cadences, discovery interview frameworks, closing guides
 └── case-studies/   # Metric-driven proof points, customer stories, and reference clips
 ```
+
+---
+
+## 2b. The Sales System: Pipeline + Plays
+
+Two layers work together:
+- **Macro pipeline** (`sales/stages/pipeline-stages.md`): the stages and the gates a deal must clear.
+- **Micro plays** (`sales/plays/<play>.md`): how to run one kind of conversation, as a decision tree with a talk track per branch.
+
+`sales/system.md` maps each stage to its gate and plays. Use `/flow` to add or change a play (conversation tree) or the pipeline (macro change); a tree that spans stages is one play with `stages: 2, 3, 4`. Log the `play` and `branch` you ran in each call log so `/retro` can show what works.
 
 ---
 

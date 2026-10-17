@@ -162,3 +162,50 @@ test('/flow (command, base mirror, MCP prompt) routes by destination, never defa
     assert.match(text, /HITL|Human-in-the-Loop/i);
   }
 });
+
+// --- Sales system: remaining plays + docs (slice 1b) ---
+const SHIPPED_PLAYS = ['cold-call', 'demo-call', 'discovery-call', 'follow-up'];
+
+test('exactly the 4 starter plays ship and system.md links all of them (S2.1)', () => {
+  assert.deepEqual(listPlays(), SHIPPED_PLAYS.map((p) => `${p}.md`));
+  const system = fs.readFileSync(path.join(SALES_DIR, 'system.md'), 'utf8');
+  for (const p of SHIPPED_PLAYS) assert.ok(system.includes(`./plays/${p}.md`), `system.md must link ${p}`);
+});
+
+test('system.md has a row for every pipeline stage 1-5 (R1)', () => {
+  const system = fs.readFileSync(path.join(SALES_DIR, 'system.md'), 'utf8');
+  for (let n = 1; n <= 5; n++) {
+    assert.match(system, new RegExp(`^\\| ${n}\\. `, 'm'), `system.md needs a row for stage ${n}`);
+  }
+});
+
+test('follow-up stages yields [2,3,4] (S3.1)', () => {
+  const fm = frontmatterOf(fs.readFileSync(path.join(PLAYS_DIR, 'follow-up.md'), 'utf8'));
+  assert.deepEqual(fm.stages.split(',').map((s) => Number(s.trim())), [2, 3, 4]);
+});
+
+test('no sales/flows/ reference in docs or prompts (S5.1)', () => {
+  const files = [
+    'AGENTS.md', 'TECHNICAL.md', 'README.md', 'src/mcp/prompts.js',
+    'templates/base/AGENTS.md', 'templates/areas/sales/README.md', 'playbooks/01-SALES-PLAYBOOK.md',
+  ];
+  for (const f of files) {
+    const text = fs.readFileSync(path.join(PKG_DIR, f), 'utf8');
+    assert.ok(!text.includes('sales/flows/'), `${f} must not mention sales/flows/`);
+  }
+});
+
+test('sales docs and AGENTS lookup rules document plays and system.md', () => {
+  const docs = [
+    'AGENTS.md', 'templates/base/AGENTS.md', 'templates/areas/sales/README.md', 'playbooks/01-SALES-PLAYBOOK.md',
+  ];
+  for (const f of docs) {
+    const text = fs.readFileSync(path.join(PKG_DIR, f), 'utf8');
+    assert.ok(text.includes('plays/'), `${f} must document plays/`);
+    assert.ok(text.includes('system.md'), `${f} must document system.md`);
+  }
+  for (const f of ['AGENTS.md', 'templates/base/AGENTS.md']) {
+    const text = fs.readFileSync(path.join(PKG_DIR, f), 'utf8');
+    assert.match(text, /plays\/[^\n]*conversation|conversation[^\n]*plays\//i, `${f} must route conversations to plays/`);
+  }
+});
