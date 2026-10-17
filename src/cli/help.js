@@ -17,17 +17,34 @@ ${pc.bold('COMMANDS:')}
   ${pc.green('mcp')} [dir]          Start the Model Context Protocol (MCP) server over stdio
   ${pc.green('help')}               Show this help message
 
-${pc.bold('OPTIONS:')}
-  --fix               Automatically apply non-destructive fixes in doctor mode
+${pc.bold('INIT OPTIONS:')}
+  --name <text>       Organization / project name
+  --industry <text>   Industry or domain
+  --tagline <text>    Core tagline or mission
+  --areas <list>      Comma-separated area ids (sales,marketing,product,operations,hr_people,finance_legal)
+  --demo              Include demo samples (mock battlecards, objections, calls)
+  --clean             No demo samples (empty folders and blank templates)
+  -y, --yes           Accept defaults for anything not passed as a flag
+                      (all areas; demo samples unless --clean)
+
+${pc.bold('ADD-AREA OPTIONS:')}
+  --preset <id>       Install an uninstalled preset area
+  --custom <id>       Create a custom area (id must match ^[a-z0-9_-]+$)
+
+${pc.bold('DOCTOR OPTIONS:')}
+  --fix               Apply non-destructive repairs (without a TTY, doctor never prompts)
+
+${pc.bold('GLOBAL OPTIONS:')}
   -v, --version       Show version number
   -h, --help          Show help
 
 ${pc.bold('EXAMPLES:')}
   $ copilot-brain init
-  $ copilot-brain init ./my-project
-  $ copilot-brain doctor
-  $ copilot-brain doctor --fix
-  $ copilot-brain add-area
-  $ copilot-brain list-areas
+  $ copilot-brain init ./acme-brain --yes --clean --name "Acme" --industry "SaaS" --areas "sales,product"
+  $ copilot-brain doctor ./acme-brain --fix
+  $ copilot-brain add-area ./acme-brain --preset operations
+  $ copilot-brain add-area ./acme-brain --custom legal_ops
+  $ copilot-brain list-areas ./acme-brain
+  $ copilot-brain mcp ./acme-brain
 `;
 }

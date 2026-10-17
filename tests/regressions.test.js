@@ -139,3 +139,11 @@ test('doctor without --fix and without a TTY does not prompt and exits 1 on erro
     fs.rmSync(empty, { recursive: true, force: true });
   }
 });
+
+test('--help documents every flag the commands accept', () => {
+  const { stdout, status } = cli('--help');
+  assert.equal(status, 0);
+  for (const flag of ['--name', '--industry', '--tagline', '--areas', '--demo', '--clean', '--yes', '--preset', '--custom', '--fix']) {
+    assert.ok(stdout.includes(flag), `help is missing ${flag}`);
+  }
+});
