@@ -8,7 +8,11 @@
 
 When provided with a call transcript, recording summary, or raw conversation notes:
 
-1. **Extract or Prompt for Metadata**:
+1. **Ask at most the missing essentials, infer the rest**:
+   - Ask only for the essentials the notes do not already say: who they spoke with, which company, and how it ended. Ask them one at a time, in plain words, and only when missing.
+   - Infer every other field below from the notes, `sales/system.md`, and `sales/stages/pipeline-stages.md`. Never ask the person for a stage name, a play ID, a branch code, or a yes/no gate field.
+
+   **Metadata to extract**:
    - **Assigned Sales Rep**: Name of the internal AE/SDR (e.g., `Carlos`, `Juanita`, `Pepito`, `Alex`).
    - **Prospect Company**: Clean company name (e.g., `Acme Corp`, `NexaPay`).
    - **Primary Contact**: Name and title (e.g., `Sarah Lin, VP of Engineering`).
@@ -17,8 +21,8 @@ When provided with a call transcript, recording summary, or raw conversation not
      - `Discovery` | `Validation` | `Business Case` | `Negotiation` | `Closed Won` | `Closed Lost`
    - **Call Type**: `Initial Discovery` | `Technical Deep-Dive` | `Executive Business Review` | `Commercial Negotiation`
    - **Outcome**: `Advanced` | `Stalled` | `Disqualified` | `Closed Won` | `Closed Lost`
-   - **Play**: The conversation play that was run, matching a file in `sales/plays/` (e.g., `discovery-call`). Read `sales/system.md` to find it. If none fits, leave `play` out and flag it for the rep.
-   - **Branch**: The branch ID in that play's decision tree (e.g., `B3`) where the call went off-script or broke. Use the last branch reached if the call ended cleanly.
+   - **Play**: Infer the conversation guide (play) that was run, matching a file in `sales/plays/` (e.g., `discovery-call`). Read `sales/system.md` to find it. If none fits, leave `play` out and mention in plain words that no guide matched.
+   - **Branch**: Infer the branch ID in that play's decision tree (e.g., `B3`) where the call went off-script or broke. Use the last branch reached if the call ended cleanly.
    - **Gate Advanced**: `true` only if the evidence for the stage exit gate in `sales/stages/pipeline-stages.md` was captured on this call, otherwise `false`.
    - **Deal Value / ARR**: Estimated or contracted ARR (e.g., `$120,000 ARR`).
 
@@ -149,11 +153,16 @@ next_meeting: "YYYY-MM-DDTHH:MM:SSZ"
 
 ---
 
-## 3b. PLAY ATTRIBUTION & HITL REVIEW CHECKPOINT
+## 3b. PLAY ATTRIBUTION & REVIEW CHECKPOINT (INTERNAL RULES)
 
-- Use the exact frontmatter keys above (`prospect_company`, `deal_stage`, `play`, `branch`, `gate_advanced`). They match the keys written by `brain_capture_call`, so `/retro` can aggregate them.
+- Always write the exact frontmatter keys above to the file (`prospect_company`, `deal_stage`, `play`, `branch`, `gate_advanced`). They match the keys written by `brain_capture_call`, so `/retro` can aggregate them.
 - `{{PROSPECT_COMPANY}}` is the prospect's name, never your own organization's name.
-- Human-in-the-Loop (HITL) checkpoint: show the full call log, including `play`, `branch`, and `gate_advanced`, and wait for the rep's confirmation before saving.
+- Review checkpoint before saving: confirm in ONE plain sentence, in the person's language, then ask a single yes/no question: "Save it?" / "¿Lo guardo?". Wait for a yes before saving.
+  - Example (ES): "Llamada con Acme: usaste la guía de llamada en frío, se frenó cuando preguntaste por el presupuesto y quedaron en hablar el jueves. ¿Lo guardo?"
+  - Example (EN): "Call with Acme: you used the cold call guide, it stalled when you asked about budget, and you agreed to talk on Thursday. Save it?"
+- In that sentence never show play IDs, branch codes (like B3), field names, file paths, or frontmatter. Never say "HITL" or "checkpoint" to the person. Show the full log only if they ask for it.
+- If the person corrects something, fix it and confirm again in one sentence.
+- After saving, say in plain words what happened (e.g. "Saved with your September calls."), without the file path.
 
 ---
 

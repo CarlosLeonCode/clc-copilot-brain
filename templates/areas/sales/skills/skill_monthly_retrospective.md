@@ -52,34 +52,50 @@ When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-
 - Group the month's calls by `play`, then by `branch`. For each play report: calls run, `gate_advanced: true` rate, and the branch where calls most often ended without advancing (drop-off).
 - Put every log with no `play` in an **Unattributed** bucket and show its count. Never guess a play for it.
 - Compare the drop-off branches with the play file in `sales/plays/<play-id>.md` (decision tree, talk tracks) and propose concrete edits: reword a talk track, add a branch, or split a play. Cite the call IDs as evidence.
-- Proposals are text only. Do not edit any play until whoever runs `/retro` gives explicit approval for that specific edit (Human-in-the-Loop, HITL).
+- Proposals are text only. Do not edit any play until whoever runs `/retro` gives explicit approval for that specific edit (Human-in-the-Loop, HITL). In the report, ask about each proposal as one plain yes/no question (part B of section 4) and never say "HITL" to the person.
 - On approval: apply the edit, append an entry to that play's Learnings Log section (`- YYYY-MM-DD vN->vN+1: change (evidence: CALL-...)`), and bump the play's frontmatter `version` by one.
 
 ---
 
 ## 3. CLOSED-LOOP ACTION ITEMS (ORGANIZATIONAL FEEDBACK LOOP)
 
-Every retrospective must culminate in concrete repository improvements:
+Every retrospective must culminate in concrete repository improvements. Each one becomes a plain yes/no question in part B of the report; nothing is written until the person says yes (review checkpoint).
 
 1. **Battlecard Scaffolding & Updates**:
-   - Direct command to scaffold or refresh battlecards in `sales/battlecards/` matching `schemas/sales-battlecard.schema.json`.
+   - Scaffold or refresh battlecards in `sales/battlecards/` matching `schemas/sales-battlecard.schema.json`.
 2. **Objection Matrix Refinements**:
    - Add newly detected trigger phrases or sharpen pivot scripts in `sales/objections/` matching `schemas/sales-objection.schema.json`.
-3. **Sales Flow Diagram Adjustments**:
-   - Update customer journey and lifecycle maps using **Archify** (`ecosystemTools.salesFlowDiagrams`: https://github.com/tt-a1i/archify) to eliminate identified drop-off friction.
-4. **Targeted Enablement Sessions**:
-   - Schedule specific roleplay or coaching drills for reps on identified weak spots.
+3. **Play Edits**:
+   - Reword a talk track, add a branch, or split a play, following section 2E (explicit approval, Learnings Log entry, `version` bump).
+4. **Sales Flow Diagram Adjustments** (internal):
+   - If the person wants a visual journey map, the brain's diagram tool is listed in `org-kernel.json` -> `ecosystemTools.salesFlowDiagrams`. Never paste its link into the main report.
+5. **Targeted Enablement Sessions**:
+   - Suggest specific roleplay or coaching drills for reps on identified weak spots.
 
 ---
 
-## 4. CANONICAL RETROSPECTIVE REPORT TEMPLATE
+## 4. REPORT FORMAT (WHAT THE PERSON SEES)
 
-Generate the monthly report formatted cleanly as follows:
+Reply in the person's language and in plain words. Show only parts A and B. In those parts never show IDs, field names, file paths, code, diagrams, or links, and never use words like HITL, gate, play, or branch unless the person uses them first. Show the detailed tables only if the person asks for details.
 
 ```markdown
-# Monthly Sales Retrospective: {{YEAR_MONTH}}
+# How {{MONTH_NAME}} went
 
-## 1. Executive Summary & Headline Metrics
+## This month in 3 points
+1. {{PLAIN_POINT_1}} (for example: "You had 14 calls and closed 2 deals, about $40k.")
+2. {{PLAIN_POINT_2}} (for example: "Price was the most common worry; our answer worked about half the time.")
+3. {{PLAIN_POINT_3}} (for example: "Deals tend to stall while waiting for the security review.")
+
+## Changes I suggest
+1. In the cold call, most people drop when we ask about budget. Want me to change that question to "{{NEW_QUESTION}}"?
+2. Two customers mentioned {{COMPETITOR_NAME}} and we have nothing on them yet. Want me to prepare a short comparison?
+3. Want me to improve our answer for when they say it's too expensive, using what worked this month?
+
+Tell me the numbers you want (for example "1 and 3"), or "none". If you want the details, just ask.
+
+## Appendix: details (only if the person asks)
+
+### Headline metrics
 | Metric | Month Result | Previous Month | Delta / MoM |
 | :--- | :--- | :--- | :--- |
 | **Total Calls Logged** | {{TOTAL_CALLS}} | {{PREV_CALLS}} | {{DELTA}} |
@@ -88,63 +104,38 @@ Generate the monthly report formatted cleanly as follows:
 | **Pipeline Win Rate** | {{WIN_RATE}}% | {{PREV_RATE}}% | {{DELTA}} |
 | **Average Deal Cycle** | {{AVG_DAYS}} days | {{PREV_DAYS}} days | {{DELTA}} |
 
----
-
-## 2. Objection Trend Analysis
-| Objection ID | Category | Occurrences | Handled Effectively % | Trend (Rising / Stable / Falling) |
+### Objection trends
+| Objection | Category | Occurrences | Handled Well % | Trend |
 | :--- | :--- | :--- | :--- | :--- |
-| `pricing-too-high` | pricing | {{COUNT}} | {{EFFECTIVE_PCT}}% | 🔺 Rising |
-| `security-compliance` | technical_fit | {{COUNT}} | {{EFFECTIVE_PCT}}% | 🟢 Stable |
+| Too expensive | pricing | {{COUNT}} | {{EFFECTIVE_PCT}}% | Rising |
 
-### Key Insight:
-{{ANALYSIS_OF_TRENDING_OBJECTIONS_AND_ROOT_CAUSES}}
-
----
-
-## 3. Rep Performance & Coaching Ledger
+### Rep performance & coaching
 | Rep Name | Calls Handled | Active Deals | Win Rate | Top Strength | Focus Area for Next Month |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Carlos** | {{CALLS}} | {{DEALS}} | {{WIN_RATE}}% | Discovery Depth | Tighten Negotiation Timelines |
 | **Juanita** | {{CALLS}} | {{DEALS}} | {{WIN_RATE}}% | Executive Rapport | Push for Mutual Action Plans Early |
 | **Pepito** | {{CALLS}} | {{DEALS}} | {{WIN_RATE}}% | Technical Demos | Disqualify Non-Economic Buyers Sooner |
 
----
+### Pipeline funnel
+| Step | Deals | Moved on |
+| :--- | :--- | :--- |
+| Discovery -> Validation | {{DISC_COUNT}} | {{CR_1}}% |
+| Validation -> Business Case | {{VAL_COUNT}} | {{CR_2}}% |
+| Business Case -> Negotiation | {{BC_COUNT}} | {{CR_3}}% |
+| Negotiation -> Closed Won | {{NEG_COUNT}} | {{CR_4}}% |
 
-## 4. Pipeline Stage Friction & Conversion Funnel
-```mermaid
-flowchart LR
-    A["Discovery ({{DISC_COUNT}})"] -->|"{{CR_1}}%"| B["Validation ({{VAL_COUNT}})"]
-    B -->|"{{CR_2}}%"| C["Business Case ({{BC_COUNT}})"]
-    C -->|"{{CR_3}}%"| D["Negotiation ({{NEG_COUNT}})"]
-    D -->|"{{CR_4}}%"| E["Closed Won ({{WON_COUNT}})"]
-```
+Main bottleneck: {{STAGE_NAME}}, because {{BOTTLENECK_ROOT_CAUSE}}. Suggested fix: {{PROCESS_FIX}}.
 
-### Bottleneck Analysis:
-- **Primary Chokepoint**: {{STAGE_NAME}}
-- **Root Cause**: {{BOTTLENECK_ROOT_CAUSE}}
-- **Remediation**: {{PROCESS_FIX}}
-
----
-
-## 5. Play Performance & Proposed Play Edits
-| Play | Calls | Gate Advanced % | Top Drop-off Branch | Proposed Edit (pending approval) |
+### Call guide performance
+| Call guide | Calls | Moved the deal forward | Where calls most often stalled | Suggested change (pending approval) |
 | :--- | :--- | :--- | :--- | :--- |
-| `{{PLAY_ID}}` | {{CALLS}} | {{ADVANCED_PCT}}% | `{{BRANCH_ID}}` | {{PROPOSED_EDIT_OR_NONE}} |
-| **Unattributed** (no `play` in log) | {{UNATTRIBUTED_COUNT}} | n/a | n/a | Ask reps to log `play` |
+| {{PLAY_NAME}} | {{CALLS}} | {{ADVANCED_PCT}}% | {{BRANCH_IN_PLAIN_WORDS}} | {{PROPOSED_EDIT_OR_NONE}} |
+| Unattributed (no guide logged) | {{UNATTRIBUTED_COUNT}} | n/a | n/a | Ask reps which guide they used |
 
-## 6. Competitive Intelligence & Battlecard Health
-- **Active Competitors Observed**: `{{COMPETITOR_LIST}}`
-- **Displacement Win Rate**: {{DISPLACEMENT_RATE}}%
-- **FUD Encountered in Field**: {{FIELD_FUD_NOTES}}
-
----
-
-## 7. Closed-Loop Action Items
-- [ ] **Battlecard Update**: Scaffold `sales/battlecards/{{NEW_COMPETITOR}}.json` using `skill_area_scaffolder.md`.
-- [ ] **Objection Matrix Update**: Enhance `sales/objections/pricing-too-high.json` with multi-year ROI calculator link.
-- [ ] **Journey Diagram Refinement**: Update sales flow diagram in **Archify** (`https://github.com/tt-a1i/archify`) to formalize pre-demo qualification step.
-- [ ] **Play Edit** (only after explicit approval): update `sales/plays/{{PLAY_ID}}.md`, bump `version`, append a Learnings Log entry in that play file.
-- [ ] **Coaching Drill**: Run 45-minute workshop on Economic Buyer discovery.
+### Competitors
+- Seen this month: {{COMPETITOR_LIST}}
+- Win rate when replacing them: {{DISPLACEMENT_RATE}}%
+- What prospects heard about us: {{FIELD_FUD_NOTES}}
 ```
 
 ---

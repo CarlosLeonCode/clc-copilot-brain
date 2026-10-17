@@ -84,7 +84,7 @@ export async function runInit(targetDir, options) {
 
 // One example question per preset area, answered from that area's files once onboarding seeds them.
 const AREA_EXAMPLES = Object.freeze({
-  sales: '/objection "it\'s too expensive"',
+  sales: '"A customer says we\'re too expensive. What do I say?"',
   marketing: '"How do we position ourselves against the market leader?"',
   product: '"What are this quarter\'s product themes?"',
   operations: '"A P1 incident just started, what do I do?"',
@@ -97,11 +97,11 @@ const MAX_EXAMPLES = 3;
 function renderNextSteps({ absDir, areas, demo }) {
   const examples = areas.filter((a) => AREA_EXAMPLES[a]).slice(0, MAX_EXAMPLES).map((a) => `   • ${pc.bold(AREA_EXAMPLES[a])}`);
   const steps = [
-    `1. Open this folder in Claude Code, Cursor, Windsurf or Gemini CLI:\n   ${pc.cyan(absDir)}`,
-    `2. Run ${pc.bold('/brain:onboarding')}, a short interview that fills your profile\n   and drafts a first asset for each area you installed.`,
+    `1. Open this folder in your AI tool (Claude Code, Antigravity,\n   Cursor, Windsurf or Gemini CLI):\n   ${pc.cyan(absDir)}`,
+    `2. Tell your assistant: ${pc.bold('"Let\'s set up my brain"')} \n   (in Claude Code you can also type /brain:onboarding).\n   It runs a short interview that fills your profile\n   and drafts a first asset for each area you installed.`,
     examples.length > 0
-      ? `3. Ask your copilot; answers cite the source file in this brain:\n${examples.join('\n')}`
-      : '3. Ask your copilot about your company;\n   answers cite the files in this brain.'
+      ? `3. Then just ask in plain words, for example:\n${examples.join('\n')}`
+      : '3. Then just ask your assistant about your company in plain words.'
   ];
   if (demo) steps.push(`\nDemo samples installed. Remove them with ${pc.cyan('clc-brain clean-demo')}.`);
   return steps.join('\n');

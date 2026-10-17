@@ -148,15 +148,18 @@ test('--help documents every flag the commands accept', () => {
   }
 });
 
-test('init ends with concrete next steps: onboarding, first objection and an MCP config for this brain', () => {
+test('init ends with tool-neutral next steps: plain onboarding phrase, first objection and an MCP config for this brain', () => {
   const outer = sandbox();
   try {
     const brain = path.join(outer, 'acme brain');
     const { stdout, status } = cli('init', brain, '--yes', '--areas', 'sales');
     assert.equal(status, 0);
     assert.match(stdout, /Next steps/);
-    assert.match(stdout, /\/brain:onboarding/);
-    assert.match(stdout, /\/objection/);
+    assert.match(stdout, /Let's set up my brain/, 'onboarding works in any tool by asking in plain words');
+    assert.match(stdout, /in Claude Code you can also type \/brain:onboarding/);
+    assert.doesNotMatch(stdout, /Run \/brain:onboarding/);
+    assert.match(stdout, /too expensive/i);
+    assert.doesNotMatch(stdout, /\/objection/, 'examples must not rely on Claude Code slash commands');
     const config = JSON.parse(stdout.slice(stdout.indexOf('{\n  "mcpServers"'), stdout.indexOf('\n}\n') + 2));
     assert.deepEqual(config.mcpServers['acme brain'], { command: 'clc-brain', args: ['mcp', path.resolve(brain)] }, 'MCP snippet must be valid JSON with the absolute brain path');
   } finally {
