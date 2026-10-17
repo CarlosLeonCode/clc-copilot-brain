@@ -1,55 +1,109 @@
-# Copilot Brain
+<p align="center">
+  <img src="docs/assets/banner.es.svg" alt="Copilot Brain: tu asistente de IA responde con los documentos de tu empresa, muestra la fuente y nunca inventa nada." width="100%">
+</p>
 
-**Todo el conocimiento de tu empresa (ventas, marketing, producto, operaciones, personas, finanzas y legal) en un solo repositorio desde el que responden los copilotos de IA, citando el archivo de origen y sin inventar nada.**
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="Licencia: MIT"></a>
+  <img src="https://img.shields.io/badge/Node.js-22%2B-339933.svg" alt="Node.js 22+">
+  <img src="https://img.shields.io/badge/Works_with-Claude_%C2%B7_Cursor_%C2%B7_Gemini_%C2%B7_ChatGPT-7c3aed.svg" alt="Funciona con Claude, Cursor, Gemini, ChatGPT">
+  <img src="https://img.shields.io/badge/Made_for-every_team-ec4899.svg" alt="Hecho para todos los equipos">
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22-green.svg)](https://nodejs.org/)
-[![MCP Ready](https://img.shields.io/badge/MCP-Tools_%26_Prompts-purple.svg)](./TECHNICAL.md#3-model-context-protocol-mcp-specification)
+<p align="center">
+  🇬🇧 <a href="./README.md">English</a> · 🇪🇸 <strong>Español</strong>
+</p>
 
-[Read in English](./README.md) · [Documentación técnica](./TECHNICAL.md)
+# 🧠 Copilot Brain
 
-## Míralo en 30 segundos
+**Tu asistente de IA responde las preguntas de tu equipo con los documentos de tu propia empresa, muestra de dónde sale cada respuesta y nunca inventa nada.**
 
-> *Ejemplos ilustrativos, no sesiones grabadas. Cada respuesta proviene de un archivo de ejemplo en [`templates/areas/`](./templates/areas/) (su contenido está en inglés).*
+## 🧩 El problema que resuelve
 
-```text
-Vendedor:   /objection "es demasiado caro"
-Copiloto:   Fuente: sales/objections/pricing-too-high.json
-            Di esto: "Entiendo que el control del presupuesto es estricto ahora mismo.
-            Permíteme preguntar: ¿cuánto tiempo de desarrollo se dedicó el mes pasado
-            a corregir código alucinado por IA o a buscar especificaciones desactualizadas?"
-            Siguiente paso: una revisión de ROI de 20 minutos con la calculadora de velocidad.
+- 🌀 **El conocimiento está disperso.** Vive en la cabeza de las personas, en documentos antiguos y en conversaciones de chat, y nadie lo encuentra cuando lo necesita.
+- 🎲 **Las herramientas de IA inventan respuestas.** Un asistente genérico adivina tus precios, políticas y procesos.
+- 🔁 **Las personas nuevas hacen las mismas preguntas.** Cada nueva incorporación interrumpe a alguien para aprender cómo funcionan las cosas.
 
-Guardia:    Acaba de empezar un incidente P1. ¿Qué hago?
-Copiloto:   Fuente: operations/sops/incident-management.json
-            1. Reconoce la alerta en PagerDuty en menos de 5 minutos, declara P0/P1 y nombra un Incident Commander.
-            2. El responsable de comunicaciones publica en Statuspage en menos de 15 minutos.
-            3. Revierte los despliegues recientes o desvía tráfico hasta que los errores bajen de 0.1% durante 10 minutos.
-            ¿Sin respuesta en 7 minutos? Escala a la guardia secundaria.
+## 👀 Míralo en acción
 
-Ejecutivo:  ¿Puedo dar un 25% de descuento?
-Copiloto:   Fuente: finance_legal/pricing/pricing-tiers-and-discount-matrix.md
-            Entre 21% y 30% requiere aprobación del VP de Ventas / CRO, justificada con un caso
-            de éxito público, derechos de logo o un webinar conjunto. A cambio: caso de éxito y cita en 60 días.
-            Tú puedes aprobar hasta 10% con pago anual anticipado de 12 meses.
+*Ejemplos ilustrativos, no conversaciones grabadas. Las respuestas provienen de los documentos de ejemplo incluidos en Copilot Brain (escritos en inglés).*
+
+> [!NOTE]
+> **💼 Un vendedor pregunta: "El prospecto dice que es demasiado caro. ¿Qué le respondo?"**
+>
+> "Entiendo que el control del presupuesto es estricto ahora mismo. Permíteme preguntar: ¿cuánto tiempo de desarrollo se dedicó el mes pasado a corregir código alucinado por IA o a buscar especificaciones desactualizadas?" Luego ofrece una revisión de ROI de 20 minutos.
+>
+> 📄 *Fuente: pricing-too-high*
+
+> [!TIP]
+> **🛠️ La persona de guardia pregunta: "Acaba de empezar un incidente P1. ¿Qué hago?"**
+>
+> Reconoce la alerta en menos de 5 minutos y nombra a un responsable del incidente. El responsable de comunicaciones publica una actualización de estado en menos de 15 minutos. Revierte los cambios recientes hasta que los errores se mantengan por debajo de 0.1% durante 10 minutos. ¿Sin respuesta en 7 minutos? Escala a la guardia de respaldo.
+>
+> 📄 *Fuente: incident-management*
+
+> [!IMPORTANT]
+> **💰 Un ejecutivo de cuentas pregunta: "¿Puedo dar un 25% de descuento?"**
+>
+> No por tu cuenta. Entre 21% y 30% requiere al VP de Ventas o al CRO, justificado con un caso de éxito público, derechos de logo o un webinar conjunto, y el cliente se compromete a un caso de éxito en 60 días. Tú puedes aprobar hasta 10% con pago anticipado de 12 meses.
+>
+> 📄 *Fuente: pricing-tiers-and-discount-matrix*
+
+Si un documento aún no existe, el asistente lo indica y ofrece ayudarte a redactarlo.
+
+## 🗂️ Qué puedes guardar
+
+<table align="center">
+  <tr>
+    <td align="center" width="33%">💼<br><strong>Ventas</strong><br>Perfiles de cliente, respuestas a objeciones, comparativas con competidores, notas de llamadas<br><em>"¿Cómo le ganamos a nuestro principal competidor?"</em></td>
+    <td align="center" width="33%">📣<br><strong>Marketing</strong><br>Guía de marca, mensajes clave, calendario de contenidos<br><em>"¿Cuál es nuestro pitch de 30 segundos?"</em></td>
+    <td align="center" width="33%">🧭<br><strong>Producto</strong><br>Hoja de ruta, especificaciones, notas de versión<br><em>"¿Qué estamos construyendo este semestre?"</em></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">🛠️<br><strong>Operaciones</strong><br>Procedimientos paso a paso, herramientas, proveedores<br><em>"¿Qué hago cuando empieza un incidente grave?"</em></td>
+    <td align="center" width="33%">🧑‍🤝‍🧑<br><strong>Personas</strong><br>Manual de la empresa, evaluaciones de contratación, planes de incorporación<br><em>"¿Qué hace una nueva incorporación en sus primeros 30 días?"</em></td>
+    <td align="center" width="33%">💰<br><strong>Finanzas y Legal</strong><br>Precios, reglas de descuento, plantillas de contratos<br><em>"¿Quién aprueba un 25% de descuento?"</em></td>
+  </tr>
+</table>
+
+## ⚙️ Cómo funciona en 3 pasos
+
+1. 🧰 **Alguien de tu equipo lo configura una sola vez** (unos 10 minutos).
+2. 💬 **Una entrevista guiada con tu asistente de IA** lo llena con la información de tu empresa y redacta tus primeros documentos de cada área. Tú apruebas todo antes de que se guarde.
+3. 🙋 **Todos hacen preguntas en lenguaje natural** y reciben respuestas con su fuente.
+
+```mermaid
+flowchart LR
+    A(["🧰 1. Configúralo una vez"]) --> B(["💬 2. Entrevista guiada"]) --> C(["🙋 3. Pregunta lo que quieras"])
+    classDef setup fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#1e1b4b
+    classDef interview fill:#fce7f3,stroke:#db2777,stroke-width:2px,color:#500724
+    classDef ask fill:#ccfbf1,stroke:#0d9488,stroke-width:2px,color:#042f2e
+    class A setup
+    class B interview
+    class C ask
 ```
 
-Cada respuesta proviene de un archivo que tu equipo administra y revisa. Si el archivo no existe, el copiloto lo indica y ofrece crearlo.
+🎨 Consulta la guía visual: [Cómo usar Copilot Brain](./docs/diagrams/uso.html).
 
-## Qué vive en cada área
+## 🤝 Funciona con las herramientas de IA que ya usas
 
-| Área | Carpetas | Pregunta de ejemplo |
-| :--- | :--- | :--- |
-| `sales` | `icps/`, `objections/`, `battlecards/`, `scripts/`, `calls/`, `stages/`, `win-loss/` | "¿Cómo le ganamos a <competidor>?" |
-| `marketing` | `brand/`, `messaging/`, `content/`, `distribution/` | "¿Cuál es nuestro pitch de 30 segundos?" |
-| `product` | `roadmap/`, `specs/`, `releases/` | "¿Qué estamos construyendo este semestre?" |
-| `operations` | `sops/`, `tools/`, `vendors/` | "¿Qué hago cuando empieza un incidente P1?" |
-| `hr_people` | `handbook/`, `hiring/`, `onboarding/` | "¿Qué hace una nueva incorporación en sus primeros 30 días?" |
-| `finance_legal` | `pricing/`, `compliance/` | "¿Quién aprueba un 25% de descuento?" |
+- 🟠 **Claude**: Claude Code, la app de escritorio de Claude y Claude Projects en la web
+- 🟣 **Cursor** y 🌊 **Windsurf**
+- 🔷 **Gemini**: el asistente de programación Gemini de Google y Gemini Gems en la web
+- 🟢 **ChatGPT**: como GPT personalizado
 
-## Inicio rápido
+## 🔒 Tus datos siguen siendo tuyos
 
-Requiere **Node.js 22+**.
+> [!IMPORTANT]
+> - 📁 **Archivos normales que te pertenecen.** Todo se guarda como documentos comunes en una carpeta de tu computadora o de tu unidad compartida.
+> - 🚫 **La herramienta no envía nada a ningún lado.** Solo lee y escribe esos archivos locales. El asistente de IA que conectes (Claude, ChatGPT, Gemini…) procesa tus preguntas bajo las condiciones de ese proveedor, así que elige uno en el que tu empresa confíe.
+> - ✅ **Tú revisas cada cambio.** El asistente te muestra cada borrador y lo guarda solo cuando lo apruebas.
+
+---
+
+<details>
+<summary>🛠️ Para quien lo configura: instalación</summary>
+
+Requiere **Node.js 22+**. El paquete de npm aún no está publicado, así que se instala desde el código fuente:
 
 ```bash
 git clone https://github.com/carlosleoncodepro/clc-copilot-brain.git
@@ -59,34 +113,34 @@ npm link                      # deja `clc-brain` disponible en tu PATH
 clc-brain init ../acme-brain  # cerebro limpio por defecto
 ```
 
-Abre `../acme-brain` en Claude Code o Cursor y ejecuta `/brain:onboarding`.
+Abre `../acme-brain` en Claude Code o Cursor y ejecuta `/brain:onboarding`. Te entrevista una pregunta a la vez, completa `org-kernel.json` y `company-profile.md`, y luego redacta el primer activo de cada área activa (objeción y battlecard de ventas, un SOP de operaciones, `marketing/messaging/core-positioning.md`, `product/roadmap/q3-q4-product-themes.md`, `hr_people/handbook/company-handbook.md`, `finance_legal/pricing/pricing-tiers-and-discount-matrix.md`). Cada uno se guarda solo tras tu aprobación y se valida con `clc-brain doctor`.
 
-- Para explorar primero con datos de ejemplo: `clc-brain init ../demo-brain --demo` (elimínalos después con `clc-brain clean-demo ../demo-brain`).
-- Cuando el paquete se publique en npm, `npm install -g @clc/copilot-brain` reemplazará los pasos de clonar y enlazar.
+- Datos de ejemplo para explorar: `clc-brain init ../demo-brain --demo`; elimínalos después con `clc-brain clean-demo ../demo-brain`.
+- Cuando se publique, `npm install -g @clc/copilot-brain` reemplazará los pasos de clonar y enlazar.
+</details>
 
-## Qué ocurre en el onboarding
+<details>
+<summary>🛠️ Para quien lo configura: conectar apps de IA</summary>
 
-`/brain:onboarding` te entrevista una pregunta a la vez (empresa, oferta, áreas, competidores, objeciones, responsable). Después:
+- **Claude Code, Cursor, Windsurf, Gemini CLI**: abre la carpeta del cerebro; no requiere configuración. `AGENTS.md` contiene las reglas y `CLAUDE.md`, `GEMINI.md`, `.cursorrules` y `.windsurfrules` apuntan a él.
+- **Claude Desktop, Cursor, Zed y otros clientes MCP**: agrega esto a la configuración MCP de la app (p. ej. `claude_desktop_config.json`) con la ruta absoluta de tu cerebro:
 
-1. Completa `org-kernel.json` y `company-profile.md`.
-2. Redacta el **primer activo real de cada área que activaste**, con como máximo una pregunta adicional por área:
+  ```json
+  {
+    "mcpServers": {
+      "copilot-brain": { "command": "clc-brain", "args": ["mcp", "/path/to/acme-brain"] }
+    }
+  }
+  ```
 
-   | Área | Primer activo |
-   | :--- | :--- |
-   | `sales` | Una ficha de objeción y una battlecard (JSON validado por esquema) |
-   | `operations` | Un primer SOP en `operations/sops/` (JSON validado por esquema) |
-   | `marketing` | `marketing/messaging/core-positioning.md` |
-   | `product` | `product/roadmap/q3-q4-product-themes.md` |
-   | `hr_people` | `hr_people/handbook/company-handbook.md` |
-   | `finance_legal` | `finance_legal/pricing/pricing-tiers-and-discount-matrix.md` |
+  Expone las herramientas `brain_query`, `brain_capture_call`, `brain_capture_objection` y `brain_doctor`, además de `call`, `objection`, `battlecard`, `flow` y `retro` como prompts MCP.
+- **ChatGPT, Gemini Gems, Claude Projects**: sigue las guías de copiar y pegar en `skills/integrations/` dentro del cerebro (`CHATGPT_CUSTOM_GPT.md`, `GEMINI_GEM.md`, `CLAUDE_PROJECT.md`).
+</details>
 
-3. Te muestra cada borrador y lo guarda solo cuando lo apruebas (puedes omitir cualquier área); luego valida con `clc-brain doctor`.
+<details>
+<summary>🛠️ Para quien lo configura: hacer preguntas y atajos de ventas</summary>
 
-Termina con una pregunta de ejemplo por cada área sembrada, para que pruebes **tus** datos de inmediato.
-
-## Uso diario
-
-**Cualquier área: pregunta en lenguaje natural.** *"¿Cuál es nuestra licencia parental?"*, *"¿Quién aprueba un 25% de descuento?"*, *"Explícame nuestro SOP de incidentes."* El copiloto busca en el cerebro (ver `.agents/skills/brain-search.md`; vía MCP, la herramienta `brain_query`) y cita el archivo. `/brain` abre el panel.
+**Cualquier área: lenguaje natural.** El asistente busca en el cerebro siguiendo `.agents/skills/brain-search.md` (vía MCP, la herramienta `brain_query`) y cita el archivo. `/brain` abre el panel.
 
 **Atajos de ventas.** Hoy los comandos dedicados están enfocados en ventas:
 
@@ -98,60 +152,29 @@ Termina con una pregunta de ejemplo por cada área sembrada, para que pruebes **
 | `/flow` | Consulta las reglas de las etapas del embudo o convierte una captura de un diagrama en Mermaid. |
 | `/retro` | Retrospectiva mensual de llamadas y revisiones de ganados/perdidos (p. ej. `/retro 2026-10`). |
 
-Consulta [todos los comandos](#todos-los-comandos).
-
-## Conectar otras apps de IA
-
-Abrir la carpeta del cerebro en **Claude Code, Cursor, Windsurf o Gemini CLI** no requiere configuración: `AGENTS.md` contiene las reglas y `CLAUDE.md`, `GEMINI.md`, `.cursorrules` y `.windsurfrules` apuntan a él.
-
-<details>
-<summary>Claude Desktop, Cursor, Zed y otros clientes MCP</summary>
-
-Agrega esto a la configuración MCP de tu app (p. ej. `claude_desktop_config.json`) con la ruta absoluta de tu cerebro:
-
-```json
-{
-  "mcpServers": {
-    "copilot-brain": { "command": "clc-brain", "args": ["mcp", "/path/to/acme-brain"] }
-  }
-}
-```
-
-Expone las herramientas `brain_query`, `brain_capture_call`, `brain_capture_objection` y `brain_doctor`, además de `call`, `objection`, `battlecard`, `flow` y `retro` como prompts MCP.
+También disponibles: `/brain:onboarding`, `/brain:sales`, `/brain:doctor`, `/brain:add-area`. Las definiciones están en `.claude/commands/`.
 </details>
 
 <details>
-<summary>ChatGPT, Gemini y Claude en la web</summary>
-
-Dentro de tu cerebro, sigue las guías de copiar y pegar en `skills/integrations/`: `CHATGPT_CUSTOM_GPT.md`, `GEMINI_GEM.md` o `CLAUDE_PROJECT.md`.
-</details>
-
-## Cómo funciona
-
-```mermaid
-flowchart LR
-    A["1. Instala una vez"] --> B["2. Crea tu cerebro"] --> C["3. Onboarding"] --> D["4. Pregunta sobre cualquier área"]
-```
-
-Guía visual: [docs/diagrams/uso.html](./docs/diagrams/uso.html).
-
-<details>
-<summary>Guía de carpetas</summary>
+<summary>🛠️ Para quien lo configura: guía de carpetas</summary>
 
 | Ruta | Qué contiene |
 | :--- | :--- |
 | `company-profile.md`, `org-kernel.json` | Quiénes son, qué venden, áreas activas, responsable de gobierno. |
-| `<área>/` | Una carpeta por área activa (ver [Qué vive en cada área](#qué-vive-en-cada-área)). |
-| `sales/objections/`, `sales/battlecards/` | JSON estructurado (+ Markdown) validado contra `schemas/`. |
-| `operations/sops/` | Procedimientos paso a paso, JSON validado contra `schemas/sop.schema.json`. |
+| `sales/` | `icps/`, `objections/`, `battlecards/`, `scripts/`, `calls/`, `stages/`, `win-loss/` |
+| `marketing/` | `brand/`, `messaging/`, `content/`, `distribution/` |
+| `product/` | `roadmap/`, `specs/`, `releases/` |
+| `operations/` | `sops/`, `tools/`, `vendors/` |
+| `hr_people/` | `handbook/`, `hiring/`, `onboarding/` |
+| `finance_legal/` | `pricing/`, `compliance/` |
 | `playbooks/` | Un playbook operativo por área. |
-| `schemas/` | JSON Schemas del kernel, battlecards, objeciones y SOPs. |
+| `schemas/` | JSON Schemas del kernel, battlecards, objeciones y SOPs (verificados por `clc-brain doctor`). |
 
 Agrega un área personalizada con `clc-brain add-area --custom <id>` o `/brain:add-area`.
 </details>
 
 <details>
-<summary>Comandos de terminal</summary>
+<summary>🛠️ Para quien lo configura: comandos de terminal</summary>
 
 | Comando | Qué hace |
 | :--- | :--- |
@@ -166,18 +189,23 @@ Ejecuta `clc-brain --help` para ver todas las opciones.
 </details>
 
 <details>
-<summary>Migrar documentos existentes</summary>
+<summary>🛠️ Para quien lo configura: migrar documentos existentes</summary>
 
-- **Texto (Notion, Google Docs, manuales, notas del CRM)**: pégalo en tu copiloto y di *"Guarda esto en nuestro cerebro en operations/sops"* (o cualquier área), o usa `/call` para notas de reuniones. También puedes colocar archivos `.md` en la carpeta correspondiente.
+- **Texto (Notion, Google Docs, manuales, notas del CRM)**: pégalo en tu asistente y di *"Guarda esto en nuestro cerebro en operations/sops"* (o cualquier área), o usa `/call` para notas de reuniones. También puedes colocar archivos `.md` en la carpeta correspondiente.
 - **Diagramas (Miro, Lucidchart, fotos de pizarra)**: arrastra la captura al chat y ejecuta `/flow` para convertirla en un diagrama Mermaid en `sales/stages/pipeline-stages.md`.
 </details>
 
-### Todos los comandos
-
-`/objection`, `/battlecard`, `/call`, `/flow`, `/retro`, además de `/brain` (panel), `/brain:onboarding` (entrevista), `/brain:sales` (copiloto de ventas), `/brain:doctor` (revisión de salud) y `/brain:add-area` (crear áreas y fichas). Las definiciones están en `.claude/commands/`.
-
-## Más información
+<details>
+<summary>🛠️ Para quien lo configura: documentación técnica y licencia</summary>
 
 - [TECHNICAL.md](./TECHNICAL.md): arquitectura, esquemas, protocolo MCP y guardas de auditoría.
 - [docs/Journal/](./docs/Journal/): registros de decisiones de arquitectura.
 - Licencia: MIT © [Carlos Leon Code Pro](https://github.com/carlosleoncodepro).
+</details>
+
+---
+
+<p align="center">
+  Hecho con ❤️ para equipos que quieren una IA que diga la verdad.<br>
+  <sub>Licencia MIT © <a href="https://github.com/carlosleoncodepro">Carlos Leon Code Pro</a> · <a href="https://opensource.org/licenses/MIT">Licencia</a></sub>
+</p>
