@@ -2,6 +2,7 @@
 // Allowlist only: everything not listed here is never touched.
 //   template-owned  = base .claude/commands/*.md and skills/*.md  -> replace (with .bak backup) when bytes differ
 //   add-if-missing  = new base commands/skills, plus sales/system.md and sales/plays/*.md when `sales` is active
+//   managed-block   = AGENTS.md: only the text between the copilot-brain managed markers is refreshed
 import fs from 'node:fs';
 import path from 'node:path';
 import { readKernel } from './areas.js';
@@ -10,6 +11,9 @@ import { ensureDir, isInside, listMarkdownFiles } from './fs-utils.js';
 import { TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR } from './package-paths.js';
 
 const PLACEHOLDER = /\{\{(COMPANY_NAME|INDUSTRY|TAGLINE|ACTIVE_AREAS_[A-Z]+|CREATED_AT|UPDATED_AT)\}\}/;
+export const MANAGED_START = '<!-- copilot-brain:managed:start -->';
+export const MANAGED_END = '<!-- copilot-brain:managed:end -->';
+const AGENTS_FILE = 'AGENTS.md';
 
 function assertBrain(rootDir) {
   if (!fs.existsSync(path.join(rootDir, 'org-kernel.json'))) {
@@ -43,7 +47,7 @@ function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas) {
 
 /**
  * Compute what an upgrade would do. Only actionable entries are returned (an up-to-date brain => []).
- * @returns {{ actions: Array<{ path: string, policy: 'template-owned'|'add-if-missing', kind: 'add'|'replace'|'skip', reason?: string, current?: string, next: string }> }}
+ * @returns {{ actions: Array<{ path: string, policy: 'template-owned'|'add-if-missing'|'managed-block', kind: 'add'|'replace'|'skip', reason?: string, current?: string, next: string }> }}
  */
 export function planUpgrade(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, templatesAreasDir = TEMPLATES_AREAS_DIR } = {}) {
   assertBrain(rootDir);
@@ -69,7 +73,51 @@ export function planUpgrade(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, te
       else actions.push({ path: file.rel, policy, kind: 'replace', current, next });
     }
   }
+  const agents = planAgentsBlock(rootDir, templatesBaseDir);
+  if (agents) actions.push(agents);
   return { actions };
+}
+
+/** Marker positions as { start, end } (end is exclusive), null when absent, or 'invalid' when unpaired or reversed. */
+function managedRange(text) {
+  const start = text.indexOf(MANAGED_START);
+  const endAt = text.indexOf(MANAGED_END);
+  if (start === -1 && endAt === -1) return null;
+  if (start === -1 || endAt === -1 || endAt < start) return 'invalid';
+  if (text.indexOf(MANAGED_START, start + 1) !== -1 || text.indexOf(MANAGED_END, endAt + 1) !== -1) return 'invalid';
+  return { start, end: endAt + MANAGED_END.length };
+}
+
+/** Put `block` in place of the managed range, else before the first "## " heading, else at the end. */
+export function mergeManagedBlock(current, block) {
+  const range = managedRange(current);
+  if (range && range !== 'invalid') return current.slice(0, range.start) + block + current.slice(range.end);
+  const heading = current.search(/^## /m);
+  if (heading !== -1) return `${current.slice(0, heading)}${block}\n\n---\n\n${current.slice(heading)}`;
+  return `${current.replace(/\n*$/, '')}\n\n${block}\n`;
+}
+
+/** AGENTS.md is the SSOT the IDE adapters symlink to: refresh only its managed block, in the real file. */
+function planAgentsBlock(rootDir, templatesBaseDir) {
+  const src = path.join(templatesBaseDir, AGENTS_FILE);
+  if (!fs.existsSync(src)) return null;
+  const template = fs.readFileSync(src, 'utf8');
+  const range = managedRange(template);
+  if (!range || range === 'invalid') return null;
+  const block = template.slice(range.start, range.end);
+  const base = { path: AGENTS_FILE, policy: 'managed-block' };
+  if (PLACEHOLDER.test(block)) return { ...base, kind: 'skip', reason: 'placeholder', next: block };
+  const dest = path.join(rootDir, AGENTS_FILE);
+  const stat = lstatOrNull(dest);
+  if (!stat) return null;
+  if (!stat.isFile()) return { ...base, kind: 'skip', reason: stat.isSymbolicLink() ? 'symlink' : 'not-a-file', next: block };
+  const current = fs.readFileSync(dest, 'utf8');
+  if (PLACEHOLDER.test(current)) return { ...base, kind: 'skip', reason: 'placeholder', current, next: block };
+  if (managedRange(current) === 'invalid') return { ...base, kind: 'skip', reason: 'managed-markers-invalid', current, next: block };
+  const next = mergeManagedBlock(current, block);
+  if (next === current) return null;
+  if (lstatOrNull(`${dest}.bak`)) return { ...base, kind: 'skip', reason: 'backup-exists', current, next };
+  return { ...base, kind: 'replace', current, next };
 }
 
 /** Reason the target must not be written (symlink in the path below root, or escape), else null. */

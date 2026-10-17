@@ -153,7 +153,7 @@ clc-brain doctor ../acme-brain
 
 You should see **0 errors**. If something is missing, `clc-brain doctor ../acme-brain --fix` repairs it without touching your documents.
 
-**Already have a brain?** Run `clc-brain upgrade ../acme-brain` to get the latest commands and skills. Nothing is changed until you confirm.
+**Already have a brain?** Just tell your assistant "Update my brain": your assistant can update your brain for you and asks before changing anything. You can also run `clc-brain upgrade ../acme-brain` yourself.
 
 <sub>Once Copilot Brain is published on npm, step 1 becomes a single command: `npm install -g @clc/copilot-brain`.</sub>
 

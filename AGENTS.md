@@ -5,9 +5,10 @@
 
 ---
 
+<!-- copilot-brain:managed:start -->
 ## 0. How to Work With the People Using This Brain
 
-> These rules come first. They override any older tone, citation, or slash-command note elsewhere in this file.
+> These rules come first and are refreshed by `clc-brain upgrade` (only the text between the managed markers; edit outside them). They override any older tone, citation, or slash-command note elsewhere in this file.
 
 Most people who use this brain are not technical. They write in plain English or Spanish and never need a special command. Everything below works in every tool (Claude Code, Google Antigravity, Cursor, Windsurf, Gemini CLI, Claude Desktop, ChatGPT, Gemini): no command needed.
 
@@ -39,6 +40,7 @@ Most people who use this brain are not technical. They write in plain English or
 If `clc-brain` is not installed, use `npx -y @clc/copilot-brain` with the same arguments. If you cannot run commands (for example in a web chat), tell the person the one command to type in a terminal opened in this folder.
 
 Slash commands (`/call`, `/retro`, `/flow`, ...) are optional shortcuts that work only in Claude Code; MCP apps such as Claude Desktop offer the same flows as prompts. Never tell people they need a slash command.
+<!-- copilot-brain:managed:end -->
 
 ---
 

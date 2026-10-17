@@ -83,3 +83,34 @@ test('sales system map starts in plain language and moves the stage table to an 
   assert.doesNotMatch(people, /\bgates?\b|\bplays?\b|stages:|`|\|/i, 'plain section must avoid jargon, code and tables');
   assert.ok(text.indexOf('| 1. ') > ai, 'stage table lives in the AI section');
 });
+
+test('web chatbot integrations know the sales system map and call guides, and use current call-log fields', () => {
+  for (const name of ['CHATGPT_CUSTOM_GPT.md', 'GEMINI_GEM.md', 'CLAUDE_PROJECT.md']) {
+    const text = read(`skills/integrations/${name}`);
+    assert.equal(text, read(`templates/base/skills/integrations/${name}`), `${name} mirror`);
+    assert.match(text, /sales system map/i, name);
+    assert.match(text, /call guides?/i, name);
+    assert.ok(text.includes('sales/system.md') && text.includes('sales/plays/'), `${name} lists the knowledge files`);
+    for (const key of ['prospect_company', 'deal_stage', 'play', 'branch', 'gate_advanced']) {
+      assert.match(text, new RegExp(`^${key}: `, 'm'), `${name} log format needs ${key}`);
+    }
+    assert.doesNotMatch(text, /^(prospect|stage): /m, `${name} must not use legacy keys`);
+    assert.match(text, /plain, friendly, no jargon/i, name);
+    assert.match(text, /ONE plain sentence/, name);
+    assert.match(text, /¿Lo guardo\?/, name);
+  }
+});
+
+test('agent skills carry a name/description header and sales-assist knows call guides and plain language', () => {
+  for (const dir of ['.agents/skills', 'templates/base/.agents/skills']) {
+    for (const name of ['brain-search.md', 'sales-assist.md', 'sop-auditor.md']) {
+      const text = read(`${dir}/${name}`);
+      assert.match(text, new RegExp(`^---\\nname: ${name.replace(/\.md$/, '')}\\ndescription: .{20,}\\n---\\n`), `${dir}/${name} header`);
+      assert.match(text, /review|confirm|checkpoint/i, `${dir}/${name} keeps a review checkpoint`);
+    }
+    const sales = read(`${dir}/sales-assist.md`);
+    assert.ok(sales.includes('sales/system.md') && sales.includes('sales/plays/'), `${dir}/sales-assist.md must use the call guides`);
+    assert.match(sales, /plain/i);
+    assert.match(sales, /never show internal IDs/i);
+  }
+});

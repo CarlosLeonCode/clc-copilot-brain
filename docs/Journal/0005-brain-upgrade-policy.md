@@ -22,3 +22,4 @@ Brains are scaffolded from templates and then edited by their owners. When the p
 - Upgrades are repeatable: an up-to-date brain yields an empty plan ("nothing to do").
 - Local edits to template-owned files survive as `.bak` but need manual re-merging; once a `.bak` exists, further changes to that file are skipped until it is removed.
 - Covered by `tests/core/` (planner) and `tests/upgrade-cli.test.js` (CLI).
+- Addendum (2026-10-17): `AGENTS.md` is no longer fully unmanaged; its marked assistant-rules block is refreshed by `upgrade` (see ADR 0006).

@@ -57,3 +57,10 @@ test('no AGENTS.md claims slash commands work outside Claude Code', () => {
     }
   }
 });
+
+test('root and template AGENTS.md share the same managed assistant-rules block', () => {
+  const blockOf = (text) => text.slice(text.indexOf('<!-- copilot-brain:managed:start -->'), text.indexOf('<!-- copilot-brain:managed:end -->'));
+  const [root, base] = FILES.map(read);
+  assert.ok(blockOf(base).length > 200, 'template must wrap the rules in managed markers');
+  assert.equal(blockOf(root), blockOf(base));
+});

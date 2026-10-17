@@ -153,7 +153,7 @@ clc-brain doctor ../acme-brain
 
 Deberías ver **0 errores**. Si falta algo, `clc-brain doctor ../acme-brain --fix` lo repara sin tocar tus documentos.
 
-**¿Ya tienes un cerebro?** Ejecuta `clc-brain upgrade ../acme-brain` para recibir los últimos comandos y skills. No se cambia nada hasta que confirmes.
+**¿Ya tienes un cerebro?** Dile a tu asistente "Actualiza mi cerebro": tu asistente puede actualizarlo por ti y te pregunta antes de cambiar algo. También puedes ejecutar `clc-brain upgrade ../acme-brain` tú mismo.
 
 <sub>Cuando Copilot Brain se publique en npm, el paso 1 será un solo comando: `npm install -g @clc/copilot-brain`.</sub>
 

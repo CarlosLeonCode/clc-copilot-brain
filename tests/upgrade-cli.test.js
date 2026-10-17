@@ -107,3 +107,25 @@ test('upgrade without a folder argument targets the current directory (S17.2)', 
     assert.equal(fs.readFileSync(`${file}.bak`, 'utf8'), '# my edit\n');
   });
 });
+
+test('upgrade --yes restores the AGENTS.md assistant rules block, keeps a .bak and the CLAUDE.md symlink', () => {
+  withBrain((brain) => {
+    const agents = path.join(brain, 'AGENTS.md');
+    const fresh = fs.readFileSync(agents, 'utf8');
+    const start = fresh.indexOf('<!-- copilot-brain:managed:start -->');
+    const end = fresh.indexOf('<!-- copilot-brain:managed:end -->') + '<!-- copilot-brain:managed:end -->'.length;
+    const edited = `${fresh.slice(0, start)}${fresh.slice(end)}\nMy own note.\n`;
+    fs.writeFileSync(agents, edited);
+    const preview = cli('upgrade', brain, '--dry-run');
+    assert.match(preview.stdout, /assistant rules/i);
+    assert.match(preview.stdout, /AGENTS\.md/);
+    const res = cli('upgrade', brain, '--yes');
+    assert.equal(res.status, 0);
+    const now = fs.readFileSync(agents, 'utf8');
+    assert.ok(now.includes(fresh.slice(start, end)), 'managed block restored');
+    assert.match(now, /My own note\./, 'user edits outside the block survive');
+    assert.equal(fs.readFileSync(`${agents}.bak`, 'utf8'), edited);
+    assert.ok(fs.lstatSync(path.join(brain, 'CLAUDE.md')).isSymbolicLink());
+    assert.equal(fs.readlinkSync(path.join(brain, 'CLAUDE.md')), 'AGENTS.md');
+  });
+});

@@ -69,7 +69,7 @@ src/
 │   ├── scaffold.js        initBrain, setupIdeAdapters (backs up regular files), restoreRootSkills
 │   ├── areas.js           PRESET_AREAS, area id rule ^[a-z0-9_-]+$, add/list areas, resolveAllowedAreas
 │   ├── doctor.js          runDoctor (structured results), repairBrain (non-destructive)
-│   ├── upgrade.js         planUpgrade/applyUpgrade (allowlist: replace-with-backup, add-if-missing; ADR 0005), text-diff.js
+│   ├── upgrade.js         planUpgrade/applyUpgrade (allowlist: replace-with-backup, add-if-missing, AGENTS.md managed block; ADR 0005, 0006), text-diff.js
 │   ├── demo.js            demo assets derived from templates/areas, cleanDemo
 │   ├── calls.js           captureCall (strict date, containment, quoted frontmatter, no overwrite)
 │   ├── objections.js      captureObjection (schema-validated)
@@ -198,6 +198,26 @@ To prevent rule drift across disparate AI coding assistants, `copilot-brain` imp
 - On systems with restricted symlink privileges (e.g. non-developer Windows mode), `src/core/scaffold.js` falls back to lightweight redirect stubs.
 - An existing regular adapter file is never deleted: `init` moves it to `<name>.bak` (or leaves it untouched if that backup exists) and reports it; `doctor --fix` leaves regular files alone.
 - `tools/check_symlinks.js` validates that all mirrors resolve to existing files without dangling targets.
+
+### Managed assistant-rules block (ADR 0006)
+
+`AGENTS.md` section 0 (plain-language rules and the "what people ask -> what you do" table) sits between two markers:
+
+```
+<!-- copilot-brain:managed:start -->
+...
+<!-- copilot-brain:managed:end -->
+```
+
+| Case in the brain | What `clc-brain upgrade` does |
+| :--- | :--- |
+| Markers present, block differs | Replaces only the text between the markers |
+| No markers | Inserts the block before the first `## ` heading, or appends it |
+| Block already current | Nothing (not in the plan) |
+| `AGENTS.md` is a symlink or not a file, has init placeholders, has unpaired or reversed markers, or `AGENTS.md.bak` exists | Skips and reports the reason |
+| No `AGENTS.md` | Nothing (`doctor` reports it) |
+
+The real `AGENTS.md` is rewritten in place with a `.bak` copy, so the adapter symlinks keep pointing at it. Text outside the markers is never touched: edit there, not inside the block. Keep the block free of init placeholders and identical in the root and template `AGENTS.md` (`tests/agents-intents.test.js`).
 
 ---
 

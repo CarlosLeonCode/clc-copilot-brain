@@ -144,3 +144,80 @@ test('real templates: no managed template has placeholders and a fresh sales bra
   const plan = planUpgrade(root, { templatesBaseDir: TEMPLATES_BASE_DIR, templatesAreasDir: TEMPLATES_AREAS_DIR });
   assert.deepEqual(plan.actions, []);
 }));
+
+// --- AGENTS.md managed block: only the delimited assistant rules are refreshed ---
+const START = '<!-- copilot-brain:managed:start -->';
+const END = '<!-- copilot-brain:managed:end -->';
+const block = (body) => `${START}\n${body}\n${END}`;
+const TPL_AGENTS = `# Guide\n\n${block('## 0. Rules\nrules v2')}\n\n---\n\n## 1. Identity\nfor {{COMPANY_NAME}}\n`;
+const agentsSetup = (tmp, brainAgents, extra = {}) =>
+  setup(tmp, { base: { 'AGENTS.md': TPL_AGENTS }, brain: { '.claude/commands/call.md': 'call v2\n', 'skills/skill_x.md': 'x v2\n', 'AGENTS.md': brainAgents, ...extra } });
+
+test('AGENTS.md: replaces only the managed block and keeps user edits elsewhere', () => withTmp((tmp) => {
+  const mine = `# My guide\n\nmy intro\n\n${block('rules v1')}\n\n## 1. Identity\nAcme, edited by me\n`;
+  const { root, opts } = agentsSetup(tmp, mine);
+  const a = find(planUpgrade(root, opts), 'AGENTS.md');
+  assert.equal(a.kind, 'replace');
+  assert.equal(a.policy, 'managed-block');
+  assert.equal(a.current, mine);
+  assert.equal(a.next, `# My guide\n\nmy intro\n\n${block('## 0. Rules\nrules v2')}\n\n## 1. Identity\nAcme, edited by me\n`);
+}));
+
+test('AGENTS.md without markers gets the block before the first ## heading, or at the end', () => withTmp(async (tmp) => {
+  const { root, opts } = agentsSetup(tmp, '# Old guide\nintro\n\n## 1. Identity\nAcme\n');
+  assert.equal(find(planUpgrade(root, opts), 'AGENTS.md').next, `# Old guide\nintro\n\n${block('## 0. Rules\nrules v2')}\n\n---\n\n## 1. Identity\nAcme\n`);
+  const { root: r2, opts: o2 } = agentsSetup(path.join(tmp, 'two'), '# No headings\nAcme');
+  assert.equal(find(planUpgrade(r2, o2), 'AGENTS.md').next, `# No headings\nAcme\n\n${block('## 0. Rules\nrules v2')}\n`);
+}));
+
+test('AGENTS.md apply writes the real file with a .bak and leaves adapter symlinks intact', () => withTmp((tmp) => {
+  const mine = `# Mine\n\n${block('rules v1')}\n`;
+  const { root, opts } = agentsSetup(tmp, mine);
+  fs.symlinkSync('AGENTS.md', path.join(root, 'CLAUDE.md'));
+  const res = applyUpgrade(root, planUpgrade(root, opts));
+  assert.ok(res.replaced.some((r) => r.path === 'AGENTS.md' && r.backup === 'AGENTS.md.bak'));
+  assert.equal(fs.readFileSync(path.join(root, 'AGENTS.md.bak'), 'utf8'), mine);
+  assert.match(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8'), /rules v2/);
+  assert.ok(fs.lstatSync(path.join(root, 'CLAUDE.md')).isSymbolicLink());
+  assert.equal(fs.readlinkSync(path.join(root, 'CLAUDE.md')), 'AGENTS.md');
+  assert.equal(find(planUpgrade(root, opts), 'AGENTS.md'), undefined, 'idempotent after apply');
+}));
+
+test('AGENTS.md is skipped when it is a symlink, has init placeholders, has a .bak, or has broken markers', () => withTmp((tmp) => {
+  const reason = (dir, agents, extra) => {
+    const { root, opts } = agentsSetup(path.join(tmp, dir), agents, extra);
+    return find(planUpgrade(root, opts), 'AGENTS.md');
+  };
+  assert.equal(reason('ph', '# {{COMPANY_NAME}}\n').reason, 'placeholder');
+  assert.equal(reason('bak', '# old\n', { 'AGENTS.md.bak': 'keep' }).reason, 'backup-exists');
+  assert.equal(reason('broken', `# x\n${START}\nno end\n`).reason, 'managed-markers-invalid');
+  assert.equal(reason('reversed', `# x\n${END}\n${START}\n`).reason, 'managed-markers-invalid');
+  const { root, opts } = agentsSetup(path.join(tmp, 'link'), 'unused');
+  fs.rmSync(path.join(root, 'AGENTS.md'));
+  fs.writeFileSync(path.join(root, 'REAL.md'), '# real\n');
+  fs.symlinkSync('REAL.md', path.join(root, 'AGENTS.md'));
+  assert.equal(find(planUpgrade(root, opts), 'AGENTS.md').reason, 'symlink');
+}));
+
+test('AGENTS.md is not planned when the template has no managed block or the brain has no AGENTS.md', () => withTmp((tmp) => {
+  const { root, opts } = agentsSetup(tmp, 'unused');
+  fs.rmSync(path.join(root, 'AGENTS.md'));
+  assert.equal(find(planUpgrade(root, opts), 'AGENTS.md'), undefined);
+}));
+
+test('real templates: the AGENTS.md managed block has no placeholders and is restored after removal', () => withTmp((tmp) => {
+  const root = path.join(tmp, 'fresh');
+  initBrain(root, { areas: ['sales'] });
+  const agentsPath = path.join(root, 'AGENTS.md');
+  const fresh = fs.readFileSync(agentsPath, 'utf8');
+  assert.ok(fresh.includes(START) && fresh.includes(END), 'template ships the managed markers');
+  fs.writeFileSync(agentsPath, fresh.slice(0, fresh.indexOf(START)) + fresh.slice(fresh.indexOf(END) + END.length));
+  const realOpts = { templatesBaseDir: TEMPLATES_BASE_DIR, templatesAreasDir: TEMPLATES_AREAS_DIR };
+  const plan = planUpgrade(root, realOpts);
+  assert.deepEqual(plan.actions.map((a) => [a.path, a.kind]), [['AGENTS.md', 'replace']]);
+  applyUpgrade(root, plan);
+  const freshBlock = fresh.slice(fresh.indexOf(START), fresh.indexOf(END) + END.length);
+  assert.ok(fs.readFileSync(agentsPath, 'utf8').includes(freshBlock), 'managed block restored');
+  assert.ok(fs.existsSync(`${agentsPath}.bak`));
+  assert.deepEqual(planUpgrade(root, realOpts).actions, []);
+}));

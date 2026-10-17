@@ -1,3 +1,8 @@
+---
+name: sop-auditor
+description: Review a Standard Operating Procedure against schemas/sop.schema.json for missing fields, unclear roles, and missing fallbacks. Use when asked to audit or check an SOP.
+---
+
 # Skill: Standard Operating Procedure (SOP) Auditor
 
 ## Purpose
@@ -17,3 +22,6 @@ Validates operational SOP documents against `schemas/sop.schema.json` to ensure 
    - Is there a clear verification criteria to confirm the step succeeded?
    - Is there an escalation/fallback action defined for failure?
 4. Report clear pass/fail status and output actionable remediation diffs.
+
+## Human-in-the-Loop (HITL) Checkpoint
+- Present the audit to the SOP owner for review and confirmation before changing the SOP.
