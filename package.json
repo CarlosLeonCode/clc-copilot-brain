@@ -19,15 +19,15 @@
     "windsurf",
     "claude"
   ],
-  "author": "Carlos Leon Code Pro",
+  "author": "Carlos Leon Code",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/carlosleoncodepro/clc-copilot-brain.git"
+    "url": "https://github.com/carlosleoncode/clc-copilot-brain.git"
   },
-  "homepage": "https://github.com/carlosleoncodepro/clc-copilot-brain#readme",
+  "homepage": "https://github.com/carlosleoncode/clc-copilot-brain#readme",
   "bugs": {
-    "url": "https://github.com/carlosleoncodepro/clc-copilot-brain/issues"
+    "url": "https://github.com/carlosleoncode/clc-copilot-brain/issues"
   },
   "engines": {
     "node": ">=22"

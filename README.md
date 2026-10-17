@@ -118,7 +118,7 @@ node -v
 **1. Download Copilot Brain and install it**
 
 ```bash
-git clone https://github.com/carlosleoncodepro/clc-copilot-brain.git
+git clone https://github.com/carlosleoncode/clc-copilot-brain.git
 cd clc-copilot-brain
 npm install
 npm link
@@ -275,5 +275,5 @@ For developers: [TECHNICAL.md](./TECHNICAL.md) covers the architecture and valid
 
 <p align="center">
   Made with ❤️ for teams who want AI that tells the truth.<br>
-  <sub>MIT License © <a href="https://github.com/carlosleoncodepro">Carlos Leon Code Pro</a> · <a href="https://opensource.org/licenses/MIT">License</a></sub>
+  <sub>MIT License © <a href="https://github.com/carlosleoncode">Carlos Leon Code</a> · <a href="https://opensource.org/licenses/MIT">License</a></sub>
 </p>
