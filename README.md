@@ -100,107 +100,175 @@ flowchart LR
 
 ---
 
-<details>
-<summary>🛠️ For the person setting it up: installation</summary>
+## 🚀 Get started
 
-Requires **Node.js 22+**. The npm package is not published yet, so install from source:
+Setup is done **once**, by someone on your team who is comfortable typing a few commands. It takes about 10 minutes.
+
+<details>
+<summary><strong>Step-by-step installation guide</strong></summary>
+
+<br>
+
+**Before you start:** you need [Node.js](https://nodejs.org/) 22 or newer. Check it with:
+
+```bash
+node -v
+```
+
+**1. Download Copilot Brain and install it**
 
 ```bash
 git clone https://github.com/carlosleoncodepro/clc-copilot-brain.git
 cd clc-copilot-brain
 npm install
-npm link                      # makes `clc-brain` available on your PATH
-clc-brain init ../acme-brain  # clean brain by default
+npm link
 ```
 
-Open `../acme-brain` in Claude Code or Cursor and run `/brain:onboarding`. It interviews you one question at a time, fills `org-kernel.json` and `company-profile.md`, then drafts the first asset per active area (sales objection + battlecard, an operations SOP, `marketing/messaging/core-positioning.md`, `product/roadmap/q3-q4-product-themes.md`, `hr_people/handbook/company-handbook.md`, `finance_legal/pricing/pricing-tiers-and-discount-matrix.md`). Each one is saved only after approval and validated with `clc-brain doctor`.
+`npm link` makes the `clc-brain` command available anywhere on your computer.
 
-- Sample data to explore: `clc-brain init ../demo-brain --demo`; remove it later with `clc-brain clean-demo ../demo-brain`.
-- Once published, `npm install -g @clc/copilot-brain` will replace the clone + link steps.
+**2. Create your company's brain**
+
+```bash
+clc-brain init ../acme-brain
+```
+
+Answer a few questions (company name, industry, areas). You'll see **"Second Brain initialized successfully!"** followed by your next steps.
+
+> [!TIP]
+> Want to look around first? Run `clc-brain init ../demo-brain --demo` to get a brain filled with sample documents. Remove them later with `clc-brain clean-demo ../demo-brain`.
+
+**3. Open it with your AI assistant**
+
+Open the `acme-brain` folder in Claude Code, Cursor, Windsurf or Gemini CLI. No extra setup is needed. Using another app? See [Connect your AI tool](#-connect-your-ai-tool).
+
+**4. Run the guided interview**
+
+Type `/brain:onboarding`. The assistant asks one question at a time, fills in your company profile and drafts a first document for each area. You approve each draft before it is saved.
+
+**5. Check everything is healthy**
+
+```bash
+clc-brain doctor ../acme-brain
+```
+
+You should see **0 errors**. If something is missing, `clc-brain doctor ../acme-brain --fix` repairs it without touching your documents.
+
+<sub>Once Copilot Brain is published on npm, step 1 becomes a single command: `npm install -g @clc/copilot-brain`.</sub>
+
+</details>
+
+## 🔌 Connect your AI tool
+
+Open only the one you use.
+
+<details>
+<summary><strong>Claude Code · Cursor · Windsurf · Gemini CLI</strong></summary>
+
+<br>
+
+Open your brain folder. That's it: the rules in `AGENTS.md` load automatically through `CLAUDE.md`, `GEMINI.md`, `.cursorrules` and `.windsurfrules`.
+
 </details>
 
 <details>
-<summary>🛠️ For the person setting it up: connecting AI apps</summary>
+<summary><strong>Claude Desktop and other MCP apps</strong></summary>
 
-- **Claude Code, Cursor, Windsurf, Gemini CLI**: open the brain folder; no setup. `AGENTS.md` holds the rules and `CLAUDE.md`, `GEMINI.md`, `.cursorrules` and `.windsurfrules` point to it.
-- **Claude Desktop, Cursor, Zed and other MCP clients**: add this to the app's MCP config (e.g. `claude_desktop_config.json`) with the absolute path of your brain:
+<br>
 
-  ```json
-  {
-    "mcpServers": {
-      "copilot-brain": { "command": "clc-brain", "args": ["mcp", "/path/to/acme-brain"] }
-    }
+Add this to the app's MCP settings (in Claude Desktop: `claude_desktop_config.json`), using the full path to your brain. `clc-brain init` prints this snippet with your path already filled in.
+
+```json
+{
+  "mcpServers": {
+    "acme-brain": { "command": "clc-brain", "args": ["mcp", "/full/path/to/acme-brain"] }
   }
-  ```
+}
+```
 
-  It exposes the tools `brain_query`, `brain_capture_call`, `brain_capture_objection` and `brain_doctor`, plus `call`, `objection`, `battlecard`, `flow` and `retro` as MCP prompts.
-- **ChatGPT, Gemini Gems, Claude Projects**: follow the copy-paste guides in the brain's `skills/integrations/` (`CHATGPT_CUSTOM_GPT.md`, `GEMINI_GEM.md`, `CLAUDE_PROJECT.md`).
+Restart the app. Your assistant can now search the brain, save call notes and objections, and run health checks.
+
 </details>
 
 <details>
-<summary>🛠️ For the person setting it up: asking questions and sales shortcuts</summary>
+<summary><strong>ChatGPT · Gemini Gems · Claude Projects</strong></summary>
 
-**Any area: plain language.** The assistant searches the brain following `.agents/skills/brain-search.md` (over MCP, the `brain_query` tool) and cites the file. `/brain` opens the dashboard.
+<br>
 
-**Sales shortcuts.** Today the dedicated slash commands are sales-focused:
+Follow the copy-paste guide inside your brain:
+
+| App | Guide |
+| :--- | :--- |
+| ChatGPT (custom GPT) | `skills/integrations/CHATGPT_CUSTOM_GPT.md` |
+| Gemini Gems | `skills/integrations/GEMINI_GEM.md` |
+| Claude Projects | `skills/integrations/CLAUDE_PROJECT.md` |
+
+</details>
+
+## 📥 Bring your existing documents
+
+- **Text** from Notion, Google Docs, handbooks or CRM notes: paste it into your assistant and say *"Save this in our brain under operations"* (or any area).
+- **Meeting notes**: paste the transcript and type `/call`.
+- **Flowcharts** from Miro, Lucidchart or a whiteboard photo: drop the image in the chat and type `/flow`.
+
+## 📚 Reference
+
+<details>
+<summary><strong>Shortcuts inside your AI assistant</strong></summary>
+
+<br>
+
+For any area, just ask in plain language. These shortcuts speed up common tasks:
+
+| Shortcut | What it does |
+| :--- | :--- |
+| `/brain` | Overview of your brain and what you can do. |
+| `/brain:onboarding` | Guided interview that sets up your brain. |
+| `/objection` | Approved reply to a buyer objection, or save a new one. |
+| `/battlecard` | How you compare against a competitor. |
+| `/call` | Analyze a call transcript and save it. |
+| `/flow` | Sales stage rules, or turn a flowchart image into a diagram. |
+| `/retro` | Monthly review of calls and won/lost deals. |
+| `/brain:add-area` | Add a new area or document. |
+| `/brain:doctor` | Health check from inside the chat. |
+
+</details>
+
+<details>
+<summary><strong>Terminal commands</strong></summary>
+
+<br>
 
 | Command | What it does |
 | :--- | :--- |
-| `/objection` | Get the approved reply to a buyer objection, or save a new one. |
-| `/battlecard` | Compare against a competitor and get your silver bullets. |
-| `/call` | Paste a call transcript; it extracts signals and saves it to `sales/calls/YYYY-MM/`. |
-| `/flow` | Check pipeline stage rules, or turn a flowchart screenshot into a Mermaid diagram. |
-| `/retro` | Monthly retrospective across calls and win/loss reviews (e.g. `/retro 2026-10`). |
+| `clc-brain init [folder]` | Create a brain (clean by default, `--demo` for samples). |
+| `clc-brain doctor [folder]` | Check health; add `--fix` to repair. |
+| `clc-brain add-area [folder]` | Add an area: `--preset operations` or `--custom legal_ops`. |
+| `clc-brain list-areas [folder]` | See installed and available areas. |
+| `clc-brain clean-demo [folder]` | Remove sample documents, keep yours. |
+| `clc-brain mcp [folder]` | Connect MCP apps (used by the config above). |
 
-Also available: `/brain:onboarding`, `/brain:sales`, `/brain:doctor`, `/brain:add-area`. Definitions live in `.claude/commands/`.
+`clc-brain --help` lists every option.
+
 </details>
 
 <details>
-<summary>🛠️ For the person setting it up: folder guide</summary>
+<summary><strong>What's inside a brain</strong></summary>
 
-| Path | What goes inside |
+<br>
+
+| Folder | What goes inside |
 | :--- | :--- |
-| `company-profile.md`, `org-kernel.json` | Who you are, what you sell, active areas, governance owner. |
-| `sales/` | `icps/`, `objections/`, `battlecards/`, `scripts/`, `calls/`, `stages/`, `win-loss/` |
-| `marketing/` | `brand/`, `messaging/`, `content/`, `distribution/` |
-| `product/` | `roadmap/`, `specs/`, `releases/` |
-| `operations/` | `sops/`, `tools/`, `vendors/` |
-| `hr_people/` | `handbook/`, `hiring/`, `onboarding/` |
-| `finance_legal/` | `pricing/`, `compliance/` |
-| `playbooks/` | One operating playbook per area. |
-| `schemas/` | JSON Schemas for the kernel, battlecards, objections and SOPs (checked by `clc-brain doctor`). |
+| `company-profile.md` | Who you are and what you sell. |
+| `sales/` | Customer profiles, objections, competitor comparisons, scripts, calls, pipeline stages, won/lost reviews. |
+| `marketing/` | Brand, messaging, content calendar, distribution. |
+| `product/` | Roadmap, specs, release notes. |
+| `operations/` | Step-by-step procedures, tools, vendors. |
+| `hr_people/` | Handbook, hiring scorecards, onboarding plans. |
+| `finance_legal/` | Pricing, discount rules, contract templates. |
+| `playbooks/` | One operating guide per area. |
 
-Add a custom area with `clc-brain add-area --custom <id>` or `/brain:add-area`.
-</details>
+For developers: [TECHNICAL.md](./TECHNICAL.md) covers the architecture and validation rules, and [docs/Journal/](./docs/Journal/) records the design decisions.
 
-<details>
-<summary>🛠️ For the person setting it up: terminal commands</summary>
-
-| Command | What it does |
-| :--- | :--- |
-| `clc-brain init [dir]` | Create a brain. Clean by default (also with `--yes`); `--demo` adds samples. |
-| `clc-brain doctor [dir] [--fix]` | Validate schemas and links; `--fix` applies non-destructive repairs. |
-| `clc-brain add-area [dir] --preset <id>` | Add a preset area later (`--custom <id>` for your own). |
-| `clc-brain list-areas [dir]` | Show installed vs available areas. |
-| `clc-brain clean-demo [dir]` | Remove demo samples, keep your real data. |
-| `clc-brain mcp [dir]` | Start the MCP server over stdio. |
-
-Run `clc-brain --help` for every flag.
-</details>
-
-<details>
-<summary>🛠️ For the person setting it up: migrating existing documents</summary>
-
-- **Text (Notion, Google Docs, handbooks, CRM notes)**: paste it into your assistant and say *"Save this into our brain under operations/sops"* (or any area), or use `/call` for meeting notes. You can also drop `.md` files into the matching folder.
-- **Flowcharts (Miro, Lucidchart, whiteboard photos)**: drop the screenshot into the chat and run `/flow` to convert it into a Mermaid diagram in `sales/stages/pipeline-stages.md`.
-</details>
-
-<details>
-<summary>🛠️ For the person setting it up: technical docs and license</summary>
-
-- [TECHNICAL.md](./TECHNICAL.md): architecture, schemas, MCP protocol, audit guards.
-- [docs/Journal/](./docs/Journal/): architecture decision records.
-- License: MIT © [Carlos Leon Code Pro](https://github.com/carlosleoncodepro).
 </details>
 
 ---
