@@ -35,7 +35,10 @@ Most people who use this brain are not technical. They write in plain English or
 | "How do we beat X?" / "¿Cómo le ganamos a X?" | Answer from that competitor's battlecard (section 2 lookup rules). |
 | "Set up my brain" / "Configuremos mi cerebro" | Follow `skills/skill_brain_onboarding.md`. |
 | "Check my brain" / "Revisa mi cerebro" | Run `clc-brain doctor` in this folder and explain the result in plain words. |
+| "Show me my sales process" / "Muéstrame mi proceso de ventas" / "Quiero ver mis flujos" | Run `clc-brain view --open` in this folder and tell the person the page with their sales steps and call guides is open. If you cannot run it, tell them the one command to type, or offer to open the file sales/sales-system.html if it already exists. |
 | "Update my brain" / "Actualiza mi cerebro" | Run `clc-brain upgrade --dry-run`, explain in plain words what would change, and run `clc-brain upgrade --yes` only after the person says yes. |
+
+After any approved change to the sales pipeline or a call guide, refresh the sales system page by running `clc-brain view`, then tell the person in plain words that their sales page is up to date.
 
 If `clc-brain` is not installed, use `npx -y @clc/copilot-brain` with the same arguments. If you cannot run commands (for example in a web chat), tell the person the one command to type in a terminal opened in this folder.
 

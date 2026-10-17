@@ -74,12 +74,13 @@ src/
 │   ├── calls.js           captureCall (strict date, containment, quoted frontmatter, no overwrite)
 │   ├── objections.js      captureObjection (schema-validated)
 │   ├── query.js           queryBrain (allowed areas + playbooks)
+│   ├── sales-view.js      buildSalesView/writeSalesView (plain-language HTML page of the sales system)
 │   ├── manifest.js        IDE adapters + commands/skills derived from templates/base
 │   ├── schema-validator.js  ajv Draft 2020-12 (ADR 0002)
 │   └── errors.js, fs-utils.js, package-paths.js
 ├── cli/                   Adapter: argv parsing, @clack/prompts, picocolors, exit codes
 │   ├── main.js, args.js, help.js, prompt.js, render.js
-│   └── commands/          init, add-area, list-areas, doctor, clean-demo, upgrade, mcp
+│   └── commands/          init, add-area, list-areas, doctor, clean-demo, upgrade, view, mcp
 └── mcp/                   Adapter: JSON-RPC 2.0 stdio server + thin tool handlers
     ├── server.js, tools.js, prompts.js
 ```
@@ -87,7 +88,7 @@ src/
 | Directory / File | Layer | Responsibility |
 | :--- | :--- | :--- |
 | `src/core/` | Domain / Use Cases | Pure functions taking explicit inputs (`rootDir`, options) and returning data. Errors are `BrainError` with a stable `code`. |
-| `src/cli/` | Adapter (CLI) | Prompts and rendering; maps `BrainError` to a red message and exit code 1. `doctor` exits 1 when errors remain (after `--fix`, if applied); without a TTY and without `--fix` it never prompts and only prints a `--fix` hint. `upgrade [dir] [--yes] [--dry-run]` previews a plan (adds, diffs, skips); it writes only with `--yes` or an interactive confirmation; a pending plan without a TTY and without `--yes` exits 1, as does `NOT_A_BRAIN`. |
+| `src/cli/` | Adapter (CLI) | Prompts and rendering; maps `BrainError` to a red message and exit code 1. `doctor` exits 1 when errors remain (after `--fix`, if applied); without a TTY and without `--fix` it never prompts and only prints a `--fix` hint. `upgrade [dir] [--yes] [--dry-run]` previews a plan (adds, diffs, skips); it writes only with `--yes` or an interactive confirmation; a pending plan without a TTY and without `--yes` exits 1, as does `NOT_A_BRAIN`. `view [dir] [--open]` writes `sales/sales-system.html` and prints its path; `--open` launches the default browser (`open`, `start`, `xdg-open`) and falls back to a hint on failure. `NOT_A_BRAIN` and `NO_SALES_SYSTEM` exit 1. |
 | `src/mcp/` | Adapter (MCP) | Validates MCP arguments via core and maps `BrainError` to `isError` tool results. |
 | `schemas/` | Core Contracts | JSON Schema definitions (Draft 2020-12) defining valid data shapes for all structured records. |
 | `templates/` | Scaffolding Source | Templates copied during `init` and `add-area`; also the source of truth for expected slash commands, skills, and demo assets. |
@@ -247,6 +248,13 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 - `sales/system.md`: the map from pipeline stage to exit gate to the plays that apply.
 - `sales/plays/<play>.md`: one play per kind of conversation (`cold-call`, `discovery-call`, `demo-call`, `follow-up`). Flat frontmatter (`play`, `stages`, `goal`, `gate_unlocked`, `version`, `status`) is parsed by regex, with no YAML dependency. `stages` is a comma list, so a play can span stages (`stages: 2, 3, 4`). The body holds a Mermaid decision tree, a talk track per branch linking `sales/scripts/`, and a Learnings Log.
 - `/flow` routes conversation trees to `sales/plays/` and macro pipeline changes to `sales/stages/pipeline-stages.md`.
+
+### Sales System Page (`clc-brain view`)
+- `sales/sales-system.html` is a generated, self-contained page for non-technical readers: the plain-language part of `sales/system.md`, the pipeline diagram from `sales/stages/pipeline-stages.md`, and one card per play (title, pipeline steps it is used in, goal, version, decision tree, collapsible talk tracks "What to say", and "What we've learned").
+- Built by `src/core/sales-view.js`. Every file-sourced text is HTML-escaped before a tiny markdown subset (headings, paragraphs, lists, bold) is applied; frontmatter keys, file paths and the AI-only section never reach the page.
+- Diagrams render client-side with Mermaid pinned to `11.4.1` from jsDelivr (`securityLevel: 'strict'`, light/dark theme from `prefers-color-scheme`). Offline, a note says diagrams need an internet connection and the escaped diagram text stays readable.
+- `init` generates it when sales is installed (a failure never breaks init); the assistant refreshes it with `clc-brain view` after any approved pipeline or call-guide change (`/flow`, `/retro`, AGENTS.md rules).
+- The page is a generated artifact: `upgrade` does not manage it, `clean-demo` never removes it, and `doctor` and `brain_query` only read `.md`/`.json`.
 
 ### 4. Declarative Ecosystem Tools Manifest
 Declared inside `org-kernel.json` under `ecosystemTools`:

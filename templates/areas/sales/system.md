@@ -18,6 +18,8 @@ How to use it day to day:
 
 You never need to edit this page by hand: ask your assistant to change a step or improve a guide.
 
+Want to see it? Ask your assistant: "Show me my sales process".
+
 ---
 
 ## For your AI assistant

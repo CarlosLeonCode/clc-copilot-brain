@@ -24,4 +24,7 @@ You are invoking the **Sales Flow & Pipeline Architect**.
 4. **If No Specific Request Was Provided**:
    - Ask, in the user's language:
      > "Do you want to see how your sales process works, improve a call guide, or turn a drawing or photo of your process into a guide?"
-   - If they want to see how it works, explain the steps of their sales process in plain words (a short numbered list), based on `sales/system.md`.
+   - If they want to see how it works, explain the steps of their sales process in plain words (a short numbered list), based on `sales/system.md`, and offer to open their sales system page (`clc-brain view --open`).
+
+5. **After Saving**:
+   - Refresh the sales system page by running `clc-brain view` in this folder (if you cannot run commands, skip this silently), then tell the person in plain words that their sales page is up to date and offer to open it ("Want to see it?" / "¿Quieres verlo?"). Open it with `clc-brain view --open` only if they say yes.

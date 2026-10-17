@@ -207,3 +207,29 @@ test('view outside a brain exits 1', () => {
     fs.rmSync(empty, { recursive: true, force: true });
   }
 });
+
+test('init with sales generates the sales system page and mentions it in plain words', () => {
+  const outer = sandbox();
+  try {
+    const brain = path.join(outer, 'brain');
+    const { stdout, status } = cli('init', brain, '--yes', '--areas', 'sales');
+    assert.equal(status, 0);
+    assert.ok(fs.existsSync(path.join(brain, 'sales', 'sales-system.html')), 'init must generate sales/sales-system.html');
+    assert.match(stdout, /Your sales system page: sales\/sales-system\.html/);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test('init without sales does not generate or mention the sales system page', () => {
+  const outer = sandbox();
+  try {
+    const brain = path.join(outer, 'brain');
+    const { stdout, status } = cli('init', brain, '--yes', '--areas', 'operations');
+    assert.equal(status, 0);
+    assert.equal(fs.existsSync(path.join(brain, 'sales', 'sales-system.html')), false);
+    assert.doesNotMatch(stdout, /sales system page/i);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});

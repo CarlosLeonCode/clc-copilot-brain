@@ -4,6 +4,7 @@ import path from 'node:path';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { PRESET_AREAS, PRESET_AREA_IDS } from '../../core/areas.js';
+import { writeSalesView } from '../../core/sales-view.js';
 import { INIT_DEFAULTS, initBrain } from '../../core/scaffold.js';
 import { ask } from '../prompt.js';
 import { reportAdapterBackups } from '../render.js';
@@ -73,13 +74,24 @@ export async function runInit(targetDir, options) {
   reportAdapterBackups(result.adapters);
 
   const absDir = path.resolve(targetDir);
-  p.note(renderNextSteps({ absDir, areas, demo }), 'Next steps');
+  const salesPage = areas.includes('sales') && tryWriteSalesView(absDir);
+  p.note(renderNextSteps({ absDir, areas, demo, salesPage }), 'Next steps');
   // Printed outside the note box so the JSON stays copy-pasteable (the box wraps long lines).
   console.log(`${pc.bold('Using Claude Desktop or another MCP client?')} Add this to its config:\n`);
   console.log(JSON.stringify({ mcpServers: { [path.basename(absDir)]: { command: 'clc-brain', args: ['mcp', absDir] } } }, null, 2));
   console.log(`\nWeb chatbots (ChatGPT, Gemini): see ${pc.cyan('skills/integrations/')}. Health check: ${pc.cyan('clc-brain doctor')}.\n`);
   p.outro(pc.bold(pc.green(`Welcome to your new Second Brain, ${companyName}! 🚀`)));
   return 0;
+}
+
+/** Generate the sales system page; a failure here must never break init. */
+function tryWriteSalesView(absDir) {
+  try {
+    writeSalesView(absDir);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // One example question per preset area, answered from that area's files once onboarding seeds them.
@@ -94,7 +106,7 @@ const AREA_EXAMPLES = Object.freeze({
 const MAX_EXAMPLES = 3;
 
 /** The guided path from an empty brain to a first grounded answer, tailored to the installed areas. */
-function renderNextSteps({ absDir, areas, demo }) {
+function renderNextSteps({ absDir, areas, demo, salesPage }) {
   const examples = areas.filter((a) => AREA_EXAMPLES[a]).slice(0, MAX_EXAMPLES).map((a) => `   • ${pc.bold(AREA_EXAMPLES[a])}`);
   const steps = [
     `1. Open this folder in your AI tool (Claude Code, Antigravity,\n   Cursor, Windsurf or Gemini CLI):\n   ${pc.cyan(absDir)}`,
@@ -103,6 +115,7 @@ function renderNextSteps({ absDir, areas, demo }) {
       ? `3. Then just ask in plain words, for example:\n${examples.join('\n')}`
       : '3. Then just ask your assistant about your company in plain words.'
   ];
+  if (salesPage) steps.push(`\nYour sales system page: ${pc.cyan('sales/sales-system.html')}\n(open it in your browser to see your sales steps and call guides).`);
   if (demo) steps.push(`\nDemo samples installed. Remove them with ${pc.cyan('clc-brain clean-demo')}.`);
   return steps.join('\n');
 }
