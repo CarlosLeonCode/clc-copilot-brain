@@ -6,6 +6,8 @@ import path from 'node:path';
 import { BrainError } from './errors.js';
 import { parseFrontmatter } from './plays.js';
 import { escapeHtml } from './html-escape.js';
+import { getBrainLanguage } from './brain-language.js';
+import { DEFAULT_LANGUAGE, t } from './i18n.js';
 import { plainSystemSection, section, stageNames } from './sales-stages.js';
 import { loadSalesReport } from './sales-records.js';
 import { DASHBOARD_CSS, renderDashboard } from './sales-dashboard.js';
@@ -13,7 +15,7 @@ import { FLOWCHART_CSS, layoutFlowchart, parseFlowchart, renderFlowchartSvg } fr
 
 export const SALES_VIEW_FILE = 'sales-system.html';
 export const SALES_PREVIEW_FILE = 'sales-system-preview.html';
-export const DRAFT_BADGE = 'Draft — not saved yet';
+export const DRAFT_BADGE = t(DEFAULT_LANGUAGE, 'view.draftBadge');
 
 const MERMAID_FENCE = /```mermaid\r?\n([\s\S]*?)```/;
 const FRONTMATTER_BLOCK = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
@@ -105,7 +107,7 @@ function humanize(id) {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-function parsePlay(fileName, text, names, { draft = false } = {}) {
+function parsePlay(fileName, text, names, { draft = false, lang = DEFAULT_LANGUAGE } = {}) {
   const fm = parseFrontmatter(text) || {};
   const fromName = path.basename(fileName).replace(/\.md$/, '');
   const id = draft && typeof fm.play === 'string' && fm.play.trim() ? fm.play.trim() : fromName;
@@ -119,7 +121,7 @@ function parsePlay(fileName, text, names, { draft = false } = {}) {
     goal: fm.goal || '',
     version: fm.version || '',
     firstStage: stageNumbers.length > 0 ? Number(stageNumbers[0]) : Number.MAX_SAFE_INTEGER,
-    steps: stageNumbers.map((n) => names.get(n) || `Step ${n}`),
+    steps: stageNumbers.map((n) => names.get(n) || t(lang, 'metrics.step', { number: n })),
     diagram: MERMAID_FENCE.exec(body)?.[1]?.trim() || '',
     branches: parseBranches(body),
     learnings: parseLearnings(body),
@@ -127,12 +129,12 @@ function parsePlay(fileName, text, names, { draft = false } = {}) {
   };
 }
 
-function readCompanyName(kernelPath) {
+function readCompanyName(kernelPath, lang) {
   try {
     const name = JSON.parse(fs.readFileSync(kernelPath, 'utf8'))?.organization?.name;
-    return typeof name === 'string' && name.trim() ? name.trim() : 'Your company';
+    return typeof name === 'string' && name.trim() ? name.trim() : t(lang, 'view.companyFallback');
   } catch {
-    return 'Your company';
+    return t(lang, 'view.companyFallback');
   }
 }
 
@@ -145,29 +147,29 @@ const MIN_TREE_SCALE = 0.7;
 const MIN_TREE_WIDTH = 300;
 
 /** Plain list of the steps, for diagrams the built-in renderer cannot draw. */
-function stepsList(graph) {
+function stepsList(graph, lang) {
   const names = new Map(graph.nodes.map((n) => [n.id, n.label.replace(/\n/g, ' ')]));
   const items = graph.nodes.map((n) => {
     const next = graph.edges.filter((e) => e.from === n.id)
-      .map((e) => `<li>${e.label ? `If ${escapeHtml(e.label)}` : 'Then'} → ${escapeHtml(names.get(e.to))}</li>`);
+      .map((e) => `<li>${escapeHtml(e.label ? t(lang, 'diagram.if', { label: e.label }) : t(lang, 'diagram.then'))} → ${escapeHtml(names.get(e.to))}</li>`);
     return `<li>${escapeHtml(names.get(n.id))}${next.length > 0 ? `<ul>${next.join('')}</ul>` : ''}</li>`;
   });
-  return `<div class="diagram-text"><p class="note">This diagram could not be drawn, so here are its steps. Ask your assistant to fix the diagram.</p><ol>${items.join('')}</ol></div>`;
+  return `<div class="diagram-text"><p class="note">${escapeHtml(t(lang, 'diagram.stepsNote'))}</p><ol>${items.join('')}</ol></div>`;
 }
 
 /**
  * Inline SVG for a Mermaid flowchart (no scripts, works offline); a text list if it cannot be drawn.
  * @returns {{ html: string, ok: boolean, error?: string }}
  */
-function diagram(code, { wide = false, title, idPrefix }) {
+function diagram(code, { wide = false, title, idPrefix, lang = DEFAULT_LANGUAGE }) {
   let graph;
   try {
     graph = parseFlowchart(code);
   } catch (err) {
     const partial = parseFlowchart(code, { lenient: true });
     const html = partial.nodes.length > 0
-      ? stepsList(partial)
-      : '<div class="diagram-text"><p class="note">This diagram could not be drawn. Ask your assistant to fix it.</p></div>';
+      ? stepsList(partial, lang)
+      : `<div class="diagram-text"><p class="note">${escapeHtml(t(lang, 'diagram.cannotDraw'))}</p></div>`;
     return { html, ok: false, error: err.message };
   }
   const layout = layoutFlowchart(graph);
@@ -175,20 +177,21 @@ function diagram(code, { wide = false, title, idPrefix }) {
   return { html: `<div class="diagram${wide ? ' diagram-wide' : ''}">${renderFlowchartSvg(graph, layout, { title, idPrefix, minWidth })}</div>`, ok: true };
 }
 
-const draftBadge = (draft) => (draft ? `<span class="badge badge-draft">${DRAFT_BADGE}</span>` : '');
+const draftBadge = (draft, lang) => (draft ? `<span class="badge badge-draft">${escapeHtml(t(lang, 'view.draftBadge'))}</span>` : '');
 
-function renderPlay(play) {
-  const steps = play.steps.length > 0 ? `<p class="meta"><span class="label">Used in:</span> ${play.steps.map(escapeHtml).join(', ')}</p>` : '';
-  const goal = play.goal ? `<p class="goal"><span class="label">Goal:</span> ${inline(play.goal)}</p>` : '';
-  const version = play.version ? `<span class="badge">Version ${escapeHtml(play.version)}</span>` : '';
+function renderPlay(play, lang) {
+  const label = (key) => `<span class="label">${escapeHtml(t(lang, key))}</span>`;
+  const steps = play.steps.length > 0 ? `<p class="meta">${label('play.usedIn')} ${play.steps.map(escapeHtml).join(', ')}</p>` : '';
+  const goal = play.goal ? `<p class="goal">${label('play.goal')} ${inline(play.goal)}</p>` : '';
+  const version = play.version ? `<span class="badge">${escapeHtml(t(lang, 'play.version', { version: play.version }))}</span>` : '';
   const say = play.branches.length > 0
-    ? `<details><summary>What to say</summary><ul class="talk">${play.branches.map((b) => `<li>${b.when ? `<span class="when">${inline(b.when)}</span>` : ''}<span class="say">${inline(b.say)}</span></li>`).join('')}</ul></details>`
+    ? `<details><summary>${escapeHtml(t(lang, 'play.whatToSay'))}</summary><ul class="talk">${play.branches.map((b) => `<li>${b.when ? `<span class="when">${inline(b.when)}</span>` : ''}<span class="say">${inline(b.say)}</span></li>`).join('')}</ul></details>`
     : '';
   const learned = play.learnings.length > 0
-    ? `<details><summary>What we've learned</summary><ul>${play.learnings.map((l) => `<li>${inline(l)}</li>`).join('')}</ul></details>`
+    ? `<details><summary>${escapeHtml(t(lang, 'play.learned'))}</summary><ul>${play.learnings.map((l) => `<li>${inline(l)}</li>`).join('')}</ul></details>`
     : '';
   return `<section class="card" id="${play.anchor}">
-<div class="card-head"><h3>${escapeHtml(play.title)}</h3>${version}${draftBadge(play.draft)}</div>
+<div class="card-head"><h3>${escapeHtml(play.title)}</h3>${version}${draftBadge(play.draft, lang)}</div>
 ${goal}
 ${steps}
 ${play.rendered ? play.rendered.html : ''}
@@ -282,9 +285,10 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
     throw new BrainError('NO_SALES_SYSTEM', 'This brain has no sales system yet (no sales map or call guides). Add the sales area with "clc-brain add-area --preset sales", or run "clc-brain upgrade" on an older brain.');
   }
 
+  const lang = getBrainLanguage(rootDir);
   const names = stageNames(systemMd);
   const byId = new Map(playFiles.map((f) => {
-    const play = parsePlay(f, fs.readFileSync(path.join(playsDir, f), 'utf8'), names);
+    const play = parsePlay(f, fs.readFileSync(path.join(playsDir, f), 'utf8'), names, { lang });
     return [play.id, play];
   }));
   const pipelineMd = readIfExists(path.join(salesDir, 'stages', 'pipeline-stages.md'));
@@ -292,7 +296,7 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
   let pipelineDraft = false;
   const draftIds = drafts.map((d) => {
     if (d.kind !== 'play') return 'pipeline';
-    const play = parsePlay(d.path || 'draft.md', d.content, names, { draft: true });
+    const play = parsePlay(d.path || 'draft.md', d.content, names, { draft: true, lang });
     byId.set(play.id, play);
     return play.id;
   });
@@ -305,15 +309,16 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
   const plays = [...byId.values()].sort((a, b) => a.firstStage - b.firstStage || a.id.localeCompare(b.id));
   const diagrams = [];
   for (const play of plays) {
-    play.rendered = play.diagram ? diagram(play.diagram, { title: `${play.title}: decision tree`, idPrefix: play.anchor }) : null;
+    play.rendered = play.diagram ? diagram(play.diagram, { title: t(lang, 'play.treeTitle', { title: play.title }), idPrefix: play.anchor, lang }) : null;
     diagrams.push({
       kind: 'play', id: play.id, title: play.title, draft: play.draft,
       ok: Boolean(play.rendered?.ok), error: play.rendered ? play.rendered.error : 'No diagram found.'
     });
   }
-  const pipelineRendered = pipeline ? diagram(pipeline, { wide: true, title: 'Your pipeline', idPrefix: 'pipeline' }) : null;
+  const pipelineTitle = t(lang, 'view.pipeline.title');
+  const pipelineRendered = pipeline ? diagram(pipeline, { wide: true, title: pipelineTitle, idPrefix: 'pipeline', lang }) : null;
   diagrams.unshift({
-    kind: 'pipeline', id: 'pipeline', title: 'Your pipeline', draft: pipelineDraft,
+    kind: 'pipeline', id: 'pipeline', title: pipelineTitle, draft: pipelineDraft,
     ok: Boolean(pipelineRendered?.ok), error: pipelineRendered ? pipelineRendered.error : 'No diagram found.'
   });
   const draftStatus = drafts.map((d, i) => {
@@ -321,12 +326,13 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
     return { path: d.path, kind: d.kind, id: draftIds[i], ok: status.ok, error: status.error };
   });
   const preview = drafts.length > 0;
-  const company = readCompanyName(kernelPath);
+  const company = readCompanyName(kernelPath, lang);
   const date = now.toISOString().slice(0, 10);
-  const heading = `${escapeHtml(company)} · Sales system${preview ? ' (Preview)' : ''}`;
+  const heading = escapeHtml(t(lang, 'view.title', { company }) + (preview ? t(lang, 'view.previewSuffix') : ''));
+  const text = (key, vars) => escapeHtml(t(lang, key, vars));
 
   const html = `<!doctype html>
-<html lang="en">
+<html lang="${lang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -337,21 +343,21 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
 <main>
 <header>
 <h1>${heading}</h1>
-<p>Updated ${date}</p>
+<p>${text('view.updated', { date })}</p>
 </header>
-${preview ? '<p class="note preview-note">This is a preview. Parts marked as drafts are not saved yet.</p>\n' : ''}<nav aria-label="Call guides">${plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`).join('')}</nav>
-<h2>How your sales system works</h2>
+${preview ? `<p class="note preview-note">${text('view.previewNote')}</p>\n` : ''}<nav aria-label="${text('view.navLabel')}">${plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`).join('')}</nav>
+<h2>${text('view.system.title')}</h2>
 <section class="card">
 ${markdownToHtml(plainSystemSection(systemMd))}
 </section>
-${renderDashboard(loadSalesReport(rootDir, { now }))}
-<h2>Your pipeline</h2>
+${renderDashboard(loadSalesReport(rootDir, { now, lang }), lang)}
+<h2>${text('view.pipeline.title')}</h2>
 <section class="card">
-${pipelineDraft ? `<div class="card-head">${draftBadge(true)}</div>\n` : ''}${pipelineRendered ? pipelineRendered.html : '<p>No pipeline diagram yet. Ask your assistant to draw one.</p>'}
+${pipelineDraft ? `<div class="card-head">${draftBadge(true, lang)}</div>\n` : ''}${pipelineRendered ? pipelineRendered.html : `<p>${text('view.pipeline.empty')}</p>`}
 </section>
-<h2>Your call guides</h2>
-${plays.map(renderPlay).join('\n')}
-<footer>Want a change? Ask your assistant, for example: "Improve the cold call guide".</footer>
+<h2>${text('view.guides.title')}</h2>
+${plays.map((play) => renderPlay(play, lang)).join('\n')}
+<footer>${text('view.footer')}</footer>
 </main>
 </body>
 </html>

@@ -1,6 +1,8 @@
 // Shared sales normalizers: one slug, company, deal and outcome rule for calls, records, metrics and doctor.
 // Pure: no I/O, never throws on odd input.
+import { hasText, t } from './i18n.js';
 
+// Default types of sale, in display order (English names; other languages come from i18n `motion.<slug>`).
 export const DEFAULT_MOTIONS = Object.freeze({
   'cold-outbound': 'Cold outreach',
   inbound: 'Inbound',
@@ -61,8 +63,9 @@ export function parseBool(value) {
   return undefined;
 }
 
-/** Friendly motion name: the default name, else the slug title-cased. */
-export function motionName(slug) {
-  if (Object.hasOwn(DEFAULT_MOTIONS, slug)) return DEFAULT_MOTIONS[slug];
+/** Friendly motion name in `lang`: the known name, else the slug title-cased. */
+export function motionName(slug, lang = 'en') {
+  const key = `motion.${text(slug)}`;
+  if (hasText(lang, key)) return t(lang, key);
   return text(slug).split('-').filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
 }

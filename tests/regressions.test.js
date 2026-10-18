@@ -16,12 +16,15 @@ function sandbox() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'brain-regress-'));
 }
 
+// Pin the locale so a brain created here is English whatever the machine's language is.
+const ENGLISH_ENV = { ...process.env, LC_ALL: '', LANG: 'en_US.UTF-8' };
+
 function cli(...args) {
-  return spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8' });
+  return spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', env: ENGLISH_ENV });
 }
 
 function initBrain(dir, extra = []) {
-  execFileSync(process.execPath, [CLI, 'init', dir, '--name', 'RegCorp', '--industry', 'tech', '--tagline', 'Reg', '--areas', 'sales', ...extra], { encoding: 'utf8' });
+  execFileSync(process.execPath, [CLI, 'init', dir, '--name', 'RegCorp', '--industry', 'tech', '--tagline', 'Reg', '--areas', 'sales', ...extra], { encoding: 'utf8', env: ENGLISH_ENV });
 }
 
 test('add-area --custom rejects an id outside ^[a-z0-9_-]+$ (path traversal)', () => {

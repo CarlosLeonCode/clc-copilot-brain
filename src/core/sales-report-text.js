@@ -1,63 +1,80 @@
-// Plain-language text rendering of the sales report for people. Pure: no I/O, no UI imports.
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// Plain-language text rendering of the sales report for people, in the report's language. Pure: no I/O, no UI imports.
+import { DEFAULT_LANGUAGE, formatMonth, formatPercent, t } from './i18n.js';
 
-export const monthTitle = (month) => `${MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
-export const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+/** "October 2026" / "Octubre de 2026". */
+export const monthTitle = (month, lang = DEFAULT_LANGUAGE) => formatMonth(lang, month);
 
-/** "3 of 4 calls", plus a percentage once the sample is big enough, or "too early to tell". */
-export function rateText(rate, noun = 'calls') {
-  const base = `${rate.count} of ${rate.of} ${noun}`;
+/** Month title, with "(so far)" while the month is still running. */
+export const windowTitle = (w, lang = DEFAULT_LANGUAGE) => (w.complete ? monthTitle(w.month, lang) : t(lang, 'dash.soFar', { month: monthTitle(w.month, lang) }));
+
+/** "3 calls", "1 time"… from a `count.<noun>` key. */
+export const plural = (n, noun, lang = DEFAULT_LANGUAGE) => t(lang, `count.${noun}`, { count: n });
+
+/** "3 of 4 calls", plus a percentage once the sample is big enough, or "too early to tell". `noun` is calls or deals. */
+export function rateText(rate, noun = 'calls', lang = DEFAULT_LANGUAGE) {
+  const base = t(lang, `rate.${noun}`, { count: rate.count, of: rate.of });
   if (rate.value == null) return base;
-  const pct = `${Math.round(rate.value * 100)}%`;
-  return rate.sample === 'too-early' ? `${base} (${pct}, too early to tell)` : `${base} (${pct})`;
+  const percent = formatPercent(lang, rate.value);
+  return t(lang, rate.sample === 'too-early' ? 'rate.tooEarly' : 'rate.withPercent', { base, percent });
 }
 
-function windowLines(w) {
-  const title = `${monthTitle(w.month)}${w.complete ? '' : ' (so far)'}`;
-  const lines = [title, '='.repeat(title.length)];
-  if (w.totals.calls === 0) return [...lines, 'No calls logged yet.', ''];
-  lines.push(`Calls logged: ${w.totals.calls}`);
-  lines.push(`Goal reached: ${w.totals.success.of === 0 ? 'not recorded yet' : rateText(w.totals.success)}`);
-  if (w.totals.notRecorded > 0) lines.push(`  (${plural(w.totals.notRecorded, 'call')} without a goal result are left out)`);
-  if (w.totals.stageAdvance.of > 0) lines.push(`Moved to the next step: ${rateText(w.totals.stageAdvance)}`);
+/** "+12 points" / "-3 puntos". */
+export function points(n, lang = DEFAULT_LANGUAGE) {
+  const rounded = Math.round(n * 100);
+  return t(lang, 'compare.points', { sign: rounded >= 0 ? '+' : '-', count: Math.abs(rounded) });
+}
 
-  lines.push('', 'By type of sale');
+/** The parts of the month-to-month comparison sentence. */
+export function comparisonParts(c, lang = DEFAULT_LANGUAGE) {
+  const parts = [t(lang, c.calls >= 0 ? 'compare.more' : 'compare.fewer', { count: Math.abs(c.calls) })];
+  if (c.success != null) parts.push(t(lang, 'compare.goal', { points: points(c.success, lang) }));
+  if (c.stageAdvance != null) parts.push(t(lang, 'compare.moved', { points: points(c.stageAdvance, lang) }));
+  return parts;
+}
+
+function windowLines(w, lang) {
+  const title = windowTitle(w, lang);
+  const lines = [title, '='.repeat(title.length)];
+  if (w.totals.calls === 0) return [...lines, t(lang, 'dash.noCalls'), ''];
+  lines.push(`${t(lang, 'dash.callsLogged')}: ${w.totals.calls}`);
+  lines.push(`${t(lang, 'dash.goalReached')}: ${w.totals.success.of === 0 ? t(lang, 'dash.notRecorded') : rateText(w.totals.success, 'calls', lang)}`);
+  if (w.totals.notRecorded > 0) lines.push(`  ${t(lang, 'report.leftOut', { count: w.totals.notRecorded })}`);
+  if (w.totals.stageAdvance.of > 0) lines.push(`${t(lang, 'dash.movedNext')}: ${rateText(w.totals.stageAdvance, 'calls', lang)}`);
+
+  lines.push('', t(lang, 'dash.byMotion'));
   for (const m of w.byMotion) {
-    const won = m.won + m.lost > 0 ? `, deals won ${m.won} of ${m.won + m.lost}` : '';
-    lines.push(`  ${m.name}: ${plural(m.calls, 'call')}${m.calls ? `, goal reached ${rateText(m.success)}` : ''}${won}`);
+    const parts = [plural(m.calls, 'calls', lang)];
+    if (m.calls) parts.push(t(lang, 'report.goalReached', { value: rateText(m.success, 'calls', lang) }));
+    if (m.won + m.lost > 0) parts.push(t(lang, 'report.dealsWon', { won: m.won, total: m.won + m.lost }));
+    lines.push(`  ${m.name}: ${parts.join(', ')}`);
   }
 
   const guides = w.byPlay.filter((p) => p.calls > 0);
   if (guides.length) {
-    lines.push('', 'By call guide');
+    lines.push('', t(lang, 'dash.byPlay'));
     for (const p of guides) {
-      lines.push(`  ${p.title}: ${plural(p.calls, 'call')}, goal reached ${rateText(p.success)}`);
-      if (!p.successDefined && p.title !== 'Not tied to a call guide') lines.push('    (success is not defined for this guide yet)');
-      for (const s of p.stallPoints) lines.push(`    Goal missed ${plural(s.count, 'time')} when: ${s.when}`);
+      lines.push(`  ${p.title}: ${plural(p.calls, 'calls', lang)}, ${t(lang, 'report.goalReached', { value: rateText(p.success, 'calls', lang) })}`);
+      if (!p.successDefined && p.play !== '') lines.push(`    ${t(lang, 'report.successUndefined')}`);
+      for (const s of p.stallPoints) lines.push(`    ${t(lang, 'report.missed', { times: plural(s.count, 'times', lang), when: s.when })}`);
     }
   }
 
-  lines.push('', 'By person');
-  for (const r of w.byRep) lines.push(`  ${r.rep}: ${plural(r.calls, 'call')}, goal reached ${rateText(r.success)}`);
+  lines.push('', t(lang, 'dash.byRep'));
+  for (const r of w.byRep) lines.push(`  ${r.rep}: ${plural(r.calls, 'calls', lang)}, ${t(lang, 'report.goalReached', { value: rateText(r.success, 'calls', lang) })}`);
   return [...lines, ''];
 }
 
-const pts = (n) => `${n >= 0 ? '+' : ''}${Math.round(n * 100)} points`;
-
-/** Render the whole report (from buildSalesReport) as plain, non-technical text. */
-export function formatSalesReport(report) {
-  const out = report.windows.flatMap(windowLines);
+/** Render the whole report (from buildSalesReport) as plain, non-technical text in its language. */
+export function formatSalesReport(report, lang = report.language ?? DEFAULT_LANGUAGE) {
+  const out = report.windows.flatMap((w) => windowLines(w, lang));
   const c = report.comparison;
   if (c) {
-    const parts = [`${plural(Math.abs(c.calls), 'call')} ${c.calls >= 0 ? 'more' : 'fewer'}`];
-    if (c.success != null) parts.push(`goal reached ${pts(c.success)}`);
-    if (c.stageAdvance != null) parts.push(`moved to the next step ${pts(c.stageAdvance)}`);
-    out.push(`Compared with ${monthTitle(c.from)}: ${parts.join(', ')}.`, '');
+    out.push(t(lang, 'compare.with', { month: formatMonth(lang, c.from, { capitalize: false }), parts: comparisonParts(c, lang).join(', ') }), '');
   } else {
-    out.push('Comparison with the month before: too early to tell (it needs at least 10 calls in both months).', '');
+    out.push(t(lang, 'compare.tooEarly'), '');
   }
-  if (report.unclassified.length) out.push(`Not classified yet: ${plural(report.unclassified.length, 'record')}. Ask your assistant to classify your older calls and deals by type of sale.`, '');
-  if (report.excluded.demo) out.push(`Sample records are left out of these numbers (${report.excluded.demo}).`, '');
-  if (report.excluded.skipped) out.push(`${plural(report.excluded.skipped, 'record')} could not be read and ${report.excluded.skipped === 1 ? 'was' : 'were'} left out.`, '');
+  if (report.unclassified.length) out.push(t(lang, 'report.unclassified', { records: plural(report.unclassified.length, 'records', lang) }), '');
+  if (report.excluded.demo) out.push(t(lang, 'report.sample', { count: report.excluded.demo }), '');
+  if (report.excluded.skipped) out.push(t(lang, 'notes.skipped', { count: report.excluded.skipped }), '');
   return out.join('\n').trimEnd() + '\n';
 }

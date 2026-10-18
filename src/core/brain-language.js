@@ -1,9 +1,9 @@
 // The brain's language (org-kernel.json `language`): "en" or "es", English when missing or invalid.
 import fs from 'node:fs';
 import path from 'node:path';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from './i18n.js';
 
-export const SUPPORTED_LANGUAGES = Object.freeze(['en', 'es']);
-export const DEFAULT_LANGUAGE = 'en';
+export { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES };
 export const LANGUAGE_HELP = 'The language must be "en" (English) or "es" (Spanish), for example: --language es';
 
 /** "en" or "es" (case and spaces ignored), else null. */

@@ -11,11 +11,14 @@ const CLI = path.join(path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const run = (...args) => spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', input: '' });
 const month = new Date().toISOString().slice(0, 7);
 
-function withBrain(areas, fn) {
+// Pin the locale so `init --yes` picks English whatever the machine's language is.
+const ENGLISH_ENV = { ...process.env, LC_ALL: '', LANG: 'en_US.UTF-8' };
+
+function withBrain(areas, fn, extra = []) {
   const outer = fs.mkdtempSync(path.join(os.tmpdir(), 'brain-stats-'));
   const brain = path.join(outer, 'brain');
   try {
-    execFileSync(process.execPath, [CLI, 'init', brain, '--yes', '--clean', '--name', 'StatCorp', '--industry', 'tech', '--tagline', 'S', '--areas', areas], { encoding: 'utf8' });
+    execFileSync(process.execPath, [CLI, 'init', brain, '--yes', '--clean', '--name', 'StatCorp', '--industry', 'tech', '--tagline', 'S', '--areas', areas, ...extra], { encoding: 'utf8', env: ENGLISH_ENV });
     fn(brain);
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
@@ -40,6 +43,21 @@ test('stats prints a plain-text table for humans', () => {
   });
 });
 
+test('stats speaks the brain language; --json keeps English keys and says the language', () => {
+  withBrain('sales', (brain) => {
+    for (let i = 0; i < 3; i++) addCall(brain, i);
+    const res = run('stats', brain);
+    assert.equal(res.status, 0, res.stderr);
+    assert.match(res.stdout, /en lo que va del mes/);
+    assert.match(res.stdout, /Por persona/);
+    assert.match(res.stdout, /Inbound: 3 llamadas/);
+    assert.doesNotMatch(res.stdout, /so far|By person|goal reached/);
+    const report = JSON.parse(run('stats', brain, '--json').stdout);
+    assert.equal(report.language, 'es');
+    assert.equal(report.windows[0].totals.calls, 3);
+  }, ['--language', 'es']);
+});
+
 test('stats --json prints the full report for the assistant', () => {
   withBrain('sales', (brain) => {
     for (let i = 0; i < 3; i++) addCall(brain, i);
@@ -49,6 +67,7 @@ test('stats --json prints the full report for the assistant', () => {
     assert.equal(report.windows[0].month, month);
     assert.equal(report.windows[0].totals.calls, 3);
     assert.ok(Array.isArray(report.journeys));
+    assert.equal(report.language, 'en');
     const picked = JSON.parse(run('stats', brain, '--month', month, '--json').stdout);
     assert.equal(picked.windows.length, 1);
   });

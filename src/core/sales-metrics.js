@@ -1,5 +1,6 @@
 // Pure sales metrics: month windows, sample-size rules and motion resolution. No I/O.
 import { toSlug, motionName, DEFAULT_MOTIONS } from './sales-normalize.js';
+import { DEFAULT_LANGUAGE, t } from './i18n.js';
 
 export const COUNT_ONLY_BELOW = 5;
 export const TOO_EARLY_BELOW = 10;
@@ -46,10 +47,6 @@ export function resolveMotion(record, dealIndex, playsById) {
 
 // ---- computed metrics (pure) ----
 const OUTCOMES = ['closed-won', 'closed-lost', 'disqualified', 'stalled', 'advanced', 'unclassified'];
-const NO_BRANCH = 'No branch recorded';
-const UNKNOWN_BRANCH = 'A situation not in the call guide';
-const NO_REP = 'Not recorded';
-const NO_PLAY = 'Not tied to a call guide';
 
 /** Rate of `true` over decided (true+false) values of `key`; undefined values are left out. */
 function rateOf(items, key) {
@@ -67,10 +64,10 @@ function group(items, keyOf) {
   return map;
 }
 
-function stallPoints(calls, play) {
+function stallPoints(calls, play, lang) {
   const whenOf = (branch) => {
-    if (!branch) return NO_BRANCH;
-    return play?.branches?.find((b) => b.id === branch)?.when || UNKNOWN_BRANCH;
+    if (!branch) return t(lang, 'metrics.noBranch');
+    return play?.branches?.find((b) => b.id === branch)?.when || t(lang, 'metrics.unknownBranch');
   };
   const counts = new Map();
   for (const c of calls.filter((x) => x.goalMet === false)) {
@@ -80,7 +77,7 @@ function stallPoints(calls, play) {
   return [...counts].map(([when, count]) => ({ branch: when, when, count })).sort((a, b) => b.count - a.count);
 }
 
-const motionLabel = (slug) => (slug === UNCLASSIFIED ? 'Not classified yet' : motionName(slug));
+const motionLabel = (slug, lang) => (slug === UNCLASSIFIED ? t(lang, 'metrics.unclassified') : motionName(slug, lang));
 const motionRank = (slug) => {
   const defaults = Object.keys(DEFAULT_MOTIONS);
   if (slug === UNCLASSIFIED) return defaults.length + 1;
@@ -88,8 +85,8 @@ const motionRank = (slug) => {
   return i === -1 ? defaults.length : i;
 };
 
-/** Metrics for one 'YYYY-MM' month. `records` is the readSalesRecords result. */
-export function computeSalesMetrics(records, { month, complete = false } = {}) {
+/** Metrics for one 'YYYY-MM' month. `records` is the readSalesRecords result; labels are in `lang`. */
+export function computeSalesMetrics(records, { month, complete = false, lang = DEFAULT_LANGUAGE } = {}) {
   const { calls = [], wins = [], plays = [] } = records;
   const playsById = new Map(plays.map((p) => [p.id, p]));
   const dealIndex = buildDealIndex(calls, wins);
@@ -108,7 +105,7 @@ export function computeSalesMetrics(records, { month, complete = false } = {}) {
     const won = results.filter((w) => w.result === 'won').length;
     const lost = results.filter((w) => w.result === 'lost').length;
     const open = new Set(mine.map((c) => c.dealKey).filter((k) => k && !decided.has(k))).size;
-    return { motion, name: motionLabel(motion), calls: mine.length, success: rateOf(mine, 'goalMet'), stageAdvance: rateOf(mine, 'gateAdvanced'), won, lost, open, winRate: makeRate(won, won + lost) };
+    return { motion, name: motionLabel(motion, lang), calls: mine.length, success: rateOf(mine, 'goalMet'), stageAdvance: rateOf(mine, 'gateAdvanced'), won, lost, open, winRate: makeRate(won, won + lost) };
   });
 
   const playIds = [...new Set([...plays.map((p) => p.id), ...inMonth.map((c) => c.play || '')])];
@@ -117,18 +114,18 @@ export function computeSalesMetrics(records, { month, complete = false } = {}) {
     const mine = inMonth.filter((c) => (c.play || '') === id);
     return {
       play: id,
-      title: id === '' ? NO_PLAY : meta?.title ?? id,
+      title: id === '' ? t(lang, 'metrics.noPlay') : meta?.title ?? id,
       successText: meta?.success ?? '',
       successDefined: meta?.successDefined ?? false,
       calls: mine.length,
       success: rateOf(mine, 'goalMet'),
       stageAdvance: rateOf(mine, 'gateAdvanced'),
-      stallPoints: stallPoints(mine, meta)
+      stallPoints: stallPoints(mine, meta, lang)
     };
   }).filter((p) => p.play !== '' || p.calls > 0);
 
   const byRep = [...group(inMonth, (c) => (c.rep ?? '').trim().toLowerCase())].map(([key, mine]) => ({
-    rep: key === '' ? NO_REP : mine[0].rep.trim(), calls: mine.length, success: rateOf(mine, 'goalMet'), stageAdvance: rateOf(mine, 'gateAdvanced')
+    rep: key === '' ? t(lang, 'metrics.noRep') : mine[0].rep.trim(), calls: mine.length, success: rateOf(mine, 'goalMet'), stageAdvance: rateOf(mine, 'gateAdvanced')
   }));
 
   return {
@@ -160,7 +157,7 @@ function compare(from, to) {
   };
 }
 
-function journeysOf(records, motionSlugs) {
+function journeysOf(records, motionSlugs, lang) {
   const { plays = [], stageNames = new Map() } = records;
   return [...motionSlugs].sort((a, b) => motionRank(a) - motionRank(b) || a.localeCompare(b)).map((motion) => {
     const tagged = plays
@@ -169,29 +166,29 @@ function journeysOf(records, motionSlugs) {
     const entry = tagged.find((p) => p.firstStage != null)?.firstStage ?? null;
     return {
       motion,
-      name: motionName(motion),
+      name: motionName(motion, lang),
       plays: tagged.map((p) => ({ play: p.id, title: p.title })),
       entryStage: entry,
-      entryName: entry == null ? null : stageNames.get(String(entry)) ?? `Step ${entry}`
+      entryName: entry == null ? null : stageNames.get(String(entry)) ?? t(lang, 'metrics.step', { number: entry })
     };
   });
 }
 
 /**
  * Full report. Default windows: current month so far and the last complete month.
- * With `month`: that month, compared with the one before it.
+ * With `month`: that month, compared with the one before it. Labels are in `lang`, which the report carries.
  */
-export function buildSalesReport(records, { now = new Date(), month } = {}) {
+export function buildSalesReport(records, { now = new Date(), month, lang = DEFAULT_LANGUAGE } = {}) {
   const { current, lastComplete } = monthWindows(now);
   const isComplete = (m) => m < current;
   let windows;
   let comparison;
   if (month) {
-    const shown = computeSalesMetrics(records, { month, complete: isComplete(month) });
+    const shown = computeSalesMetrics(records, { month, complete: isComplete(month), lang });
     windows = [shown];
-    comparison = compare(computeSalesMetrics(records, { month: previousMonth(month), complete: true }), shown);
+    comparison = compare(computeSalesMetrics(records, { month: previousMonth(month), complete: true, lang }), shown);
   } else {
-    windows = [computeSalesMetrics(records, { month: current, complete: false }), computeSalesMetrics(records, { month: lastComplete, complete: true })];
+    windows = [computeSalesMetrics(records, { month: current, complete: false, lang }), computeSalesMetrics(records, { month: lastComplete, complete: true, lang })];
     comparison = compare(windows[1], windows[0]);
   }
 
@@ -202,9 +199,10 @@ export function buildSalesReport(records, { now = new Date(), month } = {}) {
   const motionSlugs = new Set([...Object.keys(DEFAULT_MOTIONS), ...plays.flatMap((p) => (Array.isArray(p.motions) ? p.motions : [])), ...resolved.map((x) => x.motion).filter((m) => m !== UNCLASSIFIED)]);
 
   return {
+    language: lang,
     windows,
     comparison,
-    journeys: journeysOf(records, motionSlugs),
+    journeys: journeysOf(records, motionSlugs, lang),
     unclassified: resolved.filter((x) => x.motion === UNCLASSIFIED).map((x) => x.r.relPath),
     excluded: { demo: records.demoExcluded ?? 0, skipped: (records.skipped ?? []).length }
   };
