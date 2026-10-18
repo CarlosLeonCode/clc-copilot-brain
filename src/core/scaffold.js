@@ -1,13 +1,13 @@
 // Scaffold a brain from the packaged templates and wire the multi-IDE adapters.
 import fs from 'node:fs';
 import path from 'node:path';
-import { AREA_ID_PATTERN, findPreset } from './areas.js';
+import { AREA_ID_PATTERN, copyAreaTemplates, findPreset } from './areas.js';
 import { isDemoTemplateAsset } from './demo.js';
 import { BrainError } from './errors.js';
 import { DEFAULT_LANGUAGE, LANGUAGE_HELP, parseLanguage } from './brain-language.js';
 import { copyDirRecursive, ensureDir } from './fs-utils.js';
 import { IDE_ADAPTERS, SSOT_FILE, expectedAssets, templateDirs } from './manifest.js';
-import { PLAYBOOKS_DIR, SCHEMAS_DIR, TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR } from './package-paths.js';
+import { PLAYBOOKS_DIR, SCHEMAS_DIR, TEMPLATES_BASE_DIR } from './package-paths.js';
 
 export const INIT_DEFAULTS = Object.freeze({
   companyName: 'Acme Corp',
@@ -152,13 +152,11 @@ export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, 
     if (preset && fs.existsSync(path.join(PLAYBOOKS_DIR, preset.playbook))) {
       fs.copyFileSync(path.join(PLAYBOOKS_DIR, preset.playbook), path.join(playbooksDest, preset.playbook));
     }
-    const srcAreaDir = path.join(TEMPLATES_AREAS_DIR, areaId);
-    if (fs.existsSync(srcAreaDir)) {
-      copyDirRecursive(srcAreaDir, path.join(targetDir, areaId), {
-        replacer,
-        filter: demo ? null : (srcPath) => !isDemoTemplateAsset(srcPath)
-      });
-    }
+    copyAreaTemplates(areaId, path.join(targetDir, areaId), {
+      lang,
+      replacer,
+      filter: demo ? null : (srcPath) => !isDemoTemplateAsset(srcPath)
+    });
   }
 
   return { targetDir, areas, adapters };

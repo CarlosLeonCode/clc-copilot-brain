@@ -158,7 +158,7 @@ test('both AGENTS.md files use the brain language and know how to change it', ()
     const text = read(rel);
     assert.match(text, /in the brain's language \(org-kernel\.json `language`; default English\)/, `${rel} needs the brain language rule`);
     assert.match(text, /call log prose, guides, summaries/i);
-    assert.match(text, /offer once to translate them; translate only after a yes, then refresh the sales page \(`clc-brain view`\)/);
+    assert.match(text, /in a language other than the brain's language \(for example in an older brain\), offer once to translate them; translate only after a yes, then refresh the sales page \(`clc-brain view`\)/);
     assert.match(text, /put my brain in Spanish/i);
     assert.match(text, /pon mi cerebro en español/i);
     assert.match(text, /cambia el idioma/i);

@@ -2,13 +2,15 @@
 // Allowlist only: everything not listed here is never touched.
 //   template-owned  = base .claude/commands/*.md and skills/*.md  -> replace (with .bak backup) when bytes differ
 //   add-if-missing  = new base commands/skills, plus sales/system.md and sales/plays/*.md when `sales` is active
+//                     (in the brain language when templates/locales has that file, else in English)
 //   managed-block   = AGENTS.md: only the text between the copilot-brain managed markers is refreshed
 import fs from 'node:fs';
 import path from 'node:path';
-import { readKernel } from './areas.js';
+import { localeAreaDir, readKernel } from './areas.js';
+import { getBrainLanguage } from './brain-language.js';
 import { BrainError } from './errors.js';
 import { ensureDir, isInside, listMarkdownFiles } from './fs-utils.js';
-import { TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR } from './package-paths.js';
+import { TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR, TEMPLATES_LOCALES_DIR } from './package-paths.js';
 
 const PLACEHOLDER = /\{\{(COMPANY_NAME|INDUSTRY|TAGLINE|ACTIVE_AREAS_[A-Z]+|CREATED_AT|UPDATED_AT)\}\}/;
 export const MANAGED_START = '<!-- copilot-brain:managed:start -->';
@@ -30,16 +32,21 @@ function lstatOrNull(p) {
 }
 
 /** Managed template files as { rel (posix), src, policy } where policy applies to an existing file. */
-function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas) {
+function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOverlayDir) {
   const files = [];
   for (const [dir, rel] of [[path.join(templatesBaseDir, '.claude', 'commands'), '.claude/commands'], [path.join(templatesBaseDir, 'skills'), 'skills']]) {
     for (const name of listMarkdownFiles(dir)) files.push({ rel: `${rel}/${name}`, src: path.join(dir, name), owned: true });
   }
   if (activeAreas.includes('sales')) {
     const sales = path.join(templatesAreasDir, 'sales');
-    if (fs.existsSync(path.join(sales, 'system.md'))) files.push({ rel: 'sales/system.md', src: path.join(sales, 'system.md'), owned: false });
+    // The translated file when the brain language has one, else the English template.
+    const source = (...rel) => {
+      const translated = salesOverlayDir && path.join(salesOverlayDir, ...rel);
+      return translated && fs.existsSync(translated) ? translated : path.join(sales, ...rel);
+    };
+    if (fs.existsSync(path.join(sales, 'system.md'))) files.push({ rel: 'sales/system.md', src: source('system.md'), owned: false });
     for (const name of listMarkdownFiles(path.join(sales, 'plays'))) {
-      files.push({ rel: `sales/plays/${name}`, src: path.join(sales, 'plays', name), owned: false });
+      files.push({ rel: `sales/plays/${name}`, src: source('plays', name), owned: false });
     }
   }
   return files;
@@ -49,11 +56,12 @@ function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas) {
  * Compute what an upgrade would do. Only actionable entries are returned (an up-to-date brain => []).
  * @returns {{ actions: Array<{ path: string, policy: 'template-owned'|'add-if-missing'|'managed-block', kind: 'add'|'replace'|'skip', reason?: string, current?: string, next: string }> }}
  */
-export function planUpgrade(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, templatesAreasDir = TEMPLATES_AREAS_DIR } = {}) {
+export function planUpgrade(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, templatesAreasDir = TEMPLATES_AREAS_DIR, templatesLocalesDir = TEMPLATES_LOCALES_DIR } = {}) {
   assertBrain(rootDir);
   const activeAreas = readKernel(rootDir).activeAreas || [];
+  const salesOverlayDir = localeAreaDir('sales', getBrainLanguage(rootDir), templatesLocalesDir);
   const actions = [];
-  for (const file of managedFiles(templatesBaseDir, templatesAreasDir, activeAreas)) {
+  for (const file of managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOverlayDir)) {
     const next = fs.readFileSync(file.src, 'utf8');
     const dest = path.join(rootDir, ...file.rel.split('/'));
     const stat = lstatOrNull(dest);

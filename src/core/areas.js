@@ -2,8 +2,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { BrainError } from './errors.js';
+import { DEFAULT_LANGUAGE, parseLanguage } from './brain-language.js';
 import { copyDirRecursive, ensureDir, isInside } from './fs-utils.js';
-import { PLAYBOOKS_DIR, TEMPLATES_AREAS_DIR } from './package-paths.js';
+import { PLAYBOOKS_DIR, TEMPLATES_AREAS_DIR, TEMPLATES_LOCALES_DIR } from './package-paths.js';
 
 export const AREA_ID_PATTERN = /^[a-z0-9_-]+$/;
 
@@ -17,6 +18,30 @@ export const PRESET_AREAS = Object.freeze([
 ]);
 
 export const PRESET_AREA_IDS = Object.freeze(PRESET_AREAS.map((a) => a.id));
+
+/**
+ * Folder with an area's starter content translated to `lang` (templates/locales/<lang>/areas/<area>/),
+ * or null for English, an unsupported language, or when no translation ships.
+ */
+export function localeAreaDir(areaId, lang, templatesLocalesDir = TEMPLATES_LOCALES_DIR) {
+  const language = parseLanguage(lang);
+  if (!language || language === DEFAULT_LANGUAGE || !AREA_ID_PATTERN.test(areaId)) return null;
+  const dir = path.join(templatesLocalesDir, language, 'areas', areaId);
+  return fs.existsSync(dir) ? dir : null;
+}
+
+/**
+ * Copy an area's templates into destDir, then its translation for `lang` on top (same file names).
+ * `replacer` and `filter` apply to both copies.
+ */
+export function copyAreaTemplates(areaId, destDir, { lang = DEFAULT_LANGUAGE, replacer = null, filter = null } = {}) {
+  const src = path.join(TEMPLATES_AREAS_DIR, areaId);
+  if (!fs.existsSync(src)) return false;
+  copyDirRecursive(src, destDir, { replacer, filter });
+  const overlay = localeAreaDir(areaId, lang);
+  if (overlay) copyDirRecursive(overlay, destDir, { replacer, filter });
+  return true;
+}
 
 export function findPreset(areaId) {
   return PRESET_AREAS.find((a) => a.id === areaId) || null;
@@ -87,7 +112,7 @@ export function addPresetArea(rootDir, areaId) {
     .replaceAll('{{COMPANY_NAME}}', kernel.organization?.name || 'Organization')
     .replaceAll('{{INDUSTRY}}', kernel.organization?.industry || 'Industry')
     .replaceAll('{{TAGLINE}}', kernel.organization?.tagline || '');
-  copyDirRecursive(path.join(TEMPLATES_AREAS_DIR, areaId), path.join(rootDir, areaId), { replacer });
+  copyAreaTemplates(areaId, path.join(rootDir, areaId), { lang: parseLanguage(kernel.language) ?? DEFAULT_LANGUAGE, replacer });
 
   const srcPlaybook = path.join(PLAYBOOKS_DIR, preset.playbook);
   if (fs.existsSync(srcPlaybook)) {

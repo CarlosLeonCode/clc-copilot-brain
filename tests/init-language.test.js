@@ -43,3 +43,28 @@ test('init with an unknown --language exits 1 with a plain message and writes no
     assert.equal(kernel, null);
   }
 });
+
+test('init --language es writes Spanish starter guides and a Spanish sales page; English stays English', () => {
+  const pages = {};
+  for (const lang of ['es', 'en']) {
+    const outer = fs.mkdtempSync(path.join(os.tmpdir(), 'brain-lang-'));
+    const brain = path.join(outer, 'brain');
+    try {
+      const res = spawnSync(process.execPath, [CLI, 'init', brain, '--yes', '--areas', 'sales', '--language', lang], { encoding: 'utf8', input: '' });
+      assert.equal(res.status, 0, res.stderr);
+      pages[lang] = {
+        system: fs.readFileSync(path.join(brain, 'sales', 'system.md'), 'utf8'),
+        play: fs.readFileSync(path.join(brain, 'sales', 'plays', 'cold-call.md'), 'utf8'),
+        html: fs.readFileSync(path.join(brain, 'sales', 'sales-system.html'), 'utf8')
+      };
+    } finally {
+      fs.rmSync(outer, { recursive: true, force: true });
+    }
+  }
+  assert.match(pages.es.system, /## Cómo funciona tu sistema de ventas/);
+  assert.match(pages.es.play, /^# Guía: Llamada en frío$/m);
+  assert.match(pages.es.html, /<h3>Llamada en frío<\/h3>/);
+  assert.match(pages.es.html, /Conseguir una reunión de descubrimiento/);
+  assert.match(pages.en.system, /## How your sales system works/);
+  assert.match(pages.en.html, /<h3>Cold Call<\/h3>/);
+});

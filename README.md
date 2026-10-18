@@ -148,7 +148,7 @@ npm link
 clc-brain init ../acme-brain
 ```
 
-Answer a few questions (language, company name, industry, areas). To set the language up front, add `--language es` (Spanish) or `--language en` (English); by default it follows your computer's language. The sales page follows the brain's language, and so does `clc-brain stats`. You'll see **"Second Brain initialized successfully!"** followed by your next steps.
+Answer a few questions (language, company name, industry, areas). To set the language up front, add `--language es` (Spanish) or `--language en` (English); by default it follows your computer's language. The sales page follows the brain's language, and so does `clc-brain stats`. `--language es` gives you starter guides in Spanish too (the sales map, the pipeline and the call guides). You'll see **"Second Brain initialized successfully!"** followed by your next steps.
 
 > [!TIP]
 > Want to look around first? Run `clc-brain init ../demo-brain --demo` to get a brain filled with sample documents. Remove them later with `clc-brain clean-demo ../demo-brain`.

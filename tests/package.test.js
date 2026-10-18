@@ -34,6 +34,8 @@ test('published package contains every runtime module reachable from bin', () =>
     'src/mcp/prompts.js',
     'src/core/schema-validator.js',
     'schemas/sales-objection.schema.json',
+    'templates/locales/es/areas/sales/system.md',
+    'templates/locales/es/areas/sales/plays/cold-call.md',
   ];
   const missing = required.filter((f) => !files.has(f));
   assert.deepStrictEqual(missing, [], `Missing from npm pack: ${missing.join(', ')}`);
