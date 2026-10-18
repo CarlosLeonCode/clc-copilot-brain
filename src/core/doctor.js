@@ -5,7 +5,7 @@ import { IDE_ADAPTERS, SSOT_FILE, expectedAssets } from './manifest.js';
 import { restoreRootSkills, setupIdeAdapters } from './scaffold.js';
 import { validateAgainstSchema } from './schema-validator.js';
 import { TEMPLATES_BASE_DIR } from './package-paths.js';
-import { hasDecisionTree, validatePlay } from './plays.js';
+import { PLAY_TITLE_PREFIX, hasDecisionTree, validatePlay } from './plays.js';
 import { parseFlowchart } from './flowchart.js';
 import { readSalesRecords } from './sales-records.js';
 import { DEFAULT_MOTIONS, toSlug } from './sales-normalize.js';
@@ -26,7 +26,7 @@ function diagramState(markdown) {
 
 /** Plain name of a call guide: its heading ("# Play: Cold Call" -> "cold call"), else its file name. */
 function guideName(file, text) {
-  const heading = /^#\s+(?:play:\s*)?(.+)$/im.exec(String(text).replace(/^---[\s\S]*?\n---\r?\n/, ''))?.[1]?.trim();
+  const heading = /^#\s+(.+)$/m.exec(String(text).replace(/^---[\s\S]*?\n---\r?\n/, ''))?.[1]?.trim().replace(PLAY_TITLE_PREFIX, '');
   return (heading || file.replace(/\.md$/, '').replace(/[-_]+/g, ' ')).toLowerCase();
 }
 

@@ -1,5 +1,6 @@
 // Sales play frontmatter parsing and validation. Pure: no I/O, no YAML dependency.
 import { toSlug } from './sales-normalize.js';
+import { SECTION_HEADINGS, section } from './sales-stages.js';
 
 export const PLAY_KEYS = Object.freeze(['play', 'stages', 'goal', 'gate_unlocked', 'version', 'status']);
 
@@ -82,13 +83,13 @@ export function parseMotions(value) {
   return [...new Set(slugs)];
 }
 
-const TITLE = /^#\s+(?:Play:\s*)?(.+?)\s*$/m;
+/** Title prefix of a play heading ("# Play: Cold Call", "# Guía: Llamada en frío"). */
+export const PLAY_TITLE_PREFIX = /^(?:play|gu[ií]a):\s*/i;
+const TITLE = /^#\s+(.+?)\s*$/m;
 const BRANCH_ROW = /^\|\s*(B\d+)\s*\|\s*([^|]+?)\s*\|/;
 
 function branchesOf(text) {
-  const section = /^##\s+Branches\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/m.exec(text);
-  if (!section) return [];
-  return section[1].split(/\r?\n/).map((line) => BRANCH_ROW.exec(line)).filter(Boolean).map((m) => ({ id: m[1], when: m[2] }));
+  return section(text, SECTION_HEADINGS.branches).split(/\r?\n/).map((line) => BRANCH_ROW.exec(line)).filter(Boolean).map((m) => ({ id: m[1], when: m[2] }));
 }
 
 /**
@@ -104,7 +105,7 @@ export function readPlayMeta(file, text) {
   const successDefined = Boolean(fm.success);
   return {
     id: fm.play || stem,
-    title: TITLE.exec(body)?.[1] ?? stem,
+    title: TITLE.exec(body)?.[1]?.replace(PLAY_TITLE_PREFIX, '') || stem,
     goal,
     success: successDefined ? fm.success : goal,
     successDefined,

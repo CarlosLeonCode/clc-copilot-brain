@@ -4,11 +4,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { BrainError } from './errors.js';
-import { parseFrontmatter } from './plays.js';
+import { PLAY_TITLE_PREFIX, parseFrontmatter } from './plays.js';
 import { escapeHtml } from './html-escape.js';
 import { getBrainLanguage } from './brain-language.js';
 import { DEFAULT_LANGUAGE, t } from './i18n.js';
-import { plainSystemSection, section, stageNames } from './sales-stages.js';
+import { EMPTY_LOG_LINE, SECTION_HEADINGS, plainSystemSection, section, stageNames } from './sales-stages.js';
 import { loadSalesReport } from './sales-records.js';
 import { DASHBOARD_CSS, renderDashboard } from './sales-dashboard.js';
 import { FLOWCHART_CSS, layoutFlowchart, parseFlowchart, renderFlowchartSvg } from './flowchart.js';
@@ -86,7 +86,7 @@ function tableRows(markdown) {
 }
 
 function parseBranches(markdown) {
-  const rows = tableRows(section(markdown, 'Branches'));
+  const rows = tableRows(section(markdown, SECTION_HEADINGS.branches));
   if (rows.length < 2) return [];
   const header = rows[0].map((c) => c.toLowerCase());
   const triggerCol = header.indexOf('trigger') === -1 ? 1 : header.indexOf('trigger');
@@ -97,9 +97,9 @@ function parseBranches(markdown) {
 }
 
 function parseLearnings(markdown) {
-  return section(markdown, 'Learnings Log').split(/\r?\n/)
+  return section(markdown, SECTION_HEADINGS.learnings).split(/\r?\n/)
     .map((l) => /^\s*[-*]\s+(.*)$/.exec(l)?.[1]?.trim())
-    .filter((item) => item && !/^no entries yet/i.test(item));
+    .filter((item) => item && !EMPTY_LOG_LINE.test(item));
 }
 
 function humanize(id) {
@@ -117,7 +117,7 @@ function parsePlay(fileName, text, names, { draft = false, lang = DEFAULT_LANGUA
   return {
     id,
     anchor: `play-${id.toLowerCase().replace(/[^a-z0-9-]+/g, '-')}`,
-    title: heading ? heading.replace(/^play:\s*/i, '') : humanize(id),
+    title: heading ? heading.replace(PLAY_TITLE_PREFIX, '') : humanize(id),
     goal: fm.goal || '',
     version: fm.version || '',
     firstStage: stageNumbers.length > 0 ? Number(stageNumbers[0]) : Number.MAX_SAFE_INTEGER,
