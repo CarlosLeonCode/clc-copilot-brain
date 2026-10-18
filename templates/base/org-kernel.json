@@ -1,6 +1,7 @@
 {
   "$schema": "./schemas/org-kernel.schema.json",
   "version": "1.0.0",
+  "language": "{{LANGUAGE}}",
   "organization": {
     "name": "{{COMPANY_NAME}}",
     "legalName": "{{COMPANY_NAME}}, Inc.",

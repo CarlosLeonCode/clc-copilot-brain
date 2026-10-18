@@ -4,6 +4,7 @@ import path from 'node:path';
 import { AREA_ID_PATTERN, findPreset } from './areas.js';
 import { isDemoTemplateAsset } from './demo.js';
 import { BrainError } from './errors.js';
+import { DEFAULT_LANGUAGE, LANGUAGE_HELP, parseLanguage } from './brain-language.js';
 import { copyDirRecursive, ensureDir } from './fs-utils.js';
 import { IDE_ADAPTERS, SSOT_FILE, expectedAssets, templateDirs } from './manifest.js';
 import { PLAYBOOKS_DIR, SCHEMAS_DIR, TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR } from './package-paths.js';
@@ -110,10 +111,12 @@ export function restoreRootSkills(targetDir, { templatesBaseDir = TEMPLATES_BASE
 /**
  * Initialize a brain in targetDir.
  * @param {string} targetDir
- * @param {{ companyName?: string, industry?: string, tagline?: string, areas: string[], demo?: boolean }} opts
+ * @param {{ companyName?: string, industry?: string, tagline?: string, areas: string[], demo?: boolean, language?: string }} opts
  * @returns {{ targetDir: string, areas: string[], adapters: ReturnType<typeof setupIdeAdapters> }}
  */
-export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, industry = INIT_DEFAULTS.industry, tagline = INIT_DEFAULTS.tagline, areas, demo = false }) {
+export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, industry = INIT_DEFAULTS.industry, tagline = INIT_DEFAULTS.tagline, areas, demo = false, language = DEFAULT_LANGUAGE }) {
+  const lang = parseLanguage(language);
+  if (!lang) throw new BrainError('INVALID_LANGUAGE', LANGUAGE_HELP);
   const invalid = areas.filter((id) => !AREA_ID_PATTERN.test(id));
   if (invalid.length > 0) {
     throw new BrainError('INVALID_AREA_ID', `Invalid area id(s): ${invalid.join(', ')}. Use lowercase letters, numbers, hyphens, and underscores.`);
@@ -129,6 +132,7 @@ export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, 
     .replaceAll('{{COMPANY_NAME}}', companyName)
     .replaceAll('{{INDUSTRY}}', industry)
     .replaceAll('{{TAGLINE}}', tagline)
+    .replaceAll('{{LANGUAGE}}', lang)
     .replaceAll('{{ACTIVE_AREAS_JSON}}', JSON.stringify(areas, null, 2))
     .replaceAll('{{ACTIVE_AREAS_LIST}}', areasList)
     .replaceAll('{{CREATED_AT}}', nowIso)

@@ -25,10 +25,13 @@ ${pc.bold('INIT OPTIONS:')}
   --industry <text>   Industry or domain
   --tagline <text>    Core tagline or mission
   --areas <list>      Comma-separated area ids (sales,marketing,product,operations,hr_people,finance_legal)
+  --language <en|es>  Language for people: English or Spanish
+                      (asked when run in a terminal; default: your computer's language)
   --demo              Include demo samples (mock battlecards, objections, calls)
   --clean             No demo samples (empty folders and blank templates, the default)
   -y, --yes           Accept defaults for anything not passed as a flag
-                      (all areas, clean brain unless --demo)
+                      (all areas, clean brain unless --demo,
+                      your computer's language unless --language)
 
 ${pc.bold('ADD-AREA OPTIONS:')}
   --preset <id>       Install an uninstalled preset area

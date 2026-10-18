@@ -4,6 +4,8 @@ import path from 'node:path';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { PRESET_AREAS, PRESET_AREA_IDS } from '../../core/areas.js';
+import { LANGUAGE_HELP, detectLanguage, parseLanguage } from '../../core/brain-language.js';
+import { BrainError } from '../../core/errors.js';
 import { writeSalesView } from '../../core/sales-view.js';
 import { INIT_DEFAULTS, initBrain } from '../../core/scaffold.js';
 import { ask } from '../prompt.js';
@@ -42,7 +44,24 @@ async function chooseDemo(options) {
   return mode === 'demo';
 }
 
+/** --language when passed (must be en or es); the computer's language with --yes or without a terminal; else a prompt. */
+async function chooseLanguage(options, detected) {
+  if (options.language !== undefined) return parseLanguage(options.language);
+  if (options.yes || !process.stdin.isTTY) return detected;
+  return ask(p.select({
+    message: 'Language for your brain / Idioma de tu cerebro',
+    options: [
+      { value: 'en', label: 'English' },
+      { value: 'es', label: 'Español' }
+    ],
+    initialValue: detected
+  }), 'Setup cancelled.');
+}
+
 export async function runInit(targetDir, options) {
+  if (options.language !== undefined && !parseLanguage(options.language)) {
+    throw new BrainError('INVALID_LANGUAGE', LANGUAGE_HELP);
+  }
   fs.mkdirSync(targetDir, { recursive: true });
   p.intro(pc.bgCyan(pc.black(' Open Source Second Brain Engine ')));
   p.note(`Target Directory: ${pc.bold(targetDir)}`, 'Configuration Target');
@@ -58,6 +77,7 @@ export async function runInit(targetDir, options) {
   const companyName = await textOption(options.name, options, { message: 'What is the name of your organization / project?', placeholder: 'Acme Corporation', defaultValue: INIT_DEFAULTS.companyName, validate: required('Company name') });
   const industry = await textOption(options.industry, options, { message: 'What industry or domain do you operate in?', placeholder: 'Enterprise Developer Tools & AI', defaultValue: INIT_DEFAULTS.industry, validate: required('Industry') });
   const tagline = await textOption(options.tagline, options, { message: 'What is your core tagline or mission?', placeholder: INIT_DEFAULTS.tagline, defaultValue: INIT_DEFAULTS.tagline });
+  const language = await chooseLanguage(options, detectLanguage(process.env));
   const areas = await chooseAreas(options);
   const demo = await chooseDemo(options);
 
@@ -65,7 +85,7 @@ export async function runInit(targetDir, options) {
   spin.start('Scaffolding Second Brain core files and AI adapters...');
   let result;
   try {
-    result = initBrain(targetDir, { companyName, industry, tagline, areas, demo });
+    result = initBrain(targetDir, { companyName, industry, tagline, areas, demo, language });
   } catch (err) {
     spin.stop(pc.red('Scaffolding failed.'));
     throw err;

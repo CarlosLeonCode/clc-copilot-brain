@@ -1,6 +1,7 @@
 {
   "$schema": "./schemas/org-kernel.schema.json",
   "version": "1.0.0",
+  "language": "en",
   "organization": {
     "name": "CLC Copilot Brain",
     "legalName": "CLC Copilot Brain, Inc.",

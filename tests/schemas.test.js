@@ -29,11 +29,20 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
         .replaceAll('{{TAGLINE}}', 'Institutional Knowledge Engine')
         .replaceAll('{{ACTIVE_AREAS_JSON}}', JSON.stringify(['sales', 'marketing', 'product', 'operations']))
         .replaceAll('{{CREATED_AT}}', nowIso)
-        .replaceAll('{{UPDATED_AT}}', nowIso);
+        .replaceAll('{{UPDATED_AT}}', nowIso)
+        .replaceAll('{{LANGUAGE}}', 'es');
 
       const parsed = JSON.parse(interpolated);
       const errors = validateAgainstSchema('org-kernel', parsed).errors;
       assert.deepStrictEqual(errors, [], `templates/base/org-kernel.json errors: ${errors.join(', ')}`);
+    });
+
+    await sub.test('org-kernel language is optional and must be en or es', () => {
+      const kernel = loadJson('org-kernel.json');
+      const { language: _unused, ...withoutLanguage } = kernel;
+      assert.deepStrictEqual(validateAgainstSchema('org-kernel', withoutLanguage).errors, [], 'old brains without language stay valid');
+      assert.deepStrictEqual(validateAgainstSchema('org-kernel', { ...kernel, language: 'es' }).errors, []);
+      assert.notDeepStrictEqual(validateAgainstSchema('org-kernel', { ...kernel, language: 'fr' }).errors, [], 'unknown languages are rejected');
     });
 
     await sub.test('all sales/battlecards/*.json conform to sales-battlecard.schema.json', () => {
