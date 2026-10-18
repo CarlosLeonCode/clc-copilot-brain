@@ -15,6 +15,7 @@ ${pc.bold('COMMANDS:')}
   ${pc.green('doctor')} [dir]       Audit repository health, schemas, and repair broken symlinks
   ${pc.green('list-areas')} [dir]   Show installed vs available domain areas
   ${pc.green('mcp')} [dir]          Start the Model Context Protocol (MCP) server over stdio
+  ${pc.green('stats')} [dir]        Show how your sales are going: results by motion, call guide and rep
   ${pc.green('upgrade')} [dir]      Update template-owned commands and skills of an existing brain (backups kept)
   ${pc.green('view')} [dir]         Build a visual page of your sales system (sales/sales-system.html)
   ${pc.green('help')}               Show this help message
@@ -45,6 +46,10 @@ ${pc.bold('VIEW OPTIONS:')}
   --draft <file>      Preview a draft call guide or pipeline without saving it (repeatable);
                       the preview goes to a temp file and sales/sales-system.html is untouched
 
+${pc.bold('STATS OPTIONS:')}
+  --month <YYYY-MM>   Show one month (compared with the month before) instead of this month and last
+  --json              Print the full report as JSON (for your AI assistant)
+
 ${pc.bold('GLOBAL OPTIONS:')}
   -v, --version       Show version number
   -h, --help          Show help
@@ -57,6 +62,7 @@ ${pc.bold('EXAMPLES:')}
   $ copilot-brain add-area ./acme-brain --custom legal_ops
   $ copilot-brain list-areas ./acme-brain
   $ copilot-brain mcp ./acme-brain
+  $ copilot-brain stats ./acme-brain --month 2026-09
   $ copilot-brain upgrade ./acme-brain --dry-run
   $ copilot-brain view ./acme-brain --open
   $ copilot-brain view ./acme-brain --draft /tmp/cold-call-draft.md --open

@@ -12,6 +12,7 @@ import { runDoctorCommand } from './commands/doctor.js';
 import { runInit } from './commands/init.js';
 import { runListAreas } from './commands/list-areas.js';
 import { runMcp } from './commands/mcp.js';
+import { runStats } from './commands/stats.js';
 import { runUpgrade } from './commands/upgrade.js';
 import { runView } from './commands/view.js';
 
@@ -22,6 +23,7 @@ const COMMANDS = {
   doctor: runDoctorCommand,
   'list-areas': runListAreas,
   mcp: runMcp,
+  stats: runStats,
   upgrade: runUpgrade,
   view: runView
 };

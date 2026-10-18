@@ -1,5 +1,5 @@
 // Minimal argv parser: positional args plus known valued (and repeatable) flags; other dashes become booleans.
-const VALUED_FLAGS = Object.freeze(['name', 'industry', 'tagline', 'areas', 'preset', 'custom']);
+const VALUED_FLAGS = Object.freeze(['name', 'industry', 'tagline', 'areas', 'preset', 'custom', 'month']);
 // Valued flags that may repeat; their values are collected into an array.
 const REPEATABLE_FLAGS = Object.freeze(['draft']);
 
