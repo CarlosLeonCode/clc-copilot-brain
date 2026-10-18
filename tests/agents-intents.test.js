@@ -112,3 +112,43 @@ test('the "here is my sales flow" intent imports, previews and waits for approva
   }
   assert.equal(rows[0], rows[1], 'root and template rows stay identical');
 });
+
+test('"how are we doing" runs stats and explains it in plain words; "classify my old calls" proposes before writing', () => {
+  const rowOf = (text, re) => text.split('\n').find((l) => l.startsWith('|') && re.test(l)) || '';
+  const rows = FILES.map((rel) => [rowOf(read(rel), /how are we doing/i), rowOf(read(rel), /classify my old calls/i)]);
+  for (const [doing, classify] of rows) {
+    for (const phrase of [/how are we doing\?/i, /¿cómo vamos\?/i, /what's working\?/i, /¿qué está funcionando\?/i]) assert.match(doing, phrase);
+    assert.match(doing, /clc-brain stats/);
+    assert.match(doing, /--json/);
+    assert.match(doing, /plain words/i);
+    assert.match(doing, /offer to open/i);
+    assert.match(doing, /clc-brain view --open/);
+    assert.match(classify, /classify my old calls/i);
+    assert.match(classify, /clasifica mis llamadas viejas/i);
+    assert.match(classify, /type of sale/i);
+    assert.match(classify, /goal met/i);
+    assert.match(classify, /only after (they|the person) says? yes/i);
+    assert.match(classify, /clc-brain view/);
+  }
+  assert.equal(rows[0][0], rows[1][0], 'root and template stats rows stay identical');
+  assert.equal(rows[0][1], rows[1][1], 'root and template classify rows stay identical');
+});
+
+test('web chatbot integrations log type of sale, lead source, deal and goal met', () => {
+  for (const name of ['CHATGPT_CUSTOM_GPT.md', 'GEMINI_GEM.md', 'CLAUDE_PROJECT.md']) {
+    const text = read(`skills/integrations/${name}`);
+    for (const key of ['motion', 'lead_source', 'deal_id', 'goal_met']) assert.match(text, new RegExp(`^${key}: `, 'm'), `${name} needs ${key}`);
+    assert.match(text, /type of sale[^\n]*lead source/i, `${name} confirms the type of sale and lead source in the sentence`);
+  }
+});
+
+test('READMEs say the sales page shows what is working and list the stats command', () => {
+  const en = read('README.md');
+  const es = read('README.es.md');
+  assert.match(en, /what's working[^\n]*type of sale[^\n]*call guide[^\n]*person/i);
+  assert.match(en, /Ask: ?\*?"How are we doing\?"/);
+  assert.match(es, /qué está funcionando[^\n]*tipo de venta[^\n]*guía de llamada[^\n]*persona/i);
+  assert.match(es, /Pregunta: ?\*?"¿Cómo vamos\?"/);
+  assert.ok(en.includes('`clc-brain stats [folder] [--month YYYY-MM] [--json]`'));
+  assert.ok(es.includes('`clc-brain stats [carpeta] [--month YYYY-MM] [--json]`'));
+});

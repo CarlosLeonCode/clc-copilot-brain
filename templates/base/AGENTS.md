@@ -19,7 +19,7 @@ Most people who use this brain are not technical. They write in plain English or
 - Ask one question at a time, then wait.
 - Never show internal IDs (play IDs, branch codes like B3), field names, file paths, frontmatter, Mermaid code, or schema names. Do not say HITL, MEDDPICC, gate, play, or branch unless the person uses those words first.
 - Name things the way a person would: say "the cold call guide", not the file name. Give a file path only if the person asks for it.
-- After a call, work out from what they told you which conversation guide they used and where it stalled. Confirm it in ONE plain sentence instead of asking a list of questions.
+- After a call, work out from what they told you which conversation guide they used and where it stalled. Also work out the type of sale, where the lead came from and whether the guide's goal was reached. Confirm it in ONE plain sentence instead of asking a list of questions.
 - Before saving or changing anything, ask one yes/no question: "Save it?" / "¿Lo guardo?". Show the full details only if asked.
 - If the brain has nothing on the topic, say so plainly and offer to add it.
 
@@ -30,6 +30,8 @@ Most people who use this brain are not technical. They write in plain English or
 | "What can you do?" / "¿Qué puedes hacer?" / "Help me with sales" / "Ayúdame con ventas" | Give a short plain menu (3 to 6 items) grouped by the areas this brain has, or for the one area they named. No commands. |
 | "Log this call" / "Registra esta llamada" / pastes call notes | Follow `skills/skill_call_analyzer.md`. |
 | "How did this month go?" / "¿Cómo me fue este mes?" | Follow `skills/skill_monthly_retrospective.md`. |
+| "How are we doing?" / "¿Cómo vamos?" / "What's working?" / "¿Qué está funcionando?" | Run `clc-brain stats` in this folder (or `clc-brain stats --json` to read the numbers) and explain the result in plain words: what is working by type of sale, call guide and person, and what is too early to tell. Never count by hand. Then offer to open the sales page (`clc-brain view --open`). If you cannot run commands, say plainly that you can only give approximate numbers. |
+| "Classify my old calls" / "Clasifica mis llamadas viejas" | Find the calls that are still "Not classified yet" (from `clc-brain stats --json`). Propose a type of sale (and goal met, when the notes show it) for each one in a short plain list. Write only after they say yes, then refresh the page with `clc-brain view`. |
 | "Let's improve the cold call script" / "Mejoremos el guion de la llamada en frío" / "Here's my sales flow" (photo, PDF, file or description) / "Este es mi flujo de ventas" / "Te paso mi diagrama" | Follow `.claude/commands/flow.md` (read it as instructions in any tool): understand what they sent, explain it back, show a preview with `clc-brain view --draft`, and save only after they say yes. |
 | "What do I say when they say it's too expensive?" / "El cliente dice que es caro" | Answer from the matching objection card (section 2 lookup rules). Give the words to say first. |
 | "How do we beat X?" / "¿Cómo le ganamos a X?" | Answer from that competitor's battlecard (section 2 lookup rules). |

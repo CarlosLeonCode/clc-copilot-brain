@@ -90,6 +90,8 @@ flowchart LR
 
 Tu asistente convierte tus pasos de venta y tus guías de llamada en una página visual sencilla que puedes abrir en tu navegador. Solo pide *"Muéstrame mi proceso de ventas"*. La página se actualiza sola cada vez que cambia una guía y funciona sin conexión a internet.
 
+La página también muestra qué está funcionando, por tipo de venta, guía de llamada y persona, con números sencillos. Pregunta: *"¿Cómo vamos?"*
+
 ¿Ya tienes tu proceso dibujado en algún lado? Comparte una foto, un PDF o un archivo con tu asistente: te explica lo que entendió, te muestra una vista previa y lo guarda solo cuando le dices que sí.
 
 <p align="center">
@@ -263,6 +265,7 @@ Para cualquier área, pregunta en lenguaje natural. Estos atajos agilizan las ta
 | `clc-brain clean-demo [carpeta]` | Elimina los documentos de ejemplo y conserva los tuyos. |
 | `clc-brain upgrade [carpeta]` | Actualiza un cerebro existente a los últimos comandos y skills; tus ediciones quedan como copias `.bak`. Agrega `--dry-run` para previsualizar. |
 | `clc-brain view [carpeta] [--open] [--draft <archivo>]` | Crea la página visual de tu proceso de ventas; añade `--open` para abrirla en tu navegador, o `--draft <archivo>` para ver un cambio antes de guardarlo. |
+| `clc-brain stats [carpeta] [--month YYYY-MM] [--json]` | Muestra qué está funcionando en tus ventas (por tipo de venta, guía de llamada y persona) este mes y el anterior; `--json` da los números en bruto. |
 | `clc-brain mcp [carpeta]` | Conecta apps MCP (lo usa la configuración de arriba). |
 
 `clc-brain --help` muestra todas las opciones.
