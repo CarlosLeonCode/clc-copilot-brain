@@ -15,7 +15,7 @@ ${pc.bold('COMMANDS:')}
   ${pc.green('doctor')} [dir]       Audit repository health, schemas, and repair broken symlinks
   ${pc.green('list-areas')} [dir]   Show installed vs available domain areas
   ${pc.green('mcp')} [dir]          Start the Model Context Protocol (MCP) server over stdio
-  ${pc.green('stats')} [dir]        Show how your sales are going: results by motion, call guide and rep
+  ${pc.green('stats')} [dir]        Show how your sales are going: results by type of sale, call guide and person
   ${pc.green('upgrade')} [dir]      Update template-owned commands and skills of an existing brain (backups kept)
   ${pc.green('view')} [dir]         Build a visual page of your sales system (sales/sales-system.html)
   ${pc.green('help')}               Show this help message

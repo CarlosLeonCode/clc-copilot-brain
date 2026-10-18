@@ -5,6 +5,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { BrainError } from './errors.js';
 import { parseFrontmatter } from './plays.js';
+import { escapeHtml } from './html-escape.js';
+import { plainSystemSection, section, stageNames } from './sales-stages.js';
+import { loadSalesReport } from './sales-records.js';
+import { DASHBOARD_CSS, renderDashboard } from './sales-dashboard.js';
 import { FLOWCHART_CSS, layoutFlowchart, parseFlowchart, renderFlowchartSvg } from './flowchart.js';
 
 export const SALES_VIEW_FILE = 'sales-system.html';
@@ -14,11 +18,7 @@ export const DRAFT_BADGE = 'Draft — not saved yet';
 const MERMAID_FENCE = /```mermaid\r?\n([\s\S]*?)```/;
 const FRONTMATTER_BLOCK = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
 
-const HTML_ESCAPES = Object.freeze({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' });
-
-export function escapeHtml(text) {
-  return String(text ?? '').replace(/[&<>"']/g, (ch) => HTML_ESCAPES[ch]);
-}
+export { escapeHtml, stageNames };
 
 /** Escape first, then apply **bold**; inline code and links become plain text. */
 function inline(text) {
@@ -74,35 +74,6 @@ export function markdownToHtml(markdown) {
   flushParagraph();
   flushList();
   return out.join('\n');
-}
-
-/** Body of a `## Heading` section, up to the next `## ` heading. */
-function section(markdown, heading) {
-  const lines = String(markdown).split(/\r?\n/);
-  const start = lines.findIndex((l) => l.trim().toLowerCase() === `## ${heading}`.toLowerCase());
-  if (start === -1) return '';
-  const rest = lines.slice(start + 1);
-  const end = rest.findIndex((l) => /^##\s/.test(l));
-  return (end === -1 ? rest : rest.slice(0, end)).join('\n');
-}
-
-/** Plain-language part of system.md: the "How your sales system works" section, before the AI-only rule. */
-function plainSystemSection(systemMd) {
-  const body = section(systemMd, 'How your sales system works');
-  const cut = body.search(/^-{3,}\s*$/m);
-  const plain = cut === -1 ? body : body.slice(0, cut);
-  // The "Want to see it?" hint points at this very page, so it is dropped here.
-  return plain.split(/\r?\n/).filter((l) => !/^\s*want to see it\?/i.test(l)).join('\n');
-}
-
-/** Stage number -> name, from the system.md stage table, else from its numbered list. */
-export function stageNames(systemMd) {
-  const names = new Map();
-  for (const m of String(systemMd).matchAll(/^\|\s*(\d+)\.\s*([^|]+?)\s*\|/gm)) names.set(m[1], m[2].trim());
-  if (names.size === 0) {
-    for (const m of plainSystemSection(systemMd).matchAll(/^\s*(\d+)\.\s+\*\*([^*]+)\*\*/gm)) names.set(m[1], m[2].trim());
-  }
-  return names;
 }
 
 function tableRows(markdown) {
@@ -259,6 +230,7 @@ ul.talk li{margin:12px 0;padding-left:12px;border-left:3px solid var(--soft)}
 .when{display:block;font-size:.9rem;color:var(--muted)}
 .say{display:block}
 footer{margin-top:48px;color:var(--muted);font-size:.9rem}
+${DASHBOARD_CSS}
 ${FLOWCHART_CSS}`;
 
 const FLOWCHART_START = /^\s*(?:flowchart|graph)\b/m;
@@ -372,6 +344,7 @@ ${preview ? '<p class="note preview-note">This is a preview. Parts marked as dra
 <section class="card">
 ${markdownToHtml(plainSystemSection(systemMd))}
 </section>
+${renderDashboard(loadSalesReport(rootDir, { now }))}
 <h2>Your pipeline</h2>
 <section class="card">
 ${pipelineDraft ? `<div class="card-head">${draftBadge(true)}</div>\n` : ''}${pipelineRendered ? pipelineRendered.html : '<p>No pipeline diagram yet. Ask your assistant to draw one.</p>'}

@@ -8,15 +8,17 @@ const call = (i, extra = {}) => ({ relPath: `sales/calls/2026-10/c${i}.md`, date
 const plays = [{ id: 'cold-call', title: 'Cold call', success: 'Books a meeting', successDefined: true, motions: ['cold-outbound'], firstStage: 1, branches: [{ id: 'B1', when: 'They say no budget' }] }];
 const text = (calls, extra = {}) => formatSalesReport(buildSalesReport({ calls, wins: [], plays, stageNames: new Map(), skipped: [], demoExcluded: 0, ...extra }, { now: NOW }));
 
-test('plain wording with month names, motion and per-rep sections', () => {
+test('plain wording with month names, type of sale and per-person sections', () => {
   const out = text([call(1), call(2, { rep: 'Ben', goalMet: false }), call(3)]);
   assert.match(out, /October 2026/);
   assert.match(out, /so far/);
   assert.match(out, /September 2026/);
   assert.match(out, /Cold outreach/);
-  assert.match(out, /By rep/);
+  assert.match(out, /By type of sale/);
+  assert.match(out, /By person/);
   assert.match(out, /Ana/);
   assert.match(out, /They say no budget/, 'stall points use the branch trigger text');
+  assert.doesNotMatch(out, /\bmotions?\b|\breps?\b/i, 'no jargon');
   assert.doesNotMatch(out, /sales\/|\.md|goal_met|goalMet|B1|cold-outbound|cold-call/, 'no paths, field names or ids');
 });
 
@@ -36,4 +38,5 @@ test('empty month says there are no calls and unclassified and demo notes appear
   assert.match(out, /sample/i);
   const un = text([call(1, { play: '' })]);
   assert.match(un, /Not classified yet/);
+  assert.match(un, /type of sale/);
 });

@@ -7,7 +7,7 @@ import { demoAssetPaths } from './demo.js';
 import { parseFrontmatter, readPlayMeta } from './plays.js';
 import { readCallLog, isIsoDate } from './calls.js';
 import { dealKey, normalizeOutcome, toSlug } from './sales-normalize.js';
-import { stageNames } from './sales-view.js';
+import { stageNames } from './sales-stages.js';
 import { buildSalesReport } from './sales-metrics.js';
 
 const WIN_LOSS_SKIP = new Set(['README.md', 'post-mortem-template.md']);

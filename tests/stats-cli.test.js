@@ -35,7 +35,7 @@ test('stats prints a plain-text table for humans', () => {
     assert.equal(res.status, 0, res.stderr);
     assert.match(res.stdout, /so far/);
     assert.match(res.stdout, /Inbound/);
-    assert.match(res.stdout, /By rep/);
+    assert.match(res.stdout, /By person/);
     assert.doesNotMatch(res.stdout, /goal_met|\.md/);
   });
 });
