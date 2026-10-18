@@ -213,3 +213,47 @@ test('retro records approved play edits in the play file, not in sales/system.md
     assert.match(text, /Learnings Log/);
   }
 });
+
+test('call, flow and retro record and use type of sale and goal met', async (t) => {
+  const { getPrompt } = await import('../src/mcp/prompts.js');
+  const read = (rel) => fs.readFileSync(path.join(PKG_DIR, rel), 'utf8');
+  const skills = (name) => [`skills/${name}`, `templates/base/skills/${name}`, `templates/areas/sales/skills/${name}`].map(read);
+  const cmds = (name) => [`.claude/commands/${name}`, `templates/base/.claude/commands/${name}`].map(read);
+  const prompt = (name) => getPrompt(name, {}).messages[0].content.text;
+
+  await t.test('call analyzer infers type of sale, lead source and goal met, and writes the new keys', () => {
+    for (const c of skills('skill_call_analyzer.md')) {
+      for (const key of ['motion', 'lead_source', 'deal_id', 'goal_met']) assert.match(c, new RegExp(`^${key}: `, 'm'), key);
+      assert.match(c, /type of sale[^\n]*lead source[^\n]*success/i, 'one sentence confirms all three');
+      assert.match(c, /never (derive|take)[^\n]*goal_met[^\n]*gate_advanced|goal_met[^\n]*never[^\n]*gate_advanced/i);
+      assert.match(c, /Example \(EN\)[^\n]*goal/i);
+    }
+    for (const c of [...cmds('call.md'), prompt('call')]) {
+      assert.match(c, /type of sale/i);
+      for (const key of ['motion', 'lead_source', 'deal_id', 'goal_met']) assert.match(c, new RegExp(key), key);
+    }
+  });
+
+  await t.test('flow requires success and type of sale for new or imported guides and never invents them', () => {
+    for (const c of [...cmds('flow.md'), prompt('flow')]) {
+      assert.match(c, /must define (its )?success/i);
+      assert.match(c, /What counts as a good result for this call\?/);
+      assert.match(c, /type\(s\) of sale/i);
+      assert.match(c, /never invent (the )?(success|type)/i);
+    }
+  });
+
+  await t.test('retro reads numbers from clc-brain stats for the last complete month and never counts by hand', () => {
+    for (const c of [...skills('skill_monthly_retrospective.md'), ...cmds('retro.md'), prompt('retro')]) {
+      assert.match(c, /clc-brain stats --month <?[^\s`]+>? --json/);
+      assert.match(c, /last complete month/i);
+      assert.match(c, /never count by hand/i);
+      assert.match(c, /approximate/i);
+      assert.match(c, /by type of sale/i);
+      assert.match(c, /per person/i);
+      assert.match(c, /Not classified yet/);
+      assert.match(c, /This month in 3 points/);
+    }
+    for (const c of skills('skill_monthly_retrospective.md')) assert.match(c, /Classify old calls[\s\S]*?Write nothing until the person says yes/);
+  });
+});

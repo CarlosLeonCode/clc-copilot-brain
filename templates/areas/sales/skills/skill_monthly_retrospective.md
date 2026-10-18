@@ -8,9 +8,13 @@
 
 When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-09`):
 
-1. **Scan Historical Memory**:
+0. **Get the numbers from the command, never count by hand**:
+   - Default to the last complete month (for example, in October use September) unless the person names another month. Run `clc-brain stats --month <YYYY-MM> --json` in the brain folder and use its totals, by type of sale, by call guide (with where calls stalled), per person, the comparison with the previous month, and the list of calls that are still "Not classified yet".
+   - Never count by hand. If the command cannot run, say plainly that the numbers are approximate before giving them.
+   - Respect small samples: with fewer than 5 calls give counts only; with fewer than 10 say it is too early to tell.
+1. **Scan Historical Memory** (for the details behind the numbers):
    - Collect and parse all call logs in `sales/calls/YYYY-MM/*.md`.
-   - Read YAML frontmatter metadata: `deal_stage`, `rep`, `detected_objections`, `competitors_mentioned`, `outcome`, `deal_size`, `play`, `branch`, `gate_advanced`.
+   - Read YAML frontmatter metadata: `deal_stage`, `rep`, `detected_objections`, `competitors_mentioned`, `outcome`, `deal_size`, `play`, `branch`, `motion`, `lead_source`, `deal_id`, `goal_met`, `gate_advanced`.
    - Read both key generations. Legacy logs use `stage` and `prospect`; canonical logs use `deal_stage` and `prospect_company`. Treat `deal_stage ?? stage` and `prospect_company ?? prospect` as the same field.
 2. **Scan Closed Outcomes**:
    - Collect all deal post-mortems in `sales/win-loss/` closed during the target month.
@@ -69,7 +73,9 @@ Every retrospective must culminate in concrete repository improvements. Each one
    - Reword a talk track, add a branch, or split a play, following section 2E (explicit approval, Learnings Log entry, `version` bump).
 4. **Sales Flow Diagram Adjustments** (internal):
    - If the person wants a visual journey map, the brain's diagram tool is listed in `org-kernel.json` -> `ecosystemTools.salesFlowDiagrams`. Never paste its link into the main report.
-5. **Targeted Enablement Sessions**:
+5. **Classify old calls**:
+   - If the numbers list calls that are "Not classified yet", propose a type of sale (and whether the goal was met, when the notes show it) for each one in a short plain list. Write nothing until the person says yes; then refresh the page with `clc-brain view`.
+6. **Targeted Enablement Sessions**:
    - Suggest specific roleplay or coaching drills for reps on identified weak spots.
 
 ---
@@ -85,6 +91,8 @@ Reply in the person's language and in plain words. Show only parts A and B. In t
 1. {{PLAIN_POINT_1}} (for example: "You had 14 calls and closed 2 deals, about $40k.")
 2. {{PLAIN_POINT_2}} (for example: "Price was the most common worry; our answer worked about half the time.")
 3. {{PLAIN_POINT_3}} (for example: "Deals tend to stall while waiting for the security review.")
+
+By type of sale and per person, in one line each (for example: "Cold outreach reached its goal in 3 of 4 calls; Ana had the best month. 2 calls are still Not classified yet.").
 
 ## Changes I suggest
 1. In the cold call, most people drop when we ask about budget. Want me to change that question to "{{NEW_QUESTION}}"?
@@ -103,6 +111,15 @@ Tell me the numbers you want (for example "1 and 3"), or "none". If you want the
 | **Closed Lost Deals** | {{LOST_COUNT}} (${{LOST_ARR}}) | {{PREV_LOST}} | {{DELTA}} |
 | **Pipeline Win Rate** | {{WIN_RATE}}% | {{PREV_RATE}}% | {{DELTA}} |
 | **Average Deal Cycle** | {{AVG_DAYS}} days | {{PREV_DAYS}} days | {{DELTA}} |
+
+### By type of sale and per person
+| Type of sale | Calls | Goal reached | Deals won |
+| :--- | :--- | :--- | :--- |
+| {{TYPE_OF_SALE}} | {{CALLS}} | {{GOAL_PCT}}% | {{WON_COUNT}} |
+
+| Person | Calls | Goal reached |
+| :--- | :--- | :--- |
+| {{PERSON}} | {{CALLS}} | {{GOAL_PCT}}% |
 
 ### Objection trends
 | Objection | Category | Occurrences | Handled Well % | Trend |

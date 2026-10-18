@@ -23,6 +23,10 @@ When provided with a call transcript, recording summary, or raw conversation not
    - **Outcome**: `Advanced` | `Stalled` | `Disqualified` | `Closed Won` | `Closed Lost`
    - **Play**: Infer the conversation guide (play) that was run, matching a file in `sales/plays/` (e.g., `discovery-call`). Read `sales/system.md` to find it. If none fits, leave `play` out and mention in plain words that no guide matched.
    - **Branch**: Infer the branch ID in that play's decision tree (e.g., `B3`) where the call went off-script or broke. Use the last branch reached if the call ended cleanly.
+   - **Type of sale (`motion`)**: Infer how this deal started or is sold (`cold-outbound`, `inbound`, `referral`, `expansion`, or a custom slug the brain already uses). Prefer the type already recorded for the same deal, then the type of the call guide that was run. Never invent one.
+   - **Lead source (`lead_source`)**: Where this lead came from (e.g., `linkedin`, `webinar`, `partner`). Leave it out when the notes do not say.
+   - **Deal ID (`deal_id`)**: A short slug that ties calls of the same deal together (e.g., `acme-2026`). Reuse the one from earlier calls with the same company.
+   - **Goal Met (`goal_met`)**: `true` if the call reached the success defined by that call guide (its `success:` line in `sales/plays/`), `false` if not. If the guide defines no success or the notes do not show it, ask "What counts as a good result for this call?" once, or leave it out. Never derive `goal_met` from `gate_advanced`; they are different questions.
    - **Gate Advanced**: `true` only if the evidence for the stage exit gate in `sales/stages/pipeline-stages.md` was captured on this call, otherwise `false`.
    - **Deal Value / ARR**: Estimated or contracted ARR (e.g., `$120,000 ARR`).
 
@@ -84,8 +88,12 @@ contact_role: "{{CONTACT_ROLE}}"
 deal_stage: "{{STAGE}}"
 call_type: "{{CALL_TYPE}}"
 outcome: "{{OUTCOME}}"
+motion: "{{MOTION_SLUG}}"
+lead_source: "{{LEAD_SOURCE_SLUG}}"
+deal_id: "{{DEAL_ID_SLUG}}"
 play: "{{PLAY_ID}}"
 branch: "{{BRANCH_ID}}"
+goal_met: true | false
 gate_advanced: true | false
 deal_size: "{{ESTIMATED_ARR}}"
 detected_objections:
@@ -155,11 +163,11 @@ next_meeting: "YYYY-MM-DDTHH:MM:SSZ"
 
 ## 3b. PLAY ATTRIBUTION & REVIEW CHECKPOINT (INTERNAL RULES)
 
-- Always write the exact frontmatter keys above to the file (`prospect_company`, `deal_stage`, `play`, `branch`, `gate_advanced`). They match the keys written by `brain_capture_call`, so `/retro` can aggregate them.
+- Always write the exact frontmatter keys above to the file (`prospect_company`, `deal_stage`, `motion`, `lead_source`, `deal_id`, `play`, `branch`, `goal_met`, `gate_advanced`). They match the keys written by `brain_capture_call`, so `/retro` can aggregate them.
 - `{{PROSPECT_COMPANY}}` is the prospect's name, never your own organization's name.
-- Review checkpoint before saving: confirm in ONE plain sentence, in the person's language, then ask a single yes/no question: "Save it?" / "¿Lo guardo?". Wait for a yes before saving.
-  - Example (ES): "Llamada con Acme: usaste la guía de llamada en frío, se frenó cuando preguntaste por el presupuesto y quedaron en hablar el jueves. ¿Lo guardo?"
-  - Example (EN): "Call with Acme: you used the cold call guide, it stalled when you asked about budget, and you agreed to talk on Thursday. Save it?"
+- Review checkpoint before saving: confirm in ONE plain sentence, in the person's language, that names the type of sale, the lead source and whether the guide's success was reached, then ask a single yes/no question: "Save it?" / "¿Lo guardo?". Wait for a yes before saving. Ask only what is still missing, one question at a time.
+  - Example (ES): "Llamada con Acme, venta por contacto en frío que llegó de LinkedIn: usaste la guía de llamada en frío, no lograste el objetivo (agendar una demo) porque se frenó con el presupuesto, y quedaron en hablar el jueves. ¿Lo guardo?"
+  - Example (EN): "Call with Acme, a cold outreach sale that came from LinkedIn: you used the cold call guide, the goal (book a demo) was not reached because it stalled on budget, and you agreed to talk on Thursday. Save it?"
 - In that sentence never show play IDs, branch codes (like B3), field names, file paths, or frontmatter. Never say "HITL" or "checkpoint" to the person. Show the full log only if they ask for it.
 - If the person corrects something, fix it and confirm again in one sentence.
 - After saving, say in plain words what happened (e.g. "Saved with your September calls."), without the file path.

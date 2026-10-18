@@ -33,10 +33,11 @@ Keep all routing internal: never show file paths, play IDs, branch codes, Mermai
    - Explain back what you understood: a short numbered list of the steps and the "if they say X → do Y" branches.
    - Name anything unclear or missing: dead ends, arrows without a label, a missing next step, steps you could not read.
    - Ask about the gaps one question at a time, and wait for each answer. Never invent steps: mark unknowns and ask.
+   - A new or imported call guide must define success and its type(s) of sale. If the input does not say, ask plainly "What counts as a good result for this call?" and "Which type(s) of sale is it for?" one at a time. Never invent the success or the type of sale.
 
 6. **Draft**:
    - Write the draft in a temporary file outside the saved guides (for example in the system temp folder), never over a saved guide.
-   - A call guide follows the play contract: frontmatter `play, stages, goal, gate_unlocked, version, status`, then a Decision Tree, Branches (talk track per branch) and a Learnings Log. A pipeline draft holds the Mermaid flowchart of the stages.
+   - A call guide follows the play contract: frontmatter `play, stages, goal, success, motions, gate_unlocked, version, status`, then a Decision Tree, Branches (talk track per branch) and a Learnings Log. A pipeline draft holds the Mermaid flowchart of the stages.
    - Use only the Mermaid subset the page can draw:
      - Header `flowchart TD` (call guides) or `flowchart LR` (the whole process).
      - Steps: `id[text]`, `id(text)`, `id([text])`, `id{question?}` for decisions, `id((text))`; quote labels with punctuation: `id["text"]`; `<br>` for a line break.

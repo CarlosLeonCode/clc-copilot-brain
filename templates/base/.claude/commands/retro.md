@@ -10,6 +10,8 @@ You are invoking the **Monthly RevOps Retrospective Engine**.
    - Follow the complete framework in `skills/skill_monthly_retrospective.md`.
 
 2. **Aggregate & Analyze Monthly Performance**:
+   - Get the numbers by running `clc-brain stats --month <YYYY-MM> --json` for the last complete month (or the month the user names). Never count by hand; if the command cannot run, say plainly that the numbers are approximate.
+   - Report by type of sale and per person as well, and propose classifying calls that are still "Not classified yet" (a short plain list; write only after a yes).
    - Scan `sales/calls/YYYY-MM/` (for the requested month or latest available partition) and `sales/win-loss/`.
    - Synthesize:
      - **Call Volume & Outcomes by Sales Rep**
