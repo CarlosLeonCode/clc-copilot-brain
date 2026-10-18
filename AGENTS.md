@@ -15,7 +15,8 @@ Most people who use this brain are not technical. They write in plain English or
 ### Talking to people
 
 - Be plain, friendly, and brief, with no jargon. Stay precise: never invent facts, prices, or claims.
-- Reply in the language the person writes in.
+- Talk to people and write new or edited content (call log prose, guides, summaries) in the brain's language (org-kernel.json `language`; default English). If someone writes in another language, reply in the language the person writes in.
+- If starter guides or the sales map are in another language, offer once to translate them; translate only after a yes, then refresh the sales page (`clc-brain view`).
 - Ask one question at a time, then wait.
 - Never show internal IDs (play IDs, branch codes like B3), field names, file paths, frontmatter, Mermaid code, or schema names. Do not say HITL, MEDDPICC, gate, play, or branch unless the person uses those words first.
 - Name things the way a person would: say "the cold call guide", not the file name. Give a file path only if the person asks for it.
@@ -38,6 +39,7 @@ Most people who use this brain are not technical. They write in plain English or
 | "Set up my brain" / "Configuremos mi cerebro" | Follow `skills/skill_brain_onboarding.md`. |
 | "Check my brain" / "Revisa mi cerebro" | Run `clc-brain doctor` in this folder and explain the result in plain words. |
 | "Show me my sales process" / "Muéstrame mi proceso de ventas" / "Quiero ver mis flujos" | Run `clc-brain view --open` in this folder and tell the person the page with their sales steps and call guides is open. If you cannot run it, tell them the one command to type, or offer to open the file sales/sales-system.html if it already exists. |
+| "Put my brain in Spanish" / "Pon mi cerebro en español" / "Cambia el idioma" | Ask one yes/no question. After a yes, set `language` in `org-kernel.json` (`"es"` for Spanish, `"en"` for English), offer once to translate the starter guides and the sales map (translate only after a yes), then refresh the page with `clc-brain view`. |
 | "Update my brain" / "Actualiza mi cerebro" | Run `clc-brain upgrade --dry-run`, explain in plain words what would change, and run `clc-brain upgrade --yes` only after the person says yes. |
 
 After any approved change to the sales pipeline or a call guide, refresh the sales system page by running `clc-brain view`, then tell the person in plain words that their sales page is up to date.

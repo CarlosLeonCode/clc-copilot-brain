@@ -76,6 +76,8 @@ src/
 │   ├── query.js           queryBrain (allowed areas + playbooks)
 │   ├── sales-view.js      buildSalesView/writeSalesView (plain-language HTML page of the sales system)
 │   ├── sales-records.js, sales-metrics.js, sales-dashboard.js, sales-report-text.js  tolerant reader, pure metrics, page section, plain text (ADR 0007)
+│   ├── i18n.js            t(lang, key, vars) with en/es dictionaries (English fallback), formatMonth, formatPercent (Intl)
+│   ├── brain-language.js  getBrainLanguage (org-kernel.json `language`, default "en"), parseLanguage, detectLanguage (LC_ALL/LANG)
 │   ├── manifest.js        IDE adapters + commands/skills derived from templates/base
 │   ├── schema-validator.js  ajv Draft 2020-12 (ADR 0002)
 │   └── errors.js, fs-utils.js, package-paths.js
@@ -270,6 +272,14 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 - The sales page gets a "How it's going" section (`sales-dashboard.js`): both months, per type of sale, per call guide against its own success definition, where calls miss their goal, per person, win rate, and how deals start. Bars are plain `div`s with a width and always come with text; there are no scripts, links, images or URLs. Plain words only: no IDs, field names or paths.
 - `doctor` adds warnings only: guides without a success definition, records with a type of sale no guide lists, and unreadable records.
 - No MCP tool is added for metrics (decision 11); `brain_capture_call` is unchanged.
+
+### Brain language (i18n)
+- `org-kernel.json` has an optional `language` (`"en"` | `"es"`, schema enum). Old brains without it stay valid and are treated as English; an invalid value also falls back to English (`getBrainLanguage` in `src/core/brain-language.js`).
+- `init --language <en|es>` writes it through the `{{LANGUAGE}}` placeholder of `templates/base/org-kernel.json`. Without the flag, an interactive run asks "Language for your brain / Idioma de tu cerebro" (default from `LC_ALL`, then `LANG`: `es*` gives Spanish, anything else English); `--yes` or no TTY uses that default. An invalid value exits 1 with a plain message.
+- `src/core/i18n.js` is pure: `t(lang, key, vars)` looks up `en`/`es` dictionaries (plural forms via `Intl.PluralRules`, `{name}` placeholders, English fallback for missing keys), `formatMonth` (`Intl.DateTimeFormat`, first letter capitalised: "Octubre de 2026") and `formatPercent`.
+- Every chrome string of the sales page (`sales-view.js`, `sales-dashboard.js`), metric labels (`sales-metrics.js`), default type-of-sale names (`motionName(slug, lang)`) and the `stats` text (`sales-report-text.js`) goes through `t`. `<html lang>` follows the brain language. Content from the brain's own files (the plain section of `system.md`, guide titles, goals, talk tracks, stage names) is shown as written.
+- `buildSalesReport(records, { lang })` returns `language`; `loadSalesReport` reads it from the brain. `stats --json` keeps English keys (machine data) and includes `language`.
+- The AGENTS.md managed block tells the assistant to talk and write new content in the brain's language, to offer once to translate starter content in another language (only after a yes), and maps "put my brain in Spanish" to setting `language`. Onboarding asks for the language first when it is not set.
 
 ### 4. Declarative Ecosystem Tools Manifest
 Declared inside `org-kernel.json` under `ecosystemTools`:

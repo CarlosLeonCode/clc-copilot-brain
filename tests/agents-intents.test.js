@@ -152,3 +152,38 @@ test('READMEs say the sales page shows what is working and list the stats comman
   assert.ok(en.includes('`clc-brain stats [folder] [--month YYYY-MM] [--json]`'));
   assert.ok(es.includes('`clc-brain stats [carpeta] [--month YYYY-MM] [--json]`'));
 });
+
+test('both AGENTS.md files use the brain language and know how to change it', () => {
+  for (const rel of FILES) {
+    const text = read(rel);
+    assert.match(text, /in the brain's language \(org-kernel\.json `language`; default English\)/, `${rel} needs the brain language rule`);
+    assert.match(text, /call log prose, guides, summaries/i);
+    assert.match(text, /offer once to translate them; translate only after a yes, then refresh the sales page \(`clc-brain view`\)/);
+    assert.match(text, /put my brain in Spanish/i);
+    assert.match(text, /pon mi cerebro en español/i);
+    assert.match(text, /cambia el idioma/i);
+  }
+});
+
+test('onboarding asks for the language first when it is not set and stores it', () => {
+  for (const rel of ['skills/skill_brain_onboarding.md', 'templates/base/skills/skill_brain_onboarding.md', '.claude/commands/brain:onboarding.md', 'templates/base/.claude/commands/brain:onboarding.md']) {
+    const text = read(rel);
+    assert.match(text, /Step 0[^\n]*Language/i, `${rel} needs a language step`);
+    assert.match(text, /`language`/, `${rel} must store the language in org-kernel.json`);
+    assert.match(text, /only if[^\n]*not set|if[^\n]*not set yet/i, `${rel} asks only when the language is missing`);
+  }
+});
+
+test('READMEs say the brain works in English and Spanish and document --language', () => {
+  const en = read('README.md');
+  const es = read('README.es.md');
+  assert.ok(en.includes('Works in English and Spanish'));
+  assert.ok(es.includes('Funciona en español e inglés'));
+  assert.match(en, /--language es/);
+  assert.match(es, /--language es/);
+  assert.match(en, /page follows the brain('s)? language/i);
+  assert.match(es, /página[^\n]*idioma del cerebro/i);
+  const tech = read('TECHNICAL.md');
+  assert.match(tech, /i18n\.js/);
+  assert.match(tech, /`language`/);
+});

@@ -24,6 +24,11 @@
 
 Conduct the interview in this exact sequence:
 
+### Step 0: Language (only if not set)
+- **Check first**: read `org-kernel.json`. If `language` is already `"en"` or `"es"`, skip this step and run the whole interview in that language.
+- **Ask (only if not set yet)**: "Which language should your brain use: English or Spanish? / ¿Qué idioma debe usar tu cerebro: español o inglés?"
+- **Store**: set `language` in `org-kernel.json` (`"en"` or `"es"`) right away, then continue in that language.
+
 ### Step 1: Organization Name
 - **Ask**: "Welcome to your Organizational Second Brain setup! Let's get your knowledge repository configured. First: What is the official name of your company or project?"
 - **Expected Data**: Official company/project name and optional legal entity name (e.g. Acme Corp / Acme Inc.).
@@ -72,6 +77,7 @@ Once Question 8 is answered:
 
 1. **Update `org-kernel.json`**:
    - Update `organization` fields: `name`, `industry`, `tagline`, `description`.
+   - Keep `language` as chosen in Step 0 (`"en"` or `"es"`).
    - Set `activeAreas` to the chosen operational areas.
    - Update `governance`: `owner`, `reviewCadenceDays`.
    - Update `metadata.updatedAt` to the current ISO-8601 timestamp.

@@ -12,6 +12,7 @@ You are invoking the **Organizational Onboarding Specialist**.
 2. **Strict Execution Rules**:
    - **STRICTLY ASK ONE QUESTION AT A TIME**. Never ask multiple questions at once.
    - Wait for the user's answer before proceeding to the next step.
+   - **Step 0 — Language (only if not set)**: if `org-kernel.json` has no valid `language`, first ask one question: English or Spanish. Store it as `language` (`"en"` or `"es"`) and run the rest in that language.
    - Follow the 8-step interview protocol:
      1. Company Name & Legal Name
      2. Industry / Market Vertical
@@ -37,4 +38,4 @@ You are invoking the **Organizational Onboarding Specialist**.
    - Finish by suggesting one example question per seeded area (e.g. `/objection "<their objection>"`).
 
 4. **Initiate Immediately**:
-   - Begin right now by welcoming the user and asking **Step 1 (Company Name)** only.
+   - Begin right now by welcoming the user and asking **Step 0 (Language)** only if it is not set yet; otherwise ask **Step 1 (Company Name)** only.

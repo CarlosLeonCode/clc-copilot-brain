@@ -105,6 +105,8 @@ La página también muestra qué está funcionando, por tipo de venta, guía de 
 - 🔷 **Gemini**: el asistente de programación Gemini de Google y Gemini Gems en la web
 - 🟢 **ChatGPT**: como GPT personalizado
 
+🌎 Funciona en español e inglés.
+
 ## 🔒 Tus datos siguen siendo tuyos
 
 > [!IMPORTANT]
@@ -146,7 +148,7 @@ npm link
 clc-brain init ../acme-brain
 ```
 
-Responde unas preguntas (nombre de la empresa, industria, áreas). Verás **"Second Brain initialized successfully!"** y luego tus próximos pasos.
+Responde unas preguntas (idioma, nombre de la empresa, industria, áreas). Para elegir el idioma desde el principio, añade `--language es` (español) o `--language en` (inglés); por defecto se usa el idioma de tu computadora. La página de ventas usa el idioma del cerebro, y `clc-brain stats` también. Verás **"Second Brain initialized successfully!"** y luego tus próximos pasos.
 
 > [!TIP]
 > ¿Quieres explorar primero? Ejecuta `clc-brain init ../demo-brain --demo` para obtener un cerebro con documentos de ejemplo. Elimínalos después con `clc-brain clean-demo ../demo-brain`.
