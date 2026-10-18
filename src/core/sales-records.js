@@ -8,6 +8,7 @@ import { parseFrontmatter, readPlayMeta } from './plays.js';
 import { readCallLog, isIsoDate } from './calls.js';
 import { dealKey, normalizeOutcome, toSlug } from './sales-normalize.js';
 import { stageNames } from './sales-view.js';
+import { buildSalesReport } from './sales-metrics.js';
 
 const WIN_LOSS_SKIP = new Set(['README.md', 'post-mortem-template.md']);
 const WIN_LOSS_NAME = /^(\d{4}-\d{2}-\d{2})_(.+)_(won|lost)\.md$/i;
@@ -161,4 +162,9 @@ export function readSalesRecords(rootDir, { templatesAreasDir } = {}) {
     // no system.md: no stage names
   }
   return { calls, wins, plays, stageNames: stageNames(systemMd), skipped: state.skipped, demoExcluded: state.demoExcluded };
+}
+
+/** Read a brain's records and build the metrics report. Pass `now` for deterministic windows. */
+export function loadSalesReport(rootDir, { now, month, templatesAreasDir } = {}) {
+  return buildSalesReport(readSalesRecords(rootDir, { templatesAreasDir }), { now, month });
 }

@@ -1,5 +1,5 @@
 // Pure sales metrics: month windows, sample-size rules and motion resolution. No I/O.
-import { toSlug } from './sales-normalize.js';
+import { toSlug, motionName, DEFAULT_MOTIONS } from './sales-normalize.js';
 
 export const COUNT_ONLY_BELOW = 5;
 export const TOO_EARLY_BELOW = 10;
@@ -42,4 +42,170 @@ export function resolveMotion(record, dealIndex, playsById) {
   const play = record.play ? playsById?.get(record.play) : undefined;
   if (Array.isArray(play?.motions) && play.motions.length === 1) return play.motions[0];
   return UNCLASSIFIED;
+}
+
+// ---- computed metrics (pure) ----
+const OUTCOMES = ['closed-won', 'closed-lost', 'disqualified', 'stalled', 'advanced', 'unclassified'];
+const NO_BRANCH = 'No branch recorded';
+const UNKNOWN_BRANCH = 'A situation not in the call guide';
+const NO_REP = 'Not recorded';
+const NO_PLAY = 'Not tied to a call guide';
+
+/** Rate of `true` over decided (true+false) values of `key`; undefined values are left out. */
+function rateOf(items, key) {
+  const decided = items.filter((c) => typeof c[key] === 'boolean');
+  return makeRate(decided.filter((c) => c[key]).length, decided.length);
+}
+
+function group(items, keyOf) {
+  const map = new Map();
+  for (const item of items) {
+    const key = keyOf(item);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(item);
+  }
+  return map;
+}
+
+function stallPoints(calls, play) {
+  const whenOf = (branch) => {
+    if (!branch) return NO_BRANCH;
+    return play?.branches?.find((b) => b.id === branch)?.when || UNKNOWN_BRANCH;
+  };
+  const counts = new Map();
+  for (const c of calls.filter((x) => x.goalMet === false)) {
+    const key = whenOf(c.branch);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return [...counts].map(([when, count]) => ({ branch: when, when, count })).sort((a, b) => b.count - a.count);
+}
+
+const motionLabel = (slug) => (slug === UNCLASSIFIED ? 'Not classified yet' : motionName(slug));
+const motionRank = (slug) => {
+  const defaults = Object.keys(DEFAULT_MOTIONS);
+  if (slug === UNCLASSIFIED) return defaults.length + 1;
+  const i = defaults.indexOf(slug);
+  return i === -1 ? defaults.length : i;
+};
+
+/** Metrics for one 'YYYY-MM' month. `records` is the readSalesRecords result. */
+export function computeSalesMetrics(records, { month, complete = false } = {}) {
+  const { calls = [], wins = [], plays = [] } = records;
+  const playsById = new Map(plays.map((p) => [p.id, p]));
+  const dealIndex = buildDealIndex(calls, wins);
+  const inMonth = calls.filter((c) => c.month === month);
+  const motionOf = (r) => resolveMotion(r, dealIndex, playsById);
+  const decided = new Set(wins.map((w) => w.dealKey).filter(Boolean));
+  const winsInMonth = wins.filter((w) => String(w.date).slice(0, 7) === month);
+
+  const outcomes = Object.fromEntries(OUTCOMES.map((o) => [o, 0]));
+  for (const c of inMonth) outcomes[Object.hasOwn(outcomes, c.outcome) ? c.outcome : 'unclassified'] += 1;
+
+  const motionSlugs = new Set([...inMonth.map(motionOf), ...winsInMonth.map(motionOf)]);
+  const byMotion = [...motionSlugs].sort((a, b) => motionRank(a) - motionRank(b) || a.localeCompare(b)).map((motion) => {
+    const mine = inMonth.filter((c) => motionOf(c) === motion);
+    const results = winsInMonth.filter((w) => motionOf(w) === motion);
+    const won = results.filter((w) => w.result === 'won').length;
+    const lost = results.filter((w) => w.result === 'lost').length;
+    const open = new Set(mine.map((c) => c.dealKey).filter((k) => k && !decided.has(k))).size;
+    return { motion, name: motionLabel(motion), calls: mine.length, success: rateOf(mine, 'goalMet'), stageAdvance: rateOf(mine, 'gateAdvanced'), won, lost, open, winRate: makeRate(won, won + lost) };
+  });
+
+  const playIds = [...new Set([...plays.map((p) => p.id), ...inMonth.map((c) => c.play || '')])];
+  const byPlay = playIds.map((id) => {
+    const meta = playsById.get(id);
+    const mine = inMonth.filter((c) => (c.play || '') === id);
+    return {
+      play: id,
+      title: id === '' ? NO_PLAY : meta?.title ?? id,
+      successText: meta?.success ?? '',
+      successDefined: meta?.successDefined ?? false,
+      calls: mine.length,
+      success: rateOf(mine, 'goalMet'),
+      stageAdvance: rateOf(mine, 'gateAdvanced'),
+      stallPoints: stallPoints(mine, meta)
+    };
+  }).filter((p) => p.play !== '' || p.calls > 0);
+
+  const byRep = [...group(inMonth, (c) => (c.rep ?? '').trim().toLowerCase())].map(([key, mine]) => ({
+    rep: key === '' ? NO_REP : mine[0].rep.trim(), calls: mine.length, success: rateOf(mine, 'goalMet'), stageAdvance: rateOf(mine, 'gateAdvanced')
+  }));
+
+  return {
+    month,
+    complete,
+    totals: { calls: inMonth.length, success: rateOf(inMonth, 'goalMet'), notRecorded: inMonth.filter((c) => typeof c.goalMet !== 'boolean').length, stageAdvance: rateOf(inMonth, 'gateAdvanced') },
+    outcomes,
+    byMotion,
+    byPlay,
+    byRep
+  };
+}
+
+const previousMonth = (month) => {
+  const [y, m] = month.split('-').map(Number);
+  return m === 1 ? `${y - 1}-12` : `${y}-${pad(m - 1)}`;
+};
+
+const delta = (a, b) => (a.value == null || b.value == null ? null : b.value - a.value);
+
+function compare(from, to) {
+  if (from.totals.calls < TOO_EARLY_BELOW || to.totals.calls < TOO_EARLY_BELOW) return null;
+  return {
+    from: from.month,
+    to: to.month,
+    calls: to.totals.calls - from.totals.calls,
+    success: delta(from.totals.success, to.totals.success),
+    stageAdvance: delta(from.totals.stageAdvance, to.totals.stageAdvance)
+  };
+}
+
+function journeysOf(records, motionSlugs) {
+  const { plays = [], stageNames = new Map() } = records;
+  return [...motionSlugs].sort((a, b) => motionRank(a) - motionRank(b) || a.localeCompare(b)).map((motion) => {
+    const tagged = plays
+      .filter((p) => p.motions === 'all' || (Array.isArray(p.motions) && p.motions.includes(motion)))
+      .sort((a, b) => (a.firstStage ?? Infinity) - (b.firstStage ?? Infinity));
+    const entry = tagged.find((p) => p.firstStage != null)?.firstStage ?? null;
+    return {
+      motion,
+      name: motionName(motion),
+      plays: tagged.map((p) => ({ play: p.id, title: p.title })),
+      entryStage: entry,
+      entryName: entry == null ? null : stageNames.get(String(entry)) ?? `Step ${entry}`
+    };
+  });
+}
+
+/**
+ * Full report. Default windows: current month so far and the last complete month.
+ * With `month`: that month, compared with the one before it.
+ */
+export function buildSalesReport(records, { now = new Date(), month } = {}) {
+  const { current, lastComplete } = monthWindows(now);
+  const isComplete = (m) => m < current;
+  let windows;
+  let comparison;
+  if (month) {
+    const shown = computeSalesMetrics(records, { month, complete: isComplete(month) });
+    windows = [shown];
+    comparison = compare(computeSalesMetrics(records, { month: previousMonth(month), complete: true }), shown);
+  } else {
+    windows = [computeSalesMetrics(records, { month: current, complete: false }), computeSalesMetrics(records, { month: lastComplete, complete: true })];
+    comparison = compare(windows[1], windows[0]);
+  }
+
+  const { calls = [], wins = [], plays = [] } = records;
+  const playsById = new Map(plays.map((p) => [p.id, p]));
+  const dealIndex = buildDealIndex(calls, wins);
+  const resolved = [...calls, ...wins].map((r) => ({ r, motion: resolveMotion(r, dealIndex, playsById) }));
+  const motionSlugs = new Set([...Object.keys(DEFAULT_MOTIONS), ...plays.flatMap((p) => (Array.isArray(p.motions) ? p.motions : [])), ...resolved.map((x) => x.motion).filter((m) => m !== UNCLASSIFIED)]);
+
+  return {
+    windows,
+    comparison,
+    journeys: journeysOf(records, motionSlugs),
+    unclassified: resolved.filter((x) => x.motion === UNCLASSIFIED).map((x) => x.r.relPath),
+    excluded: { demo: records.demoExcluded ?? 0, skipped: (records.skipped ?? []).length }
+  };
 }
