@@ -8,8 +8,11 @@ contact_role: "VP of Engineering"
 deal_stage: "Discovery"
 call_type: "Discovery & Qualification"
 outcome: "Advanced"
+motion: "inbound"
+lead_source: "website"
 play: "discovery-call"
 branch: "B5"
+goal_met: true
 gate_advanced: true
 deal_size: "$120,000 ARR"
 detected_objections:

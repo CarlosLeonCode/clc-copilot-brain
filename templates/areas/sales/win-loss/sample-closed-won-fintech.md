@@ -1,3 +1,7 @@
+---
+motion: "referral"
+result: won
+---
 # Deal Post-Mortem: NexaPay Systems (Closed Won — $180,000 ARR)
 
 > **Status**: CLOSED WON  

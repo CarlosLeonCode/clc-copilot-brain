@@ -96,7 +96,7 @@ function plainSystemSection(systemMd) {
 }
 
 /** Stage number -> name, from the system.md stage table, else from its numbered list. */
-function stageNames(systemMd) {
+export function stageNames(systemMd) {
   const names = new Map();
   for (const m of String(systemMd).matchAll(/^\|\s*(\d+)\.\s*([^|]+?)\s*\|/gm)) names.set(m[1], m[2].trim());
   if (names.size === 0) {

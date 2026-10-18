@@ -1,3 +1,7 @@
+---
+motion: "inbound"
+result: lost
+---
 # Deal Post-Mortem: OmniBank Financial (Closed Lost — $140,000 ARR)
 
 > **Status**: CLOSED LOST  
