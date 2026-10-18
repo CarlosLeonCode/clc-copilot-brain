@@ -5,6 +5,8 @@ goal: Keep the deal moving between meetings until the next step is agreed
 gate_unlocked: Next gate
 version: 1
 status: active
+motions: all
+success: Prospect replied with a next step
 ---
 # Play: Follow-up
 

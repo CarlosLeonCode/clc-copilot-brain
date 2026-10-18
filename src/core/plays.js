@@ -1,4 +1,6 @@
 // Sales play frontmatter parsing and validation. Pure: no I/O, no YAML dependency.
+import { toSlug } from './sales-normalize.js';
+
 export const PLAY_KEYS = Object.freeze(['play', 'stages', 'goal', 'gate_unlocked', 'version', 'status']);
 
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---/;
@@ -20,14 +22,17 @@ function unquote(value) {
 }
 
 /**
- * Parse flat `key: value` frontmatter. Double-quoted scalars (JSON escaping) are unquoted.
+ * Parse flat `key: value` frontmatter. Double-quoted scalars (JSON escaping) are unquoted; a leading BOM is ignored.
+ * With `topLevelOnly`, indented (nested) lines are skipped.
  * @returns {Record<string, string> | null} null when the text has no frontmatter block
  */
-export function parseFrontmatter(text) {
-  const match = FRONTMATTER.exec(String(text));
+export function parseFrontmatter(text, { topLevelOnly = false } = {}) {
+  const match = FRONTMATTER.exec(String(text).replace(/^\uFEFF/, ''));
   if (!match) return null;
   const fields = {};
   for (const line of match[1].split(/\r?\n/)) {
+    // Indented lines belong to a nested block; they must not leak into the top level.
+    if (topLevelOnly && /^\s/.test(line)) continue;
     const sep = line.indexOf(':');
     if (sep <= 0) continue;
     const key = line.slice(0, sep).trim();
@@ -68,4 +73,43 @@ export function hasDecisionTree(markdown) {
     if (DECISION_NODE.test(match[1])) return true;
   }
   return false;
+}
+
+/** `motions:` value to 'all' or a list of slugs. A missing, empty or `all` value means every motion. */
+export function parseMotions(value) {
+  const slugs = String(value ?? '').split(',').map(toSlug).filter(Boolean);
+  if (slugs.length === 0 || slugs.includes('all')) return 'all';
+  return [...new Set(slugs)];
+}
+
+const TITLE = /^#\s+(?:Play:\s*)?(.+?)\s*$/m;
+const BRANCH_ROW = /^\|\s*(B\d+)\s*\|\s*([^|]+?)\s*\|/;
+
+function branchesOf(text) {
+  const section = /^##\s+Branches\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/m.exec(text);
+  if (!section) return [];
+  return section[1].split(/\r?\n/).map((line) => BRANCH_ROW.exec(line)).filter(Boolean).map((m) => ({ id: m[1], when: m[2] }));
+}
+
+/**
+ * Read what the metrics need from a play file: title, goal, success, motions, first stage and branch triggers.
+ * A play without `success:` is legacy: its goal text stands in and `successDefined` is false.
+ */
+export function readPlayMeta(file, text) {
+  const body = String(text).replace(/^\uFEFF/, '');
+  const fm = parseFrontmatter(body, { topLevelOnly: true }) ?? {};
+  const stem = String(file).replace(/\.md$/, '');
+  const stages = String(fm.stages ?? fm.stage ?? '').split(',').map((n) => Number.parseInt(n, 10)).filter(Number.isInteger);
+  const goal = fm.goal ?? '';
+  const successDefined = Boolean(fm.success);
+  return {
+    id: fm.play || stem,
+    title: TITLE.exec(body)?.[1] ?? stem,
+    goal,
+    success: successDefined ? fm.success : goal,
+    successDefined,
+    motions: parseMotions(fm.motions),
+    firstStage: stages.length > 0 ? Math.min(...stages) : null,
+    branches: branchesOf(body)
+  };
 }

@@ -5,6 +5,8 @@ goal: Book a discovery meeting
 gate_unlocked: Stage 1 entry
 version: 1
 status: active
+motions: cold-outbound
+success: Meeting booked
 ---
 # Play: Cold Call
 

@@ -1,3 +1,9 @@
+---
+motion:
+lead_source:
+deal_id:
+result:
+---
 # Deal Post-Mortem Template
 
 > **Instructions**: Complete this post-mortem within 5 business days of closing any Tier 1 or Tier 2 deal. Ground findings in factual customer statements, emails, and call recordings. Commit the finalized document to `sales/win-loss/YYYY-MM-DD_<prospect-slug>_<won|lost>.md`.

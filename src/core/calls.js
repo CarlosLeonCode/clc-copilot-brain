@@ -4,6 +4,7 @@ import path from 'node:path';
 import { BrainError } from './errors.js';
 import { isInside } from './fs-utils.js';
 import { parseFrontmatter } from './plays.js';
+import { parseBool, toSlug } from './sales-normalize.js';
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const REQUIRED = Object.freeze(['rep', 'prospect', 'date', 'summary', 'stage', 'outcome']);
@@ -18,14 +19,20 @@ export const CALL_FIELDS = Object.freeze({
   date: 'date',
   stage: 'deal_stage',
   outcome: 'outcome',
+  motion: 'motion',
+  leadSource: 'lead_source',
+  dealId: 'deal_id',
   play: 'play',
   branch: 'branch',
+  goalMet: 'goal_met',
   gateAdvanced: 'gate_advanced'
 });
 
 // Frontmatter key order. Optional fields are omitted when absent.
-const FRONTMATTER_ORDER = Object.freeze(['rep', 'prospect', 'date', 'stage', 'outcome', 'play', 'branch', 'gateAdvanced']);
-const OPTIONAL = new Set(['play', 'branch', 'gateAdvanced']);
+const FRONTMATTER_ORDER = Object.freeze(['rep', 'prospect', 'date', 'stage', 'outcome', 'motion', 'leadSource', 'dealId', 'play', 'branch', 'goalMet', 'gateAdvanced']);
+const OPTIONAL = new Set(['motion', 'leadSource', 'dealId', 'play', 'branch', 'goalMet', 'gateAdvanced']);
+// Free-text tags stored as slugs so the same motion or source always reads the same.
+const SLUGGED = Object.freeze(['motion', 'leadSource', 'dealId']);
 
 /** Strict YYYY-MM-DD that is also a real calendar date. */
 export function isIsoDate(value) {
@@ -93,7 +100,7 @@ ${rawTranscript ? `## 6. Raw Call Transcript\n\`\`\`text\n${rawTranscript}\n\`\`
 /**
  * @param {string} rootDir
  * @param {{ rep: string, prospect: string, date: string, summary: string, stage: string, outcome: string,
- *   play?: string, branch?: string, gateAdvanced?: boolean, notes?: string, objections?: string[], actionItems?: string[], rawTranscript?: string }} call
+ *   motion?: string, leadSource?: string, dealId?: string, play?: string, branch?: string, goalMet?: boolean, gateAdvanced?: boolean, notes?: string, objections?: string[], actionItems?: string[], rawTranscript?: string }} call
  * @returns {{ relPath: string }} path relative to rootDir (posix separators)
  */
 export function captureCall(rootDir, call) {
@@ -106,6 +113,11 @@ export function captureCall(rootDir, call) {
   if (call.gateAdvanced !== undefined && typeof call.gateAdvanced !== 'boolean') {
     throw new BrainError('VALIDATION', 'Error: gateAdvanced must be a boolean.');
   }
+  if (call.goalMet !== undefined && typeof call.goalMet !== 'boolean') {
+    throw new BrainError('VALIDATION', 'Error: goalMet must be a boolean.');
+  }
+  call = { ...call };
+  for (const field of SLUGGED) if (call[field] !== undefined) call[field] = toSlug(call[field]);
 
   const callsRoot = path.resolve(rootDir, 'sales', 'calls');
   const month = call.date.slice(0, 7);
@@ -131,7 +143,7 @@ export function captureCall(rootDir, call) {
  * and canonical logs (`prospect_company`, `deal_stage`) both load; absent play fields stay undefined.
  */
 export function readCallLog(text) {
-  const fm = parseFrontmatter(text) ?? {};
+  const fm = parseFrontmatter(text, { topLevelOnly: true }) ?? {};
   const record = {
     rep: fm.rep,
     prospect: fm.prospect_company ?? fm.prospect,
@@ -141,6 +153,10 @@ export function readCallLog(text) {
   };
   if (fm.play !== undefined) record.play = fm.play;
   if (fm.branch !== undefined) record.branch = fm.branch;
+  if (fm.motion) record.motion = toSlug(fm.motion) || undefined;
+  if (fm.lead_source) record.leadSource = toSlug(fm.lead_source) || undefined;
+  if (fm.deal_id) record.dealId = toSlug(fm.deal_id) || undefined;
+  if (parseBool(fm.goal_met) !== undefined) record.goalMet = parseBool(fm.goal_met);
   if (fm.gate_advanced !== undefined) record.gateAdvanced = fm.gate_advanced === 'true';
   return record;
 }

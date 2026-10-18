@@ -5,6 +5,8 @@ goal: Show how we solve their problem and agree on the next steps together
 gate_unlocked: Gate 2
 version: 1
 status: active
+motions: all
+success: Proposal requested
 ---
 # Play: Demo Call
 

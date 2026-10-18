@@ -5,6 +5,8 @@ goal: Understand their problem and who decides, so we can plan the next meeting
 gate_unlocked: Gate 1
 version: 1
 status: active
+motions: all
+success: Problem and decision maker understood
 ---
 # Play: Discovery Call
 

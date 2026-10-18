@@ -5,6 +5,7 @@ import path from 'node:path';
 import { CALL_FIELDS, captureCall, isIsoDate, readCallLog } from '../../src/core/calls.js';
 import { parseFrontmatter } from '../../src/core/plays.js';
 import { BrainError } from '../../src/core/errors.js';
+import { TOOLS_DEFINITIONS } from '../../src/mcp/tools.js';
 import { withTmp } from './helpers.js';
 
 const call = { rep: 'Ana Ruiz', prospect: 'Globex Inc', date: '2026-10-02', summary: 'Intro', stage: 'Discovery', outcome: 'Demo booked' };
@@ -97,4 +98,57 @@ test('readCallLog aliases deal_stage ?? stage and prospect_company ?? prospect',
   const legacy = readCallLog('---\nprospect: "Old Co"\nstage: "Discovery"\n---\n');
   assert.equal(legacy.prospect, 'Old Co');
   assert.equal(legacy.stage, 'Discovery');
+});
+
+test('captureCall stores motion, lead_source and deal_id as slugs and writes the fields in order (R1.2)', () =>
+  withTmp((dir) => {
+    const { relPath } = captureCall(dir, {
+      ...call, motion: 'Cold Outbound', leadSource: 'Trade Show!', dealId: 'Deal 7', play: 'cold-call', branch: 'B2', goalMet: false, gateAdvanced: true
+    });
+    const fm = parseFrontmatter(readLog(dir, relPath));
+    assert.equal(fm.motion, 'cold-outbound');
+    assert.equal(fm.lead_source, 'trade-show');
+    assert.equal(fm.deal_id, 'deal-7');
+    assert.equal(fm.goal_met, 'false');
+    assert.deepEqual(Object.keys(fm), [
+      'rep', 'prospect_company', 'date', 'deal_stage', 'outcome', 'motion', 'lead_source', 'deal_id', 'play', 'branch', 'goal_met', 'gate_advanced', 'created_at'
+    ]);
+  }));
+
+test('captureCall omits motion fields that slug to nothing', () =>
+  withTmp((dir) => {
+    const { relPath } = captureCall(dir, { ...call, motion: '!!!', leadSource: '', goalMet: true });
+    const fm = parseFrontmatter(readLog(dir, relPath));
+    assert.equal(fm.motion, undefined);
+    assert.equal(fm.lead_source, undefined);
+    assert.equal(fm.goal_met, 'true');
+  }));
+
+test('captureCall rejects a non-boolean goalMet with VALIDATION and writes nothing', () =>
+  withTmp((dir) => {
+    assert.throws(() => captureCall(dir, { ...call, goalMet: 'yes' }), (e) => e instanceof BrainError && e.code === 'VALIDATION');
+    assert.equal(fs.existsSync(path.join(dir, 'sales')), false);
+  }));
+
+test('readCallLog reads the new fields tolerantly and ignores nested keys', () => {
+  const rec = readCallLog('---\nrep: "A"\nmotion: "Bad Slug"\nlead_source: "referral"\ndeal_id: "D1"\ngoal_met: false\ndetected_objections:\n  goal_met: true\n---\n');
+  assert.equal(rec.motion, 'bad-slug');
+  assert.equal(rec.leadSource, 'referral');
+  assert.equal(rec.dealId, 'd1');
+  assert.equal(rec.goalMet, false);
+  const legacy = readCallLog('---\nrep: "A"\n---\n');
+  assert.equal(legacy.motion, undefined);
+  assert.equal(legacy.goalMet, undefined);
+});
+
+test('CALL_FIELDS gains the new keys while the MCP brain_capture_call schema stays unchanged (decision 11)', () => {
+  assert.equal(CALL_FIELDS.leadSource, 'lead_source');
+  assert.equal(CALL_FIELDS.dealId, 'deal_id');
+  assert.equal(CALL_FIELDS.goalMet, 'goal_met');
+  assert.equal(CALL_FIELDS.motion, 'motion');
+  const tool = TOOLS_DEFINITIONS.find((t) => t.name === 'brain_capture_call');
+  assert.deepEqual(Object.keys(tool.inputSchema.properties), [
+    'rep', 'prospect', 'date', 'summary', 'stage', 'outcome', 'play', 'branch', 'gateAdvanced', 'notes', 'objections', 'actionItems', 'rawTranscript'
+  ]);
+  assert.deepEqual(tool.inputSchema.required, ['rep', 'prospect', 'date', 'summary', 'stage', 'outcome']);
 });
