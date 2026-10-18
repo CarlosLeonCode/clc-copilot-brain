@@ -75,12 +75,13 @@ src/
 │   ├── objections.js      captureObjection (schema-validated)
 │   ├── query.js           queryBrain (allowed areas + playbooks)
 │   ├── sales-view.js      buildSalesView/writeSalesView (plain-language HTML page of the sales system)
+│   ├── sales-records.js, sales-metrics.js, sales-dashboard.js, sales-report-text.js  tolerant reader, pure metrics, page section, plain text (ADR 0007)
 │   ├── manifest.js        IDE adapters + commands/skills derived from templates/base
 │   ├── schema-validator.js  ajv Draft 2020-12 (ADR 0002)
 │   └── errors.js, fs-utils.js, package-paths.js
 ├── cli/                   Adapter: argv parsing, @clack/prompts, picocolors, exit codes
 │   ├── main.js, args.js, help.js, prompt.js, render.js
-│   └── commands/          init, add-area, list-areas, doctor, clean-demo, upgrade, view, mcp
+│   └── commands/          init, add-area, list-areas, doctor, clean-demo, upgrade, view, stats, mcp
 └── mcp/                   Adapter: JSON-RPC 2.0 stdio server + thin tool handlers
     ├── server.js, tools.js, prompts.js
 ```
@@ -260,6 +261,15 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 - Import loop (`/flow`, `flow` MCP prompt, AGENTS.md intent): the assistant accepts photos, PDFs, HTML exports (Archify, Miro, Lucidchart), Mermaid or a description, explains back what it understood, asks about gaps one at a time, drafts with the supported subset, previews with `view --draft`, and saves only after a yes.
 - `doctor` warns (never errors) when a call guide or the pipeline has no Mermaid diagram or one `src/core/flowchart.js` can't draw, in plain words ("The cold call guide's diagram can't be drawn; ask your assistant to fix it").
 - The page is a generated artifact: `upgrade` does not manage it, `clean-demo` never removes it, and `doctor` and `brain_query` only read `.md`/`.json`.
+
+### Sales Metrics (`clc-brain stats`, ADR 0007)
+- Data model, all optional frontmatter. Call guides: `motions:` (comma list of types of sale, or `all`; missing means all) and `success:` (plain-words success). Call logs: `motion`, `lead_source`, `deal_id` (stored as slugs) and `goal_met` (boolean, checked against the guide's `success:`), next to `play`, `branch`, `gate_advanced`. Win-loss notes: `result`, `date`, `motion`, `lead_source`, `deal_id`, `rep`, with the file name and the older table as fallbacks. Default types of sale: `cold-outbound`, `inbound`, `referral`, `expansion`; custom ones are allowed.
+- `readSalesRecords` (src/core/sales-records.js) reads `sales/` only, skips symlinks and sample records, and lists unreadable files in `skipped`. `buildSalesReport` (src/core/sales-metrics.js) is pure: it returns `windows` (current month so far and last complete month), `comparison`, `journeys`, `unclassified` and `excluded`. `loadSalesReport` joins the two.
+- Rules: under 5 calls shows counts only, 5 to 9 is "too early to tell", and the comparison needs 10 or more calls in both months. Type of sale resolves from the record, then its deal, then its guide's only type, else "Not classified yet". Stall points are every `goal_met: false` call, grouped by branch trigger text. `gate_advanced` is a separate metric.
+- `clc-brain stats [dir] [--month YYYY-MM] [--json]` prints plain text (`sales-report-text.js`) or the report as JSON. A bad month is a validation error; `NOT_A_BRAIN` and a missing sales area exit 1.
+- The sales page gets a "How it's going" section (`sales-dashboard.js`): both months, per type of sale, per call guide against its own success definition, where calls miss their goal, per person, win rate, and how deals start. Bars are plain `div`s with a width and always come with text; there are no scripts, links, images or URLs. Plain words only: no IDs, field names or paths.
+- `doctor` adds warnings only: guides without a success definition, records with a type of sale no guide lists, and unreadable records.
+- No MCP tool is added for metrics (decision 11); `brain_capture_call` is unchanged.
 
 ### 4. Declarative Ecosystem Tools Manifest
 Declared inside `org-kernel.json` under `ecosystemTools`:

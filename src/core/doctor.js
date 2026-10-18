@@ -7,6 +7,8 @@ import { validateAgainstSchema } from './schema-validator.js';
 import { TEMPLATES_BASE_DIR } from './package-paths.js';
 import { hasDecisionTree, validatePlay } from './plays.js';
 import { parseFlowchart } from './flowchart.js';
+import { readSalesRecords } from './sales-records.js';
+import { DEFAULT_MOTIONS, toSlug } from './sales-normalize.js';
 
 const FIRST_MERMAID = /```mermaid\r?\n([\s\S]*?)```/;
 
@@ -135,6 +137,37 @@ function checkSalesSystem(rootDir, report) {
   if (problems === 0) report.pass('Sales system map and plays verified.');
 }
 
+// Warnings for the numbers behind the sales page: one grouped message per kind of problem.
+function checkSalesMetrics(rootDir, report) {
+  const records = readSalesRecords(rootDir);
+  let problems = 0;
+  const warn = (message) => {
+    report.issue({ level: 'warning', message });
+    problems++;
+  };
+
+  const noSuccess = records.plays.filter((p) => !p.successDefined).map((p) => p.title);
+  if (noSuccess.length > 0) {
+    warn(`These call guides do not say what success means yet: ${noSuccess.join(', ')}. Ask your assistant to add a success definition to each one.`);
+  }
+
+  const known = new Set([...Object.keys(DEFAULT_MOTIONS), ...records.plays.flatMap((p) => (Array.isArray(p.motions) ? p.motions : []))]);
+  const unknown = new Map();
+  for (const r of [...records.calls, ...records.wins]) {
+    const slug = toSlug(r.motion);
+    if (slug && !known.has(slug)) unknown.set(slug, (unknown.get(slug) ?? 0) + 1);
+  }
+  if (unknown.size > 0) {
+    const list = [...unknown].map(([slug, n]) => `"${slug}" (${n})`).join(', ');
+    warn(`Some records use a type of sale that no call guide lists: ${list}. Check the spelling, or ask your assistant to add it to the call guides it belongs to.`);
+  }
+
+  if (records.skipped.length > 0) {
+    warn(`These records could not be read and are left out of the numbers: ${records.skipped.map((s) => s.relPath).join(', ')}. Ask your assistant to fix them.`);
+  }
+  if (problems === 0) report.pass('Sales records are readable and every call guide defines success.');
+}
+
 /**
  * Audit a brain.
  * @returns {{ passed: string[], issues: Array<{ level: 'error'|'warning', message: string, repairable?: boolean }>,
@@ -174,7 +207,10 @@ export function runDoctor(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR } = {
 
   checkSchemaAssets(rootDir, report);
 
-  if (kernel && Array.isArray(kernel.activeAreas) && kernel.activeAreas.includes('sales')) checkSalesSystem(rootDir, report);
+  if (kernel && Array.isArray(kernel.activeAreas) && kernel.activeAreas.includes('sales')) {
+    checkSalesSystem(rootDir, report);
+    checkSalesMetrics(rootDir, report);
+  }
 
   const errors = issues.filter((i) => i.level === 'error').length;
   const warnings = issues.filter((i) => i.level === 'warning').length;
