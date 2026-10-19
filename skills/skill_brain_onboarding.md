@@ -91,8 +91,13 @@ Once Question 8 is answered:
 4. **Final Summary & Next Steps**:
    - Provide a concise summary of all updated files.
    - Recommend the user run `/brain:doctor` (or `clc-brain doctor`) to verify integrity.
-   - Close by suggesting **one example question per seeded area**, built from the user's own data (see 9.5).
+   - Suggest **one example question per seeded area**, built from the user's own data (see 9.5).
    - Mention `/brain` as the dashboard for everything else.
+
+5. **Mark the Brain as Set Up** (last step, only after the person approves the summary):
+   - Ask one yes/no question, for example "All good? Shall I mark your brain as ready?" / "¿Todo bien? ¿Marco tu cerebro como listo?".
+   - After a yes, set `setup.completed` to `true` and `setup.completedAt` to the current ISO-8601 timestamp in `org-kernel.json` (also update `metadata.updatedAt`). Keep the file valid against `schemas/org-kernel.schema.json`.
+   - Then show a short "what I can do" menu: 3-6 things the person can ask, grouped by their active areas, in plain words and in the brain's language (org-kernel.json `language`). No commands, file names or IDs.
 
 ---
 

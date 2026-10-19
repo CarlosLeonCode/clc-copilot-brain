@@ -45,6 +45,16 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
       assert.notDeepStrictEqual(validateAgainstSchema('org-kernel', { ...kernel, language: 'fr' }).errors, [], 'unknown languages are rejected');
     });
 
+    await sub.test('org-kernel setup is optional: completed boolean plus an optional completedAt date-time', () => {
+      const { setup: _unused, ...kernel } = loadJson('org-kernel.json');
+      assert.deepStrictEqual(validateAgainstSchema('org-kernel', kernel).errors, [], 'old brains without setup stay valid');
+      assert.deepStrictEqual(validateAgainstSchema('org-kernel', { ...kernel, setup: { completed: false } }).errors, []);
+      assert.deepStrictEqual(validateAgainstSchema('org-kernel', { ...kernel, setup: { completed: true, completedAt: '2026-10-19T10:00:00.000Z' } }).errors, []);
+      assert.notDeepStrictEqual(validateAgainstSchema('org-kernel', { ...kernel, setup: { completed: 'yes' } }).errors, [], 'completed must be a boolean');
+      assert.notDeepStrictEqual(validateAgainstSchema('org-kernel', { ...kernel, setup: {} }).errors, [], 'completed is required inside setup');
+      assert.notDeepStrictEqual(validateAgainstSchema('org-kernel', { ...kernel, setup: { completed: true, completedAt: 'yesterday' } }).errors, [], 'completedAt must be a date-time');
+    });
+
     await sub.test('all sales/battlecards/*.json conform to sales-battlecard.schema.json', () => {
       const battlecardsDir = path.join(PKG_DIR, 'templates', 'areas', 'sales', 'battlecards');
       const files = fs.readdirSync(battlecardsDir).filter((f) => f.endsWith('.json'));

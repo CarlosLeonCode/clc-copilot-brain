@@ -18,6 +18,21 @@
       "description": "Language the assistant and the sales page use for people: en (English) or es (Spanish). English when missing.",
       "enum": ["en", "es"]
     },
+    "setup": {
+      "type": "object",
+      "description": "Whether the guided setup (\"Let's set up my brain\") has been done. Missing in brains made before this field existed.",
+      "required": ["completed"],
+      "properties": {
+        "completed": {
+          "type": "boolean"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
     "organization": {
       "type": "object",
       "required": ["name", "industry", "tagline"],

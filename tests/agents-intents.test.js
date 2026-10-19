@@ -187,3 +187,14 @@ test('READMEs say the brain works in English and Spanish and document --language
   assert.match(tech, /i18n\.js/);
   assert.match(tech, /`language`/);
 });
+
+test('onboarding marks the brain as set up after approval, then shows a short menu', () => {
+  for (const rel of ['skills/skill_brain_onboarding.md', 'templates/base/skills/skill_brain_onboarding.md', '.claude/commands/brain:onboarding.md', 'templates/base/.claude/commands/brain:onboarding.md']) {
+    const text = read(rel);
+    assert.match(text, /`setup\.completed`[^\n]*`true`/, `${rel} must set setup.completed to true`);
+    assert.match(text, /`(setup\.)?completedAt`/, `${rel} must record completedAt`);
+    assert.match(text, /approv[^\n]*summary|summary[^\n]*approv/i, `${rel} marks setup only after the summary is approved`);
+    assert.match(text, /3[–-]6 (things|items)/, `${rel} must close with a short menu of 3-6 things`);
+    assert.match(text, /brain's language/i, `${rel} must show the menu in the brain language`);
+  }
+});
