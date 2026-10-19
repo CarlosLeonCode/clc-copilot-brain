@@ -83,15 +83,15 @@ export async function runInit(targetDir, options) {
   const demo = await chooseDemo(options);
 
   const spin = p.spinner();
-  spin.start('Scaffolding Second Brain core files and AI adapters...');
+  spin.start(t(language, 'init.scaffolding'));
   let result;
   try {
     result = initBrain(targetDir, { companyName, industry, tagline, areas, demo, language });
   } catch (err) {
-    spin.stop(pc.red('Scaffolding failed.'));
+    spin.stop(pc.red(t(language, 'init.failed')));
     throw err;
   }
-  spin.stop(pc.green('Second Brain initialized successfully!'));
+  spin.stop(pc.green(t(language, 'init.success')));
   reportAdapterBackups(result.adapters);
 
   const absDir = path.resolve(targetDir);

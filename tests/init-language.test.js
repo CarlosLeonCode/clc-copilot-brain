@@ -80,7 +80,7 @@ test('init --language es prints its next steps in Spanish, with the MCP block ma
     assert.match(res.stdout, /"Configuremos mi cerebro"/);
     assert.match(res.stdout, /"hola"/);
     assert.match(res.stdout, /Opcional[^\n]*sin acceso a carpetas/);
-    assert.match(res.stdout, /Bienvenido a tu nuevo Second Brain, Acme/);
+    assert.match(res.stdout, /Te damos la bienvenida a tu nuevo Second Brain, Acme/);
     assert.doesNotMatch(res.stdout, /Let's set up my brain|Welcome to your new/);
     assert.ok(res.stdout.includes('"mcpServers"'), 'the MCP JSON block is kept');
   } finally {
@@ -99,4 +99,12 @@ test('init in English labels the MCP block as optional and mentions starting wit
   } finally {
     fs.rmSync(outer, { recursive: true, force: true });
   }
+});
+
+test('init in Spanish reports progress and welcome in Spanish, with inclusive wording', () => {
+  const { res } = initWith({ LANG: 'en_US.UTF-8' }, '--language', 'es', '--name', 'Acme');
+  assert.equal(res.status, 0, res.stderr);
+  assert.doesNotMatch(res.stdout, /initialized successfully/);
+  assert.match(res.stdout, /Tu Second Brain está listo/);
+  assert.match(res.stdout, /Te damos la bienvenida/);
 });
