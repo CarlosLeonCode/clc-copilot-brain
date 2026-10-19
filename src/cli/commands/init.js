@@ -6,6 +6,7 @@ import pc from 'picocolors';
 import { PRESET_AREAS, PRESET_AREA_IDS } from '../../core/areas.js';
 import { LANGUAGE_HELP, detectLanguage, parseLanguage } from '../../core/brain-language.js';
 import { BrainError } from '../../core/errors.js';
+import { hasText, t } from '../../core/i18n.js';
 import { writeSalesView } from '../../core/sales-view.js';
 import { INIT_DEFAULTS, initBrain } from '../../core/scaffold.js';
 import { ask } from '../prompt.js';
@@ -95,12 +96,12 @@ export async function runInit(targetDir, options) {
 
   const absDir = path.resolve(targetDir);
   const salesPage = areas.includes('sales') && tryWriteSalesView(absDir);
-  p.note(renderNextSteps({ absDir, areas, demo, salesPage }), 'Next steps');
+  p.note(renderNextSteps({ absDir, areas, demo, salesPage, language }), t(language, 'init.nextSteps'));
   // Printed outside the note box so the JSON stays copy-pasteable (the box wraps long lines).
-  console.log(`${pc.bold('Using Claude Desktop or another MCP client?')} Add this to its config:\n`);
+  console.log(`${pc.bold(t(language, 'init.mcp'))}\n`);
   console.log(JSON.stringify({ mcpServers: { [path.basename(absDir)]: { command: 'clc-brain', args: ['mcp', absDir] } } }, null, 2));
-  console.log(`\nWeb chatbots (ChatGPT, Gemini): see ${pc.cyan('skills/integrations/')}. Health check: ${pc.cyan('clc-brain doctor')}.\n`);
-  p.outro(pc.bold(pc.green(`Welcome to your new Second Brain, ${companyName}! 🚀`)));
+  console.log(`\n${t(language, 'init.webChat', { dir: pc.cyan('skills/integrations/'), command: pc.cyan('clc-brain doctor') })}\n`);
+  p.outro(pc.bold(pc.green(t(language, 'init.welcome', { name: companyName }))));
   return 0;
 }
 
@@ -114,28 +115,19 @@ function tryWriteSalesView(absDir) {
   }
 }
 
-// One example question per preset area, answered from that area's files once onboarding seeds them.
-const AREA_EXAMPLES = Object.freeze({
-  sales: '"A customer says we\'re too expensive. What do I say?"',
-  marketing: '"How do we position ourselves against the market leader?"',
-  product: '"What are this quarter\'s product themes?"',
-  operations: '"A P1 incident just started, what do I do?"',
-  hr_people: '"What is the onboarding plan for a new engineer?"',
-  finance_legal: '"Can I give a customer a 25% discount?"'
-});
+// One example question per preset area (init.example.<area>), answered from that area's files once onboarding seeds them.
 const MAX_EXAMPLES = 3;
 
-/** The guided path from an empty brain to a first grounded answer, tailored to the installed areas. */
-function renderNextSteps({ absDir, areas, demo, salesPage }) {
-  const examples = areas.filter((a) => AREA_EXAMPLES[a]).slice(0, MAX_EXAMPLES).map((a) => `   • ${pc.bold(AREA_EXAMPLES[a])}`);
+/** The guided path from an empty brain to a first grounded answer, tailored to the installed areas, in the brain language. */
+function renderNextSteps({ absDir, areas, demo, salesPage, language }) {
+  const examples = areas.filter((a) => hasText(language, `init.example.${a}`)).slice(0, MAX_EXAMPLES)
+    .map((a) => `   • ${pc.bold(t(language, `init.example.${a}`))}`);
   const steps = [
-    `1. Open this folder in your AI tool (Claude Code, Antigravity,\n   Cursor, Windsurf or Gemini CLI):\n   ${pc.cyan(absDir)}`,
-    `2. Tell your assistant: ${pc.bold('"Let\'s set up my brain"')} \n   (in Claude Code you can also type /brain:onboarding).\n   It runs a short interview that fills your profile\n   and drafts a first asset for each area you installed.`,
-    examples.length > 0
-      ? `3. Then just ask in plain words, for example:\n${examples.join('\n')}`
-      : '3. Then just ask your assistant about your company in plain words.'
+    t(language, 'init.step1', { dir: pc.cyan(absDir) }),
+    t(language, 'init.step2', { phrase: pc.bold(t(language, 'phrase.setUp')), hi: pc.bold(t(language, 'phrase.hi')) }),
+    examples.length > 0 ? `${t(language, 'init.step3')}\n${examples.join('\n')}` : t(language, 'init.step3Plain')
   ];
-  if (salesPage) steps.push(`\nYour sales system page: ${pc.cyan('sales/sales-system.html')}\n(open it in your browser to see your sales steps and call guides).`);
-  if (demo) steps.push(`\nDemo samples installed. Remove them with ${pc.cyan('clc-brain clean-demo')}.`);
+  if (salesPage) steps.push(`\n${t(language, 'init.salesPage', { file: pc.cyan('sales/sales-system.html') })}`);
+  if (demo) steps.push(`\n${t(language, 'init.demo', { command: pc.cyan('clc-brain clean-demo') })}`);
   return steps.join('\n');
 }

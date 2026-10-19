@@ -1,4 +1,5 @@
 // CLI adapter entry: parse argv, dispatch to a command, map domain errors to exit codes.
+import fs from 'node:fs';
 import path from 'node:path';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
@@ -6,6 +7,7 @@ import { BrainError } from '../core/errors.js';
 import { readPackageVersion } from '../core/package-paths.js';
 import { parseArgs } from './args.js';
 import { renderHelp } from './help.js';
+import { renderStartScreen } from './start.js';
 import { runAddArea } from './commands/add-area.js';
 import { runCleanDemo } from './commands/clean-demo.js';
 import { runDoctorCommand } from './commands/doctor.js';
@@ -37,12 +39,20 @@ export async function main(argv = process.argv.slice(2)) {
     console.log(`copilot-brain v${version}`);
     return 0;
   }
-  if (options.help || options.h || command === 'help' || !command) {
+  if (options.help || options.h || command === 'help') {
     console.log(renderHelp(version));
+    return 0;
+  }
+  if (!command) {
+    console.log(renderStartScreen(process.cwd()));
     return 0;
   }
 
   const run = COMMANDS[command];
+  if (!run && args.length === 1 && isDirectory(command)) {
+    console.log(renderStartScreen(path.resolve(process.cwd(), command)));
+    return 0;
+  }
   if (!run) {
     console.error(pc.red(`Unknown command: "${command}"`));
     console.log(renderHelp(version));
@@ -58,6 +68,14 @@ export async function main(argv = process.argv.slice(2)) {
       return 1;
     }
     throw err;
+  }
+}
+
+function isDirectory(p) {
+  try {
+    return fs.statSync(p).isDirectory();
+  } catch {
+    return false;
   }
 }
 

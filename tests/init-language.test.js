@@ -68,3 +68,35 @@ test('init --language es writes Spanish starter guides and a Spanish sales page;
   assert.match(pages.en.system, /## How your sales system works/);
   assert.match(pages.en.html, /<h3>Cold Call<\/h3>/);
 });
+
+test('init --language es prints its next steps in Spanish, with the MCP block marked as optional', () => {
+  const outer = fs.mkdtempSync(path.join(os.tmpdir(), 'brain-lang-'));
+  try {
+    const brain = path.join(outer, 'acme');
+    const res = spawnSync(process.execPath, [CLI, 'init', brain, '--yes', '--areas', 'sales', '--name', 'Acme', '--language', 'es'], { encoding: 'utf8', input: '', env: { ...process.env, LC_ALL: '', LANG: 'en_US.UTF-8' } });
+    assert.equal(res.status, 0, res.stderr);
+    assert.match(res.stdout, /Próximos pasos/);
+    assert.match(res.stdout, /Abre esta carpeta en tu asistente de IA/);
+    assert.match(res.stdout, /"Configuremos mi cerebro"/);
+    assert.match(res.stdout, /"hola"/);
+    assert.match(res.stdout, /Opcional[^\n]*sin acceso a carpetas/);
+    assert.match(res.stdout, /Bienvenido a tu nuevo Second Brain, Acme/);
+    assert.doesNotMatch(res.stdout, /Let's set up my brain|Welcome to your new/);
+    assert.ok(res.stdout.includes('"mcpServers"'), 'the MCP JSON block is kept');
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
+test('init in English labels the MCP block as optional and mentions starting with a hi', () => {
+  const outer = fs.mkdtempSync(path.join(os.tmpdir(), 'brain-lang-'));
+  try {
+    const res = spawnSync(process.execPath, [CLI, 'init', path.join(outer, 'b'), '--yes', '--areas', 'sales', '--language', 'en'], { encoding: 'utf8', input: '' });
+    assert.equal(res.status, 0, res.stderr);
+    assert.match(res.stdout, /Open this folder in your AI assistant/);
+    assert.match(res.stdout, /"hi"/);
+    assert.match(res.stdout, /Optional[^\n]*chat apps without folder access/);
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
