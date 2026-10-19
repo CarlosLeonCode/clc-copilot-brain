@@ -97,6 +97,7 @@ src/
 │   ├── sales-report-text.js  plain-text `stats` report
 │   ├── i18n.js            t(lang, key, vars) with en/es dictionaries (English fallback), formatMonth, formatPercent (Intl)
 │   ├── brain-language.js  getBrainLanguage (org-kernel.json `language`, default "en"), parseLanguage, detectLanguage (LC_ALL/LANG)
+│   ├── setup-state.js     getSetupState (org-kernel.json `setup`: pending/done/unknown), getBrainSummary (start screen data)
 │   ├── manifest.js        IDE adapters + commands/skills derived from templates/base
 │   ├── schema-validator.js  ajv Draft 2020-12 (ADR 0002)
 │   ├── text-diff.js       dependency-free line diff for upgrade previews
@@ -126,6 +127,7 @@ src/
 
 | Command | Options |
 | :--- | :--- |
+| *(none)* or `<dir>` | Start screen (`src/cli/start.js`): outside a brain, how to create one (computer language); inside a brain, its name, language, setup state and the one next step (brain language). Always exits 0. `help`, `-h`, `--help` print the full help. |
 | `init [dir]` | `--language <en\|es>`, `--name`, `--industry`, `--tagline`, `--areas <list>`, `--demo` / `--clean` (default), `-y`/`--yes` |
 | `doctor [dir]` | `--fix` |
 | `add-area [dir]` | `--preset <id>` or `--custom <id>` (`^[a-z0-9_-]+$`) |
@@ -345,6 +347,13 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 - `buildSalesReport(records, { lang })` returns `language`; `loadSalesReport` reads it from the brain. `stats --json` keeps English keys (machine data) and includes `language`.
 - Locale overlay: translated starter content lives in `templates/locales/<lang>/areas/<area>/` with the same file names as `templates/areas/<area>/` (today `es` for `sales/system.md`, `sales/stages/pipeline-stages.md` and `sales/plays/*.md`). `copyAreaTemplates` (`src/core/areas.js`) copies the English area, then the overlay for the brain language on top, with the same placeholder replacer and demo filter; `init` and `add-area --preset` use it. `upgrade` adds missing `sales/system.md` and plays from the overlay when it has the file, else from English, and never overwrites existing files. Translations keep everything code or logs rely on: frontmatter keys, `play`, `stages`, `motions`, `version`, `status`, branch IDs and script links; `tests/locale-parity.test.js` enforces it. The parsers read both heading sets (`SECTION_HEADINGS` in `sales-stages.js`: "Branches"/"Situaciones", "Learnings Log"/"Registro de aprendizajes", the plain section heading) and both title prefixes (`PLAY_TITLE_PREFIX`: "Play:"/"Guía:").
 - The AGENTS.md managed block tells the assistant to talk and write new content in the brain's language, to offer once to translate starter content written in a different language (for example in an older brain; only after a yes), and maps "put my brain in Spanish" to setting `language`. Onboarding asks for the language first when it is not set.
+- `init` next steps, the optional MCP block label, the web chatbot line and the welcome line go through `t` (`init.*`, `phrase.*` keys), so they follow the brain language.
+
+### Setup state and first contact
+- `org-kernel.json` has an optional `setup` object: `{ "completed": boolean, "completedAt"?: date-time }` (schema: `completed` required inside it, no other keys). `templates/base/org-kernel.json` writes `"setup": { "completed": false }` at `init`; onboarding sets `completed: true` and `completedAt` after the person approves the final summary, then shows a short menu.
+- `getSetupState(rootDir)` (`src/core/setup-state.js`): `done` / `pending` from the field; when it is missing or malformed (brains made before it existed), `pending` if the company name is still the init default (`INIT_DEFAULTS.companyName`), else `unknown`; `unknown` also when the kernel cannot be read. `doctor` does not report it.
+- Start screen: `clc-brain` with no command (or with only a folder) shows `pending` -> open the folder in the assistant and say "Let's set up my brain"; `done` -> three things to say (sales examples and `clc-brain view --open` when `sales` is active); `unknown` -> the same plus a one-line setup hint.
+- The AGENTS.md managed block opens section 0 with a "First contact" rule: read `setup`; if not set up, offer the guided setup on the first message (even "hi"), at most once per conversation; if set up and the message is a greeting or vague, answer with a 3-6 item menu.
 
 ### Declarative Ecosystem Tools Manifest
 Declared inside `org-kernel.json` under `ecosystemTools`:

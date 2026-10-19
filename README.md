@@ -70,7 +70,7 @@ You can also ask to *see* things: *"Show me my sales process"* opens your sales 
 ## ⚙️ How it works in 3 steps
 
 1. 🧰 **Someone on your team sets it up once** (about 10 minutes).
-2. 💬 **A guided interview with your AI assistant** fills it with your company's information and drafts your first documents for each area. You approve everything before it's saved.
+2. 💬 **A guided interview with your AI assistant** fills it with your company's information and drafts your first documents for each area. You approve everything before it's saved. The assistant guides you from the first "hi": if the brain isn't set up yet, it offers to start.
 3. 🙋 **Everyone asks in plain words** and gets answers with their source. No special commands to learn.
 
 ```mermaid
@@ -171,7 +171,7 @@ Setup is done **once**, by someone on your team who is comfortable typing a few 
 
 1. 🧰 Install Copilot Brain on the computer (see the guide below).
 2. 🧠 Create your company's brain and choose its language.
-3. 📂 Open the brain's folder in your AI tool and say *"Set up my brain"*.
+3. 📂 Open the brain's folder in your AI tool and say *"Set up my brain"* (or just say *"hi"*: the assistant guides you from the first "hi").
 
 <details>
 <summary><strong>Step-by-step installation guide</strong></summary>
@@ -226,6 +226,8 @@ clc-brain init ../acme-brain --yes --language es --name "Acme" --industry "SaaS"
 **3. Open it with your AI assistant**
 
 Open the `acme-brain` folder in Claude Code, Codex, Google Antigravity, Cursor, Windsurf or Gemini CLI. No extra setup is needed. Using another app? See [Connect your AI tool](#-connect-your-ai-tool).
+
+Not sure what comes next? Run `clc-brain` on its own inside the folder: it shows where you are and the next step.
 
 **4. Run the guided interview**
 

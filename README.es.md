@@ -70,7 +70,7 @@ También puedes pedirle que te *muestre* cosas: *"Muéstrame mi proceso de venta
 ## ⚙️ Cómo funciona en 3 pasos
 
 1. 🧰 **Alguien de tu equipo lo configura una sola vez** (unos 10 minutos).
-2. 💬 **Una entrevista guiada con tu asistente de IA** lo llena con la información de tu empresa y redacta tus primeros documentos de cada área. Tú apruebas todo antes de que se guarde.
+2. 💬 **Una entrevista guiada con tu asistente de IA** lo llena con la información de tu empresa y redacta tus primeros documentos de cada área. Tú apruebas todo antes de que se guarde. El asistente te guía desde el primer "hola": si el cerebro todavía no está configurado, te ofrece empezar.
 3. 🙋 **Todos preguntan con sus propias palabras** y reciben respuestas con su fuente. No hay comandos especiales que aprender.
 
 ```mermaid
@@ -171,7 +171,7 @@ La configuración se hace **una sola vez**, y la hace alguien del equipo que se 
 
 1. 🧰 Instala Copilot Brain en la computadora (mira la guía de abajo).
 2. 🧠 Crea el cerebro de tu empresa y elige su idioma.
-3. 📂 Abre la carpeta del cerebro en tu herramienta de IA y di *"Configuremos mi cerebro"*.
+3. 📂 Abre la carpeta del cerebro en tu herramienta de IA y di *"Configuremos mi cerebro"* (o simplemente *"hola"*: el asistente te guía desde el primer "hola").
 
 <details>
 <summary><strong>Guía de instalación paso a paso</strong></summary>
@@ -226,6 +226,8 @@ clc-brain init ../acme-brain --yes --language es --name "Acme" --industry "SaaS"
 **3. Ábrelo con tu asistente de IA**
 
 Abre la carpeta `acme-brain` en Claude Code, Codex, Google Antigravity, Cursor, Windsurf o Gemini CLI. No hace falta configurar nada más. ¿Usas otra app? Mira [Conecta tu herramienta de IA](#-conecta-tu-herramienta-de-ia).
+
+¿No sabes qué sigue? Ejecuta `clc-brain` solo dentro de la carpeta: te muestra dónde estás y el siguiente paso.
 
 **4. Haz la entrevista guiada**
 

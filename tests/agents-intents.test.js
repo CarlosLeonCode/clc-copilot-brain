@@ -198,3 +198,46 @@ test('onboarding marks the brain as set up after approval, then shows a short me
     assert.match(text, /brain's language/i, `${rel} must show the menu in the brain language`);
   }
 });
+
+test('both AGENTS.md files guide people on first contact (setup offer, or a short menu once set up)', () => {
+  for (const rel of FILES) {
+    const text = read(rel);
+    const section0 = text.slice(text.indexOf('## 0.'), text.indexOf('### Talking to people'));
+    assert.match(section0, /### First contact/, `${rel} opens section 0 with the first contact rule`);
+    assert.match(section0, /`setup`/, `${rel} reads org-kernel.json setup`);
+    assert.match(section0, /default company name/i);
+    assert.match(section0, /even "hi"\s*\/\s*"hola"/i);
+    assert.match(section0, /"Shall we set it up\? It takes about 10 minutes"/);
+    assert.match(section0, /"¿Lo configuramos ahora\? Toma unos 10 minutos"/);
+    assert.match(section0, /skills\/skill_brain_onboarding\.md/);
+    assert.match(section0, /offer setup once at the end/i);
+    assert.match(section0, /3[–-]6 things/);
+    assert.match(section0, /more than once per conversation/i);
+    const row = text.split('\n').find((l) => l.startsWith('|') && /"hi" \/ "hola"/i.test(l)) || '';
+    for (const phrase of [/"help"/i, /"ayuda"/i, /"what now\?"/i, /"¿y ahora qué\?"/i]) assert.match(row, phrase, `${rel} intent row needs ${phrase}`);
+    assert.match(row, /first contact/i);
+  }
+});
+
+test('AGENTS.md no longer points to npx and says which tools read it', () => {
+  for (const rel of FILES) {
+    const text = read(rel);
+    assert.doesNotMatch(text, /npx -y @clc\/copilot-brain/, `${rel}: the package is not on npm`);
+    assert.match(text, /If `clc-brain` isn't available, tell the person in one plain sentence that the setup person needs to install it \(see the README's "Get started" section\), and carry on with what you can do without it\./);
+    const intro = text.split('\n').find((l) => l.startsWith('Most people who use this brain')) || '';
+    assert.doesNotMatch(intro, /ChatGPT, Gemini\)/, `${rel}: web chats cannot read AGENTS.md`);
+    assert.match(intro, /skills\/integrations/, `${rel}: web chats use the integration guides`);
+  }
+});
+
+test('READMEs say the assistant guides you from the first hi and that clc-brain alone shows the next step', () => {
+  const en = read('README.md');
+  const es = read('README.es.md');
+  assert.match(en.slice(0, en.indexOf('<details>')), /first "hi"/i);
+  assert.match(es.slice(0, es.indexOf('<details>')), /primer "hola"/i);
+  assert.match(en, /Run `clc-brain` on its own[^\n]*where you are[^\n]*next/i);
+  assert.match(es, /Ejecuta `clc-brain` solo[^\n]*dónde estás[^\n]*siguiente/i);
+  const tech = read('TECHNICAL.md');
+  assert.match(tech, /`setup`/);
+  assert.match(tech, /start screen/i);
+});
