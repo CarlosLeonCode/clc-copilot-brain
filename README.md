@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/Node.js-22%2B-339933.svg" alt="Node.js 22+">
-  <img src="https://img.shields.io/badge/Works_with-Claude_%C2%B7_Cursor_%C2%B7_Gemini_%C2%B7_ChatGPT-7c3aed.svg" alt="Works with Claude, Cursor, Gemini, ChatGPT">
+  <img src="https://img.shields.io/badge/Works_with-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-7c3aed.svg" alt="Works with Claude, Codex, Cursor, Gemini">
   <img src="https://img.shields.io/badge/Made_for-every_team-ec4899.svg" alt="Made for every team">
 </p>
 
@@ -56,7 +56,7 @@ You can also ask to *see* things: *"Show me my sales process"* opens your sales 
 
 <table align="center">
   <tr>
-    <td align="center" width="33%">💼<br><strong>Sales</strong><br>Customer profiles, objection replies, competitor comparisons, call notes<br><em>"How do we beat our main competitor?"</em></td>
+    <td align="center" width="33%">💼<br><strong>Sales</strong><br>Your sales process, call guides, objection replies, competitor comparisons, call notes<br><em>"How do we beat our main competitor?"</em></td>
     <td align="center" width="33%">📣<br><strong>Marketing</strong><br>Brand guidelines, key messages, content calendar<br><em>"What is our elevator pitch?"</em></td>
     <td align="center" width="33%">🧭<br><strong>Product</strong><br>Roadmap, feature specs, release notes<br><em>"What are we building this half?"</em></td>
   </tr>
@@ -71,7 +71,7 @@ You can also ask to *see* things: *"Show me my sales process"* opens your sales 
 
 1. 🧰 **Someone on your team sets it up once** (about 10 minutes).
 2. 💬 **A guided interview with your AI assistant** fills it with your company's information and drafts your first documents for each area. You approve everything before it's saved.
-3. 🙋 **Everyone asks questions in plain language** and gets answers with their source, and can see the sales flows as a simple visual page.
+3. 🙋 **Everyone asks in plain words** and gets answers with their source. No special commands to learn.
 
 ```mermaid
 flowchart LR
@@ -84,26 +84,75 @@ flowchart LR
     class C ask
 ```
 
-🎨 See the visual guide (in Spanish): [How to use Copilot Brain](./docs/diagrams/uso.html).
+🎨 See the visual guide to the basics (in Spanish): [How to use Copilot Brain](./docs/diagrams/uso.html).
 
-## 👁️ See your sales process
+## 💬 Just ask in plain words
 
-Your assistant turns your sales steps and call guides into a simple visual page you can open in your browser. Just ask *"Show me my sales process"*. The page updates itself whenever a guide changes, and it works without an internet connection.
+You never need to learn a command. Type what you want, in English or Spanish:
+
+| Say this | What happens |
+| :--- | :--- |
+| *"What can you do?"* | A short menu of what your brain can help with. |
+| *"Set up my brain"* | The guided interview, one question at a time. |
+| *"Log this call"* (and paste your notes) | Your assistant sums up the call in one sentence and saves it after you say yes. |
+| *"How are we doing?"* | Plain numbers on what's working in sales. |
+| *"How did this month go?"* | A monthly review with changes you can accept or skip. |
+| *"Show me my sales process"* | Opens the visual page of your sales process. |
+| *"Here's my sales flow"* | Brings in a process you already have drawn somewhere. |
+| *"Classify my old calls"* | Sorts older call notes so they count in the numbers. |
+| *"Put my brain in Spanish"* | Switches your brain's language. |
+| *"Check my brain"* | A health check, explained in plain words. |
+| *"Update my brain"* | Brings your brain up to the latest version, after you agree. |
+
+## 💼 Your sales system
+
+Your brain comes with a ready-to-use sales system that you can shape to the way your team sells.
+
+- 🗺️ **A map of your sales process**: the steps every deal goes through.
+- 📞 **Call guides** for a cold call, a discovery call, a demo and a follow-up. Each guide says what to say, what to do when the call goes one way or another, and **what success means** for that call (for example, "meeting booked").
+- 🧭 **Types of sale**: cold outreach, inbound requests, referrals and existing customers. You can add your own.
+- 📝 **Call notes**: after each call, say *"Log this call"*. Your assistant records the type of sale, where the lead came from and whether the call reached its goal, and asks before saving.
+- 📅 **A monthly review**: ask *"How did this month go?"*. Your assistant reads the real numbers, proposes changes to your guides, and changes nothing until you approve.
+
+### 👁️ See your sales process
+
+Your assistant turns your sales steps and call guides into a simple visual page you can open in your browser. Just ask *"Show me my sales process"*. The page updates itself whenever a guide changes, and it works without an internet connection. The page follows the brain's language (English or Spanish).
 
 The page also shows what's working, by type of sale, call guide and person, in plain numbers. Ask: *"How are we doing?"*
 
-Already have your process drawn somewhere? Share a photo, PDF or file with your assistant: it explains what it understood, shows you a preview, and saves it only when you say yes.
+Its **"How it's going"** section shows:
+
+- 📊 Results by type of sale, by call guide (measured against that guide's own idea of success) and by person.
+- 🎯 Where calls tend to miss their goal.
+- 🗓️ This month so far next to the last full month.
+- ⏳ "Too early to tell" when there are only a few calls, so nobody draws conclusions from too little.
+- 🧪 Sample documents are never counted.
 
 <p align="center">
   <img src="docs/assets/sales-system-preview.png" alt="Sales system page: the five steps of the sales process as a diagram, with a card for each call guide showing its goal, decision tree and what to say." width="100%">
 </p>
 
+### 📥 Already have your process drawn?
+
+Say *"Here's my sales flow"* and share it: a photo of a whiteboard, a PDF, an export from Miro or Archify, or just a description.
+
+1. 🔎 Your assistant explains back what it understood and asks about anything unclear, one question at a time.
+2. 👀 It shows you a preview of the page with your flow.
+3. ✅ It saves it only after you say yes.
+
+Changing a step or improving a guide later works the same way: explain, preview, save after a yes.
+
 ## 🤝 Works with the AI tools you already use
 
-- 🟠 **Claude**: Claude Code, the Claude desktop app, and Claude Projects on the web
+Any AI tool that can open a folder on your computer works out of the box:
+
+- 🟠 **Claude Code**, and the Code tab of the Claude desktop app
+- ⚫ **Codex**
+- 🛸 **Google Antigravity**
 - 🟣 **Cursor** and 🌊 **Windsurf**
-- 🔷 **Gemini**: Google's Gemini coding assistant, and Gemini Gems on the web
-- 🟢 **ChatGPT**: as a custom GPT
+- 🔷 **Gemini CLI**
+
+Chat apps that can't open folders (ChatGPT, Gemini Gems, Claude Projects) can use a copy-paste setup. See [Connect your AI tool](#-connect-your-ai-tool).
 
 🌎 Works in English and Spanish.
 
@@ -111,7 +160,7 @@ Already have your process drawn somewhere? Share a photo, PDF or file with your 
 
 > [!IMPORTANT]
 > - 📁 **Plain files you own.** Everything is saved as ordinary documents in a folder on your computer or shared drive.
-> - 🚫 **The tool itself sends nothing anywhere.** It only reads and writes those local files. Whichever AI assistant you connect (Claude, ChatGPT, Gemini…) handles your questions under that provider's own terms, so choose one your company trusts.
+> - 🚫 **The tool itself sends nothing anywhere.** It only reads and writes those local files, and the sales page works offline. Whichever AI assistant you use (Claude, ChatGPT, Gemini…) handles your questions under that provider's own terms, so choose one your company trusts.
 > - ✅ **You review every change.** The assistant shows you each draft and saves it only after you approve.
 
 ---
@@ -119,6 +168,10 @@ Already have your process drawn somewhere? Share a photo, PDF or file with your 
 ## 🚀 Get started
 
 Setup is done **once**, by someone on your team who is comfortable typing a few commands. It takes about 10 minutes.
+
+1. 🧰 Install Copilot Brain on the computer (see the guide below).
+2. 🧠 Create your company's brain and choose its language.
+3. 📂 Open the brain's folder in your AI tool and say *"Set up my brain"*.
 
 <details>
 <summary><strong>Step-by-step installation guide</strong></summary>
@@ -133,6 +186,8 @@ node -v
 
 **1. Download Copilot Brain and install it**
 
+Copilot Brain is not on npm yet, so you install it from its source code:
+
 ```bash
 git clone https://github.com/carlosleoncode/clc-copilot-brain.git
 cd clc-copilot-brain
@@ -140,7 +195,16 @@ npm install
 npm link
 ```
 
-`npm link` makes the `clc-brain` command available anywhere on your computer.
+`npm link` makes the `clc-brain` command available anywhere on your computer. Check that it points to the copy you just downloaded (macOS and Linux):
+
+```bash
+readlink -f "$(command -v clc-brain)"
+```
+
+The result should end in `clc-copilot-brain/bin/cli.js` inside the folder you just cloned.
+
+> [!WARNING]
+> If you linked an older copy before, the command may still point to it. Run `npm link` again from the new folder (or run `npm unlink -g @clc/copilot-brain` first), then check again.
 
 **2. Create your company's brain**
 
@@ -150,16 +214,22 @@ clc-brain init ../acme-brain
 
 Answer a few questions (language, company name, industry, areas). To set the language up front, add `--language es` (Spanish) or `--language en` (English); by default it follows your computer's language. The sales page follows the brain's language, and so does `clc-brain stats`. `--language es` gives you starter guides in Spanish too (the sales map, the pipeline and the call guides). You'll see **"Second Brain initialized successfully!"** followed by your next steps.
 
+To skip the questions, pass everything as options:
+
+```bash
+clc-brain init ../acme-brain --yes --language es --name "Acme" --industry "SaaS" --tagline "We make sales simple" --areas "sales,operations"
+```
+
 > [!TIP]
-> Want to look around first? Run `clc-brain init ../demo-brain --demo` to get a brain filled with sample documents. Remove them later with `clc-brain clean-demo ../demo-brain`.
+> Want to look around first? Run `clc-brain init ../demo-brain --demo` to get a brain filled with sample documents. Remove them later with `clc-brain clean-demo ../demo-brain`. A brain without samples (`--clean`) is the default.
 
 **3. Open it with your AI assistant**
 
-Open the `acme-brain` folder in Claude Code, Cursor, Windsurf or Gemini CLI. No extra setup is needed. Using another app? See [Connect your AI tool](#-connect-your-ai-tool).
+Open the `acme-brain` folder in Claude Code, Codex, Google Antigravity, Cursor, Windsurf or Gemini CLI. No extra setup is needed. Using another app? See [Connect your AI tool](#-connect-your-ai-tool).
 
 **4. Run the guided interview**
 
-Type `/brain:onboarding`. The assistant asks one question at a time, fills in your company profile and drafts a first document for each area. You approve each draft before it is saved.
+Say *"Set up my brain"* (in Claude Code you can also type `/brain:onboarding`). The assistant asks one question at a time, fills in your company profile and drafts a first document for each area. You approve each draft before it is saved.
 
 **5. Check everything is healthy**
 
@@ -169,9 +239,53 @@ clc-brain doctor ../acme-brain
 
 You should see **0 errors**. If something is missing, `clc-brain doctor ../acme-brain --fix` repairs it without touching your documents.
 
-**Already have a brain?** Just tell your assistant "Update my brain": your assistant can update your brain for you and asks before changing anything. You can also run `clc-brain upgrade ../acme-brain` yourself.
-
 <sub>Once Copilot Brain is published on npm, step 1 becomes a single command: `npm install -g @clc/copilot-brain`.</sub>
+
+</details>
+
+## 🔄 Update an existing brain
+
+When a new version comes out, the person who installed Copilot Brain gets the latest version, then asks the assistant *"Update my brain"*. The assistant explains what would change and only updates after you say yes. Your own documents and call notes are never overwritten.
+
+<details>
+<summary><strong>Step-by-step update guide</strong></summary>
+
+<br>
+
+**1. Get the latest version**
+
+```bash
+cd clc-copilot-brain
+git pull
+npm install
+npm link   # only needed if the check below points somewhere else
+readlink -f "$(command -v clc-brain)"
+```
+
+**2. Preview the update, then apply it**
+
+```bash
+clc-brain upgrade ../acme-brain --dry-run
+clc-brain upgrade ../acme-brain --yes
+```
+
+`--dry-run` shows what would be added or changed, without writing anything. Review it, then run it with `--yes`. What the update does:
+
+- Built-in shortcuts and assistant instructions are refreshed. If you had customized one, your version is kept next to it as a `.bak` copy. If a `.bak` from an earlier update is still there, that file is skipped and reported; move the old `.bak` away and run it again.
+- The assistant rules at the top of `AGENTS.md` are refreshed (with a `.bak` copy); anything you wrote outside them stays as is.
+- Call guides you already have are never overwritten. New starter guides are added in the brain's language.
+- Your call notes, won/lost reviews and other documents are never touched.
+
+Or skip the commands and say *"Update my brain"*: the assistant runs the same preview and applies it only after you agree.
+
+**3. After updating an older brain**
+
+Ask your assistant, in this order:
+
+1. *"Put my brain in Spanish"* (only if you want Spanish and the brain is still in English).
+2. *"Here's my sales flow"*, and share the process you already use.
+3. *"Classify my old calls"*, so earlier calls count in the numbers.
+4. *"Show me my sales process"*.
 
 </details>
 
@@ -180,32 +294,15 @@ You should see **0 errors**. If something is missing, `clc-brain doctor ../acme-
 Open only the one you use.
 
 <details>
-<summary><strong>Claude Code · Cursor · Windsurf · Gemini CLI</strong></summary>
+<summary><strong>Claude Code · Codex · Antigravity · Cursor · Windsurf · Gemini CLI · Claude desktop (Code tab)</strong></summary>
 
 <br>
 
-Open your brain folder. That's it: the rules in `AGENTS.md` load automatically through `CLAUDE.md`, `GEMINI.md`, `.cursorrules` and `.windsurfrules`.
+Open your brain folder. That's it: every tool reads the rules in `AGENTS.md`, directly or through `CLAUDE.md`, `GEMINI.md`, `.cursorrules` and `.windsurfrules`. People ask in plain words, and the assistant follows the right procedure.
 
-The sales process page works in any tool: when you ask *"Show me my sales process"*, the assistant runs `clc-brain view --open` for you. If it can't run commands, open `sales/sales-system.html` in your browser.
+Slash commands such as `/call` or `/flow` are optional shortcuts that work only in Claude Code. Nobody needs them.
 
-</details>
-
-<details>
-<summary><strong>Claude Desktop and other MCP apps</strong></summary>
-
-<br>
-
-Add this to the app's MCP settings (in Claude Desktop: `claude_desktop_config.json`), using the full path to your brain. `clc-brain init` prints this snippet with your path already filled in.
-
-```json
-{
-  "mcpServers": {
-    "acme-brain": { "command": "clc-brain", "args": ["mcp", "/full/path/to/acme-brain"] }
-  }
-}
-```
-
-Restart the app. Your assistant can now search the brain, save call notes and objections, and run health checks.
+The sales page works in any of these tools: when you ask *"Show me my sales process"*, the assistant runs `clc-brain view --open` for you. If it can't run commands, open `sales/sales-system.html` in your browser.
 
 </details>
 
@@ -214,7 +311,7 @@ Restart the app. Your assistant can now search the brain, save call notes and ob
 
 <br>
 
-Follow the copy-paste guide inside your brain:
+These apps can't open your folder, so follow the copy-paste guide inside your brain:
 
 | App | Guide |
 | :--- | :--- |
@@ -224,29 +321,49 @@ Follow the copy-paste guide inside your brain:
 
 </details>
 
+<details>
+<summary><strong>Optional: chat apps through an MCP connection</strong></summary>
+
+<br>
+
+Only for chat apps that can't open folders but support MCP servers (for example the Claude desktop chat). Add this to the app's MCP settings (in Claude Desktop: `claude_desktop_config.json`) with the full path to your brain; `clc-brain init` prints it with your path filled in:
+
+```json
+{
+  "mcpServers": {
+    "acme-brain": { "command": "clc-brain", "args": ["mcp", "/full/path/to/acme-brain"] }
+  }
+}
+```
+
+Restart the app. It can search the brain, save call notes and objections, and run health checks. The sales page and the sales numbers need a tool with folder access.
+
+</details>
+
 ## 📥 Bring your existing documents
 
 - **Text** from Notion, Google Docs, handbooks or CRM notes: paste it into your assistant and say *"Save this in our brain under operations"* (or any area).
-- **Meeting notes**: paste the transcript and type `/call`.
-- **Flowcharts** from Miro, Lucidchart or a whiteboard photo: drop the image in the chat and type `/flow`.
+- **Meeting notes**: paste them and say *"Log this call"*.
+- **Sales flows** from Miro, Archify, Lucidchart, a PDF or a whiteboard photo: share it and say *"Here's my sales flow"*.
 
 ## 📚 Reference
 
 <details>
-<summary><strong>Shortcuts inside your AI assistant</strong></summary>
+<summary><strong>Shortcuts in Claude Code (optional)</strong></summary>
 
 <br>
 
-For any area, just ask in plain language. These shortcuts speed up common tasks:
+Everything below also works by asking in plain words, in any tool. In Claude Code these shortcuts are a quicker way in:
 
 | Shortcut | What it does |
 | :--- | :--- |
 | `/brain` | Overview of your brain and what you can do. |
 | `/brain:onboarding` | Guided interview that sets up your brain. |
+| `/brain:sales` | Sales help: objection replies, competitor comparisons, what to say. |
 | `/objection` | Approved reply to a buyer objection, or save a new one. |
 | `/battlecard` | How you compare against a competitor. |
-| `/call` | Analyze a call transcript and save it. |
-| `/flow` | Sales stage rules, or turn a flowchart image into a diagram. |
+| `/call` | Analyze call notes and save them. |
+| `/flow` | See or change your sales process and call guides, or bring in a flow you already have. |
 | `/retro` | Monthly review of calls and won/lost deals. |
 | `/brain:add-area` | Add a new area or document. |
 | `/brain:doctor` | Health check from inside the chat. |
@@ -260,17 +377,30 @@ For any area, just ask in plain language. These shortcuts speed up common tasks:
 
 | Command | What it does |
 | :--- | :--- |
-| `clc-brain init [folder]` | Create a brain (clean by default, `--demo` for samples). |
+| `clc-brain init [folder]` | Create a brain. Options: `--language en\|es`, `--name`, `--industry`, `--tagline`, `--areas`, `--demo` or `--clean` (default), `--yes`. |
 | `clc-brain doctor [folder]` | Check health; add `--fix` to repair. |
 | `clc-brain add-area [folder]` | Add an area: `--preset operations` or `--custom legal_ops`. |
 | `clc-brain list-areas [folder]` | See installed and available areas. |
 | `clc-brain clean-demo [folder]` | Remove sample documents, keep yours. |
-| `clc-brain upgrade [folder]` | Update an existing brain to the latest commands and skills; your edits are kept as `.bak` copies. Add `--dry-run` to preview. |
+| `clc-brain upgrade [folder] [--dry-run] [--yes]` | Update an existing brain to the latest commands and skills; your edits are kept as `.bak` copies. `--dry-run` previews, `--yes` applies. |
 | `clc-brain view [folder] [--open] [--draft <file>]` | Build the visual page of your sales process; add `--open` to open it in your browser, or `--draft <file>` to preview a change without saving it. |
 | `clc-brain stats [folder] [--month YYYY-MM] [--json]` | Show what's working in your sales (by type of sale, call guide and person) for this month and the last one; `--json` gives the raw numbers. |
-| `clc-brain mcp [folder]` | Connect MCP apps (used by the config above). |
+| `clc-brain mcp [folder]` | Start the optional MCP connection (used by the config above). |
 
-`clc-brain --help` lists every option.
+`clc-brain --help` lists every option. `copilot-brain` is the same command under another name.
+
+</details>
+
+<details>
+<summary><strong>Languages</strong></summary>
+
+<br>
+
+- Each brain has one language, English or Spanish (`language` in `org-kernel.json`). `init --language es|en` sets it; without it, `init` uses your computer's language.
+- The assistant talks and writes new content in the brain's language, and answers in whatever language a person writes in.
+- Spanish brains get the sales map, the pipeline and the four call guides in Spanish, and a Spanish sales page and `stats` report.
+- The starter documents of the other areas (marketing, product, operations, people, finance & legal) are in English for now. The assistant can translate them when you ask.
+- To switch later, say *"Put my brain in Spanish"*.
 
 </details>
 
@@ -282,7 +412,12 @@ For any area, just ask in plain language. These shortcuts speed up common tasks:
 | Folder | What goes inside |
 | :--- | :--- |
 | `company-profile.md` | Who you are and what you sell. |
-| `sales/` | Customer profiles, objections, competitor comparisons, scripts, calls, pipeline stages, won/lost reviews. |
+| `sales/system.md` | The map of your sales process. |
+| `sales/plays/` | The call guides (cold call, discovery, demo, follow-up), each with its goal and its definition of success. |
+| `sales/stages/` | The steps of your sales process and what must be true before moving on. |
+| `sales/calls/` | Call notes, one folder per month. |
+| `sales/win-loss/` | Reviews of deals won and lost. |
+| `sales/` (other folders) | Customer profiles, objections, competitor comparisons, scripts, qualification, case studies. |
 | `sales/sales-system.html` | The visual page of your sales process (created for you; open it in any browser). |
 | `marketing/` | Brand, messaging, content calendar, distribution. |
 | `product/` | Roadmap, specs, release notes. |
@@ -290,8 +425,9 @@ For any area, just ask in plain language. These shortcuts speed up common tasks:
 | `hr_people/` | Handbook, hiring scorecards, onboarding plans. |
 | `finance_legal/` | Pricing, discount rules, contract templates. |
 | `playbooks/` | One operating guide per area. |
+| `AGENTS.md` | The rules every AI tool follows in this brain. |
 
-For developers: [TECHNICAL.md](./TECHNICAL.md) covers the architecture and validation rules, and [docs/Journal/](./docs/Journal/) records the design decisions.
+For developers: [TECHNICAL.md](./TECHNICAL.md) covers the architecture, data model and validation rules, and [docs/Journal/](./docs/Journal/) records the design decisions.
 
 </details>
 

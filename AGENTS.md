@@ -159,29 +159,29 @@ Autonomous agents should execute specialized tasks using instructions defined in
 
 ## 6. Model Context Protocol (MCP) Server (`src/mcp/`)
 
-The Second Brain provides a native MCP server (`clc-brain mcp` / `copilot-brain mcp`) over standard I/O (`stdio`) for Google Antigravity, Claude Desktop, Cursor, Zed, and Gentle Dot.
+Optional. Tools with folder access (Claude Code, Codex, Google Antigravity, Cursor, Windsurf, Gemini CLI) read this file directly and need no MCP setup. The MCP server (`clc-brain mcp` / `copilot-brain mcp`, stdio) is for chat apps without folder access that support MCP, such as the Claude Desktop chat.
 
 ### Client Configuration (`mcpServers`)
 
-#### Option A: Universal execution via `npx` (Recommended for any client)
-```json
-{
-  "mcpServers": {
-    "copilot-brain": {
-      "command": "npx",
-      "args": ["-y", "@clc/copilot-brain", "mcp"]
-    }
-  }
-}
-```
-
-#### Option B: Global CLI installation (`npm install -g @clc/copilot-brain`)
+#### Option A: Global CLI linked from source (current install path: `git clone`, `npm install`, `npm link`)
 ```json
 {
   "mcpServers": {
     "copilot-brain": {
       "command": "clc-brain",
-      "args": ["mcp"]
+      "args": ["mcp", "/full/path/to/brain"]
+    }
+  }
+}
+```
+
+#### Option B: `npx` (only after the package is published on npm)
+```json
+{
+  "mcpServers": {
+    "copilot-brain": {
+      "command": "npx",
+      "args": ["-y", "@clc/copilot-brain", "mcp", "/full/path/to/brain"]
     }
   }
 }

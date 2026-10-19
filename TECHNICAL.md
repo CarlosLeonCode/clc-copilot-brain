@@ -9,13 +9,24 @@
 
 `@clc/copilot-brain` is a modular, schema-enforced knowledge engine and runtime that turns a Git repository into an active Single Source of Truth (SSOT) for human operators and autonomous AI agents.
 
-### High-Level System Architecture
+### Access paths
+
+| Path | Who uses it | How it works |
+| :--- | :--- | :--- |
+| Folder access (primary) | Claude Code, the Claude desktop Code tab, Codex, Google Antigravity, Cursor, Windsurf, Gemini CLI | The tool opens the brain folder and reads `AGENTS.md` (directly or through the adapter symlinks). People ask in plain language; the managed "What people ask" table routes each request to a skill, a command file (read as instructions) or a `clc-brain` command. |
+| Slash commands (optional) | Claude Code only | `.claude/commands/*.md` are shortcuts to the same procedures. Nothing requires them. |
+| Copy-paste guides | ChatGPT custom GPTs, Gemini Gems, Claude Projects | `skills/integrations/*.md`; no file access, so no sales page or computed metrics. |
+| MCP over stdio (optional) | Chat apps without folder access that support MCP | `clc-brain mcp [dir]`, described below. It exposes query, capture and doctor tools; the sales page and metrics are CLI-only. |
+
+The package is not published on npm yet: install from source (`git clone`, `npm install`, `npm link`) and verify the global link with `readlink -f "$(command -v clc-brain)"`. Requires Node.js >= 22.
+
+### MCP Path Architecture
 
 ```
                                  ┌─────────────────────────┐
-                                 │   AI Clients / Agents   │
-                                 │ Claude Desktop / Cursor │
-                                 │  Antigravity / Raycast  │
+                                 │  MCP chat apps (opt.)   │
+                                 │  e.g. Claude Desktop    │
+                                 │  chat, other MCP hosts  │
                                  └────────────┬────────────┘
                                               │ stdio (JSON-RPC 2.0)
                                               ▼
@@ -69,17 +80,26 @@ src/
 │   ├── scaffold.js        initBrain, setupIdeAdapters (backs up regular files), restoreRootSkills
 │   ├── areas.js           PRESET_AREAS, area id rule ^[a-z0-9_-]+$, add/list areas, resolveAllowedAreas
 │   ├── doctor.js          runDoctor (structured results), repairBrain (non-destructive)
-│   ├── upgrade.js         planUpgrade/applyUpgrade (allowlist: replace-with-backup, add-if-missing, AGENTS.md managed block; ADR 0005, 0006), text-diff.js
+│   ├── upgrade.js         planUpgrade/applyUpgrade (allowlist: replace-with-backup, add-if-missing, AGENTS.md managed block; ADR 0005, 0006)
 │   ├── demo.js            demo assets derived from templates/areas, cleanDemo
-│   ├── calls.js           captureCall (strict date, containment, quoted frontmatter, no overwrite)
+│   ├── calls.js           captureCall (strict date, containment, quoted frontmatter, no overwrite), CALL_FIELDS, readCallLog
 │   ├── objections.js      captureObjection (schema-validated)
 │   ├── query.js           queryBrain (allowed areas + playbooks)
-│   ├── sales-view.js      buildSalesView/writeSalesView (plain-language HTML page of the sales system)
-│   ├── sales-records.js, sales-metrics.js, sales-dashboard.js, sales-report-text.js  tolerant reader, pure metrics, page section, plain text (ADR 0007)
+│   ├── plays.js           play frontmatter parse/validate (PLAY_KEYS), parseMotions, readPlayMeta, PLAY_TITLE_PREFIX
+│   ├── sales-stages.js    plain sections of system.md (SECTION_HEADINGS in en/es), stage number -> name
+│   ├── sales-normalize.js slugs, company/deal keys, outcomes, booleans, DEFAULT_MOTIONS, motionName(slug, lang)
+│   ├── sales-view.js      buildSalesView/writeSalesView/writeSalesPreview (plain-language HTML page of the sales system)
+│   ├── flowchart.js       offline renderer: Mermaid flowchart subset -> layered layout -> inline SVG (no deps, no network)
+│   ├── html-escape.js     single HTML escaper for generated pages
+│   ├── sales-records.js   tolerant reader of call logs, win-loss notes and guides under sales/ (ADR 0007)
+│   ├── sales-metrics.js   pure metrics: month windows, sample-size rules, type-of-sale resolution
+│   ├── sales-dashboard.js "How it's going" section of the sales page
+│   ├── sales-report-text.js  plain-text `stats` report
 │   ├── i18n.js            t(lang, key, vars) with en/es dictionaries (English fallback), formatMonth, formatPercent (Intl)
 │   ├── brain-language.js  getBrainLanguage (org-kernel.json `language`, default "en"), parseLanguage, detectLanguage (LC_ALL/LANG)
 │   ├── manifest.js        IDE adapters + commands/skills derived from templates/base
 │   ├── schema-validator.js  ajv Draft 2020-12 (ADR 0002)
+│   ├── text-diff.js       dependency-free line diff for upgrade previews
 │   └── errors.js, fs-utils.js, package-paths.js
 ├── cli/                   Adapter: argv parsing, @clack/prompts, picocolors, exit codes
 │   ├── main.js, args.js, help.js, prompt.js, render.js
@@ -99,6 +119,34 @@ src/
 | `tools/` | Safeguards & Static Guards | Pre-commit and CI guards (`audit.js` plus `check_*.js` and `scan_secrets.js`), CommonJS with Node.js built-ins only ([ADR 0003](./docs/Journal/0003-project-specific-clc-kernel-guards.md)). |
 | `docs/Journal/` | Decisions | Architecture Decision Records (`NNNN-kebab-title.md`). |
 | `tests/` | Verification | Node.js native test runner: end-to-end CLI/MCP suites plus `tests/core/` unit tests. |
+
+### CLI Commands
+
+`clc-brain` and `copilot-brain` are the same binary (`bin/cli.js`). `[dir]` defaults to the current directory.
+
+| Command | Options |
+| :--- | :--- |
+| `init [dir]` | `--language <en\|es>`, `--name`, `--industry`, `--tagline`, `--areas <list>`, `--demo` / `--clean` (default), `-y`/`--yes` |
+| `doctor [dir]` | `--fix` |
+| `add-area [dir]` | `--preset <id>` or `--custom <id>` (`^[a-z0-9_-]+$`) |
+| `list-areas [dir]` | |
+| `clean-demo [dir]` | |
+| `view [dir]` | `--open`, `--draft <file>` (repeatable) |
+| `stats [dir]` | `--month <YYYY-MM>`, `--json` |
+| `upgrade [dir]` | `--dry-run`, `-y`/`--yes` |
+| `mcp [dir]` | |
+
+`clc-brain --help` is authoritative (`src/cli/help.js`).
+
+### Upgrade Policy (`src/core/upgrade.js`, ADR 0005, 0006)
+
+`upgrade` is an allowlist; anything not listed is never touched (call logs, win-loss notes, objections, the generated sales page, every other area file).
+
+| Policy | Files | Behaviour |
+| :--- | :--- | :--- |
+| `template-owned` | `.claude/commands/*.md`, `skills/*.md` from `templates/base` | Replaced when bytes differ, with a `<file>.bak` copy. Skipped (reported) when the target is a symlink or not a file, when a `.bak` already exists, or when the template still has init placeholders. |
+| `add-if-missing` | New base commands/skills; `sales/system.md` and `sales/plays/*.md` when `sales` is active | Added only when absent, never overwritten. Sales files come from `templates/locales/<brain language>/` when that file exists, else from English. |
+| `managed-block` | `AGENTS.md` | Only the text between the managed markers is refreshed (see section 4). |
 
 ---
 
@@ -155,10 +203,15 @@ The Second Brain provides a native MCP server executing over standard I/O (`stdi
   - `summary` (`string`, required): 3-5 bullet executive summary.
   - `stage` (`string`, required): Pipeline stage (`Discovery`, `Validation`, `Proposal`, `Negotiation`, `Closed Won`, `Closed Lost`).
   - `outcome` (`string`, required): Immediate outcome or next scheduled milestone.
+  - `play` (`string`, optional): Call guide id used on the call (e.g. `cold-call`).
+  - `branch` (`string`, optional): Decision-tree branch reached (e.g. `B2`).
+  - `gateAdvanced` (`boolean`, optional): Whether the call moved the deal through its pipeline gate.
   - `notes` (`string`, optional): Raw transcript notes or coaching points.
   - `objections` (`array<string>`, optional): List of buyer objections raised.
   - `actionItems` (`array<string>`, optional): Tasks and assignees.
-- **Execution**: Rejects any `date` that is not a real calendar date in strict `YYYY-MM-DD` form, derives the partition `sales/calls/YYYY-MM/`, and asserts the resolved path stays inside `sales/calls/`. Writes `YYYY-MM-DD_<rep-slug>_<prospect-slug>.md` (rep/prospect slugified to `[a-z0-9-]`). Frontmatter values are emitted as double-quoted (JSON-escaped) YAML scalars so newlines or colons cannot inject keys. An existing log is never overwritten: a numeric suffix (`-2`, `-3`, ...) is appended instead. There is no call JSON Schema; validation is limited to the checks above.
+  - `rawTranscript` (`string`, optional): Full transcript to archive.
+- **Execution**: Inputs are written with canonical frontmatter keys (`CALL_FIELDS` in `src/core/calls.js`: `prospect` -> `prospect_company`, `stage` -> `deal_stage`, `gateAdvanced` -> `gate_advanced`). The MCP tool does not take `motion`, `lead_source`, `deal_id` or `goal_met`; the call analyzer flow writes those (see section 5).
+- **Validation**: Rejects any `date` that is not a real calendar date in strict `YYYY-MM-DD` form, derives the partition `sales/calls/YYYY-MM/`, and asserts the resolved path stays inside `sales/calls/`. Writes `YYYY-MM-DD_<rep-slug>_<prospect-slug>.md` (rep/prospect slugified to `[a-z0-9-]`). Frontmatter values are emitted as double-quoted (JSON-escaped) YAML scalars so newlines or colons cannot inject keys. An existing log is never overwritten: a numeric suffix (`-2`, `-3`, ...) is appended instead. There is no call JSON Schema; validation is limited to the checks above.
 
 #### `brain_capture_objection`
 - **Purpose**: Create or update objection-handling matrices validated against schema contracts.
@@ -229,28 +282,39 @@ The real `AGENTS.md` is rewritten in place with a `.bak` copy, so the adapter sy
 
 The `sales/` domain implements an enterprise revenue enablement engine:
 
-### 1. Partitioned Historical Call Storage
+### Partitioned Historical Call Storage
 - Calls are stored in monthly partitions: `sales/calls/YYYY-MM/YYYY-MM-DD_rep_prospect.md`.
-- Structured YAML Frontmatter allows deterministic parsing by automated retro prompts:
+- Flat frontmatter, parsed without a YAML dependency. Canonical keys (the call analyzer, `skills/skill_call_analyzer.md`, writes the full set; `brain_capture_call` writes the subset it receives plus `created_at`):
   ```yaml
   ---
-  rep: Carlos
-  prospect: Acme Corp
-  date: 2026-10-15
-  stage: Discovery
-  outcome: Next step scheduled
-  created_at: 2026-10-15T18:00:00.000Z
+  call_id: "CALL-2026-10-15-01"
+  date: "2026-10-15"
+  rep: "Carlos"
+  prospect_company: "Acme Corp"
+  contact_name: "Dana Diaz"
+  contact_role: "VP Sales"
+  deal_stage: "Discovery"
+  call_type: "Discovery"
+  outcome: "Next step scheduled"
+  motion: "inbound"            # type of sale (slug)
+  lead_source: "webinar"       # slug
+  deal_id: "acme-2026"         # slug, joins calls and win-loss notes
+  play: "discovery-call"       # call guide id
+  branch: "B2"                 # decision-tree branch reached
+  goal_met: true               # checked against the guide's `success:`
+  gate_advanced: false
   ---
   ```
+- Legacy logs with `prospect` / `stage` keys still load (`readCallLog`), and every sales-metrics field is optional for the reader.
 
-### 2. Qualification & Pipeline Gate Enforcement
+### Qualification & Pipeline Gate Enforcement
 - `sales/qualification/qualification-matrix.md`: Implements a MEDDPICC framework with 6 immediate disqualification triggers.
 - `sales/stages/pipeline-stages.md`: Canonical definition of 5 pipeline stages (Discovery, Validation, Proposal, Negotiation, Closed Won/Lost) with mandatory exit criteria before stage progression.
 
-### 3. Sales System: Map and Plays
+### Sales System: Map and Plays
 - `sales/system.md`: the map from pipeline stage to exit gate to the plays that apply.
-- `sales/plays/<play>.md`: one play per kind of conversation (`cold-call`, `discovery-call`, `demo-call`, `follow-up`). Flat frontmatter (`play`, `stages`, `goal`, `gate_unlocked`, `version`, `status`) is parsed by regex, with no YAML dependency. `stages` is a comma list, so a play can span stages (`stages: 2, 3, 4`). The body holds a Mermaid decision tree, a talk track per branch linking `sales/scripts/`, and a Learnings Log.
-- `/flow` routes conversation trees to `sales/plays/` and macro pipeline changes to `sales/stages/pipeline-stages.md`.
+- `sales/plays/<play>.md`: one play (call guide) per kind of conversation (`cold-call`, `discovery-call`, `demo-call`, `follow-up`). Flat frontmatter is parsed by regex, with no YAML dependency (`src/core/plays.js`). Required keys (`PLAY_KEYS`): `play`, `stages`, `goal`, `gate_unlocked`, `version`, `status`. Optional: `motions` (types of sale) and `success` (what success means for this call, in plain words). `stages` is a comma list, so a play can span stages (`stages: 2, 3, 4`). The body holds a Mermaid decision tree, a talk track per branch linking `sales/scripts/`, and a Learnings Log.
+- The flow procedure (`.claude/commands/flow.md`, triggered by a plain request in any tool or `/flow` in Claude Code) routes conversation trees to `sales/plays/` and macro pipeline changes to `sales/stages/pipeline-stages.md`.
 
 ### Sales System Page (`clc-brain view`)
 - `sales/sales-system.html` is a generated, self-contained page for non-technical readers: the plain-language part of `sales/system.md`, the pipeline diagram from `sales/stages/pipeline-stages.md`, and one card per play (title, pipeline steps it is used in, goal, version, decision tree, collapsible talk tracks "What to say", and "What we've learned").
@@ -265,7 +329,7 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 - The page is a generated artifact: `upgrade` does not manage it, `clean-demo` never removes it, and `doctor` and `brain_query` only read `.md`/`.json`.
 
 ### Sales Metrics (`clc-brain stats`, ADR 0007)
-- Data model, all optional frontmatter. Call guides: `motions:` (comma list of types of sale, or `all`; missing means all) and `success:` (plain-words success). Call logs: `motion`, `lead_source`, `deal_id` (stored as slugs) and `goal_met` (boolean, checked against the guide's `success:`), next to `play`, `branch`, `gate_advanced`. Win-loss notes: `result`, `date`, `motion`, `lead_source`, `deal_id`, `rep`, with the file name and the older table as fallbacks. Default types of sale: `cold-outbound`, `inbound`, `referral`, `expansion`; custom ones are allowed.
+- Data model, all optional frontmatter. Call guides: `motions:` (comma list of types of sale, or `all`; missing means all) and `success:` (plain-words success). Call logs: `motion`, `lead_source`, `deal_id` (stored as slugs) and `goal_met` (boolean, checked against the guide's `success:`), next to `play`, `branch`, `gate_advanced` (full example in "Partitioned Historical Call Storage" above). Win-loss notes (`sales/win-loss/post-mortem-template.md`): `result`, `date`, `motion`, `lead_source`, `deal_id`, `rep`, and `company`/`prospect_company`, with the file name and the older table as fallbacks. Default types of sale (`DEFAULT_MOTIONS`): `cold-outbound`, `inbound`, `referral`, `expansion`; custom slugs are allowed.
 - `readSalesRecords` (src/core/sales-records.js) reads `sales/` only, skips symlinks and sample records, and lists unreadable files in `skipped`. `buildSalesReport` (src/core/sales-metrics.js) is pure: it returns `windows` (current month so far and last complete month), `comparison`, `journeys`, `unclassified` and `excluded`. `loadSalesReport` joins the two.
 - Rules: under 5 calls shows counts only, 5 to 9 is "too early to tell", and the comparison needs 10 or more calls in both months. Type of sale resolves from the record, then its deal, then its guide's only type, else "Not classified yet". Stall points are every `goal_met: false` call, grouped by branch trigger text. `gate_advanced` is a separate metric.
 - `clc-brain stats [dir] [--month YYYY-MM] [--json]` prints plain text (`sales-report-text.js`) or the report as JSON. A bad month is a validation error; `NOT_A_BRAIN` and a missing sales area exit 1.
@@ -282,7 +346,7 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 - Locale overlay: translated starter content lives in `templates/locales/<lang>/areas/<area>/` with the same file names as `templates/areas/<area>/` (today `es` for `sales/system.md`, `sales/stages/pipeline-stages.md` and `sales/plays/*.md`). `copyAreaTemplates` (`src/core/areas.js`) copies the English area, then the overlay for the brain language on top, with the same placeholder replacer and demo filter; `init` and `add-area --preset` use it. `upgrade` adds missing `sales/system.md` and plays from the overlay when it has the file, else from English, and never overwrites existing files. Translations keep everything code or logs rely on: frontmatter keys, `play`, `stages`, `motions`, `version`, `status`, branch IDs and script links; `tests/locale-parity.test.js` enforces it. The parsers read both heading sets (`SECTION_HEADINGS` in `sales-stages.js`: "Branches"/"Situaciones", "Learnings Log"/"Registro de aprendizajes", the plain section heading) and both title prefixes (`PLAY_TITLE_PREFIX`: "Play:"/"Guía:").
 - The AGENTS.md managed block tells the assistant to talk and write new content in the brain's language, to offer once to translate starter content written in a different language (for example in an older brain; only after a yes), and maps "put my brain in Spanish" to setting `language`. Onboarding asks for the language first when it is not set.
 
-### 4. Declarative Ecosystem Tools Manifest
+### Declarative Ecosystem Tools Manifest
 Declared inside `org-kernel.json` under `ecosystemTools`:
 ```json
 "ecosystemTools": {
@@ -293,7 +357,7 @@ Declared inside `org-kernel.json` under `ecosystemTools`:
   }
 }
 ```
-Archify is optional tooling and adds no npm runtime dependencies. Conversation decision trees do not live in the pipeline file: they are Mermaid diagrams inside plays (see below).
+Archify is optional tooling and adds no npm runtime dependencies. Conversation decision trees do not live in the pipeline file: they are Mermaid diagrams inside plays (see "Sales System: Map and Plays" above).
 
 ---
 
@@ -314,6 +378,9 @@ Executed via Node.js native test runner (`node --test tests/**/*.test.js`):
 11. **`tests/core/*.test.js`**: Unit tests for core use cases (scaffold, areas, doctor, calls, demo, query) without subprocesses.
 12. **`tests/regressions.test.js`**: Regressions fixed during the hexagonal split (custom area id validation, custom areas over MCP, package `files`, `clean-demo` safety, adapter backups) and the `doctor` exit code (1 on errors, also after `--fix`; warnings alone exit 0).
 13. **`tests/mcp-jsonrpc.test.js`**: JSON-RPC 2.0 compliance (notifications vs `id: null`, `-32600`/`-32601`/`-32700`, batch rejection, in-order responses) and protocol version negotiation.
+14. **`tests/agents-intents.test.js`** and **`tests/plain-language.test.js`**: the managed AGENTS.md block (intents in English and Spanish, plain-language rules, slash commands are Claude Code only), plain user-facing procedures, and the README claims about languages, the sales page and `stats`.
+15. **`tests/init-language.test.js`** and **`tests/locale-parity.test.js`**: `--language`, the locale overlay and parity of translated starter files.
+16. **`tests/stats-cli.test.js`**, **`tests/sales-report-text.test.js`** and **`tests/upgrade-cli.test.js`**: the `stats` and `upgrade` commands end to end.
 
 CLI tests scaffold into a temporary directory under `os.tmpdir()`; no test writes into the repository. Requires Node.js >= 22.
 
