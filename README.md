@@ -245,6 +245,47 @@ You should see **0 errors**. If something is missing, `clc-brain doctor ../acme-
 
 </details>
 
+## 🏢 Use it inside a company workspace
+
+If your company also uses other AI tools, give the company one folder (and optionally one git repo) and give each tool its own subfolder:
+
+```
+acme/                 # one folder (and optionally one git repo) per company
+├── AGENTS.md         # company-level router for AI assistants (+ CLAUDE.md symlink)
+├── brain/            # Copilot Brain
+└── other-tool/       # any other tool, in its own sibling folder
+```
+
+> [!WARNING]
+> **Never create the brain in a folder another tool already uses.** `clc-brain init` writes `AGENTS.md` (overwriting an existing one) and the `CLAUDE.md`, `GEMINI.md`, `.cursorrules` and `.windsurfrules` links at the root of its folder, which would replace the other tool's rules.
+
+From the company folder, create the brain in its own subfolder:
+
+```bash
+cd acme
+clc-brain init brain --name "Acme"
+```
+
+Every brain file stays inside `brain/`. Other commands take the same path, for example `clc-brain doctor brain`.
+
+**Opening your AI assistant at `acme/`.** Claude Code only loads `CLAUDE.md`/`AGENTS.md` from `acme/` and its parent folders. The brain's rules and `.claude/skills` load only after the assistant reads a file inside `brain/`, and the shortcuts in `brain/.claude/commands` (such as `/call`) are not documented to be found from the parent. So either:
+
+1. **Open the assistant inside `brain/`** for day-to-day brain work (simplest), or
+2. **Add a short router** at `acme/AGENTS.md`, with a `CLAUDE.md` link to it (`ln -s AGENTS.md CLAUDE.md`), that sends each topic to its folder:
+
+```markdown
+# Acme workspace
+
+Before acting on a topic below, read `<folder>/AGENTS.md` and follow it.
+
+| Topic | Folder |
+| :--- | :--- |
+| Company knowledge, SOPs, sales calls, objections | `brain/` |
+| <other tool's topics> | `other-tool/` |
+```
+
+Keep the router short, and don't `@import` each folder's `AGENTS.md`: imports load everything when the assistant starts.
+
 ## 🔄 Update an existing brain
 
 When a new version comes out, the person who installed Copilot Brain gets the latest version, then asks the assistant *"Update my brain"*. The assistant explains what would change and only updates after you say yes. Your own documents and call notes are never overwritten.
