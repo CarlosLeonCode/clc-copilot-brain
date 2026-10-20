@@ -41,7 +41,7 @@ Most people who use this brain are not technical. They write in plain English or
 | "How did this month go?" / "¿Cómo me fue este mes?" | Follow `skills/skill_monthly_retrospective.md`. |
 | "How are we doing?" / "¿Cómo vamos?" / "What's working?" / "¿Qué está funcionando?" | Run `clc-brain stats` in this folder (or `clc-brain stats --json` to read the numbers) and explain the result in plain words: what is working by type of sale, call guide and person, and what is too early to tell. Never count by hand. Then offer to open the sales page (`clc-brain view --open`). If you cannot run commands, say plainly that you can only give approximate numbers. |
 | "Classify my old calls" / "Clasifica mis llamadas viejas" | Find the calls that are still "Not classified yet" (from `clc-brain stats --json`). Propose a type of sale (and goal met, when the notes show it) for each one in a short plain list. Write only after they say yes, then refresh the page with `clc-brain view`. |
-| "Let's improve the cold call script" / "Mejoremos el guion de la llamada en frío" / "Here's my sales flow" (photo, PDF, file or description) / "Este es mi flujo de ventas" / "Te paso mi diagrama" | Follow `.claude/commands/flow.md` (read it as instructions in any tool): understand what they sent, explain it back, show a preview with `clc-brain view --draft`, and save only after they say yes. |
+| "Let's improve the cold call script" / "Mejoremos el guion de la llamada en frío" / "Here's my sales flow" (photo, PDF, file or description) / "Este es mi flujo de ventas" / "Te paso mi diagrama" | Follow `.agents/skills/flow/SKILL.md`: understand what they sent, explain it back, show a preview with `clc-brain view --draft`, and save only after they say yes. |
 | "What do I say when they say it's too expensive?" / "El cliente dice que es caro" | Answer from the matching objection card (section 2 lookup rules). Give the words to say first. |
 | "How do we beat X?" / "¿Cómo le ganamos a X?" | Answer from that competitor's battlecard (section 2 lookup rules). |
 | "Set up my brain" / "Configuremos mi cerebro" | Follow `skills/skill_brain_onboarding.md`. |
@@ -54,7 +54,7 @@ After any approved change to the sales pipeline or a call guide, refresh the sal
 
 If `clc-brain` isn't available, tell the person in one plain sentence that the setup person needs to install it (see the README's "Get started" section), and carry on with what you can do without it. If you cannot run commands (for example in a web chat), tell the person the one command to type in a terminal opened in this folder.
 
-Slash commands (`/call`, `/retro`, `/flow`, ...) are optional shortcuts that work only in Claude Code; MCP apps such as Claude Desktop offer the same flows as prompts. Never tell people they need a slash command.
+Slash commands (`/call`, `/retro`, `/flow`, ...) are optional shortcuts. Each one is a skill in `.agents/skills/<name>/SKILL.md`, and `clc-brain upgrade` keeps the shortcut files of every assistant in line with it; MCP apps such as Claude Desktop offer the main flows as prompts. Never tell people they need a slash command.
 <!-- copilot-brain:managed:end -->
 
 ---
@@ -104,22 +104,25 @@ When the user asks conversational questions about **sales, operations, marketing
 
 ---
 
-## 3. Optional Shortcuts: Slash Commands (Claude Code only) & MCP Prompts
+## 3. Optional Shortcuts: Slash Commands & MCP Prompts
 
-These slash commands work only in Claude Code. MCP apps expose the same flows as prompts. In every other tool, people just ask in plain words (see section 0) and you follow the same command file as instructions:
+Every slash command is one skill in `.agents/skills/<name>/SKILL.md` (the single source). Codex, Google Antigravity, Cursor, OpenCode, Windsurf, Gemini CLI and GitHub Copilot read that folder directly; `clc-brain init` and `clc-brain upgrade` generate the extra shortcut files Claude Code (`.claude/skills/`), Gemini CLI (`.gemini/commands/`) and Windsurf (`.windsurf/workflows/`) need. Never edit the generated files: edit the skill and run `clc-brain upgrade`. MCP apps expose the main flows as prompts. People never need a slash command: when they ask in plain words (see section 0), follow the same skill file as instructions.
 
-| Slash Command | Command File / MCP Prompt | Purpose & Behavior |
+| Slash Command | Skill File | Purpose & Behavior |
 | :--- | :--- | :--- |
-| `/call` | `.claude/commands/call.md` | Analyze a meeting or sales call transcript, extract deal signals & objections, and save to `<brain-root>/sales/calls/YYYY-MM/`. |
-| `/objection` | `.claude/commands/objection.md` | Get an instant verbatim script for a buyer objection or save a new objection card in `<brain-root>/sales/objections/`. |
-| `/battlecard` | `.claude/commands/battlecard.md` | Compare against a competitor and retrieve silver bullets from `<brain-root>/sales/battlecards/`. |
-| `/flow` | `.claude/commands/flow.md` | Import any drawing, file or description of a sales flow, explain it back, preview it with `clc-brain view --draft`, and save it after approval (pipeline in `<brain-root>/sales/stages/pipeline-stages.md`, call guides in `<brain-root>/sales/plays/`). |
-| `/retro` | `.claude/commands/retro.md` | Run a monthly RevOps retrospective across `<brain-root>/sales/calls/` and `<brain-root>/sales/win-loss/`. |
-| `/brain` | `.claude/commands/brain.md` | Master dashboard showing active areas, brain health, and available tools. |
-| `/brain:onboarding` | `.claude/commands/brain:onboarding.md` | Conducts the 8-step organizational onboarding interview **strictly 1 question at a time**. Updates `<brain-root>/org-kernel.json` and `<brain-root>/company-profile.md`. |
-| `/brain:sales` | `.claude/commands/brain:sales.md` | Instant Sales Copilot. Resolves buyer objections, surfaces competitor battlecards, and generates talk tracks grounded in `<brain-root>/sales/`. |
-| `/brain:doctor` | `.claude/commands/brain:doctor.md` | Audits repository health, validates schemas, detects missing areas or broken links, and offers auto-repairs. |
-| `/brain:add-area` | `.claude/commands/brain:add-area.md` | Scaffolds new operational domains or adds schema-compliant knowledge assets (battlecards, objections, SOPs). |
+| `/brain` | `.agents/skills/brain/SKILL.md` | Short plain menu of what this brain can help with, by active area; offers setup when it is not set up yet. |
+| `/brain-onboarding` | `.agents/skills/brain-onboarding/SKILL.md` | Guided setup interview, **strictly one question at a time**; updates `<brain-root>/org-kernel.json` and `<brain-root>/company-profile.md` after approval. |
+| `/brain-sales` | `.agents/skills/brain-sales/SKILL.md` | Sales copilot: talk tracks for objections, competitors, discovery and outreach, grounded in the sales area. |
+| `/brain-doctor` | `.agents/skills/brain-doctor/SKILL.md` | Health check of the brain (schemas, adapters, skills, shortcuts, links) with fixes after approval. |
+| `/brain-add-area` | `.agents/skills/brain-add-area/SKILL.md` | Adds a new area or a schema-compliant battlecard, objection card or SOP. |
+| `/call` | `.agents/skills/call/SKILL.md` | Log a call from notes or a transcript: summary, objections, coaching and next steps, saved after a yes. |
+| `/objection` | `.agents/skills/objection/SKILL.md` | Exact words for a buyer objection, or a new objection card after approval. |
+| `/battlecard` | `.agents/skills/battlecard/SKILL.md` | How to win against a competitor, or a new battlecard after approval. |
+| `/flow` | `.agents/skills/flow/SKILL.md` | Import any drawing, file or description of a sales flow, explain it back, preview it with `clc-brain view --draft`, and save it after approval. |
+| `/retro` | `.agents/skills/retro/SKILL.md` | Monthly sales review from `clc-brain stats`, with suggested changes applied only after a yes. |
+| `/brain-search` | `.agents/skills/brain-search/SKILL.md` | Find the right answer across every area of the brain. |
+| `/sales-assist` | `.agents/skills/sales-assist/SKILL.md` | Draft outreach, answer objections and prepare calls with the right call guide. |
+| `/sop-auditor` | `.agents/skills/sop-auditor/SKILL.md` | Review an SOP against `schemas/sop.schema.json`. |
 
 ---
 
@@ -135,10 +138,8 @@ Autonomous agents should execute specialized tasks using instructions defined in
 - **`skills/skill_brain_doctor.md`**: Protocol for repository health audits, schema validations, broken link detection, and in-chat auto-remediation.
 - **`skills/skill_area_scaffolder.md`**: Standard operating instructions for scaffolding new operational areas or knowledge assets strictly conforming to `schemas/`.
 
-### Task-Specific Execution Skills (`.agents/skills/`)
-- **`.agents/skills/brain-search.md`**: Contextual cross-functional topic retrieval.
-- **`.agents/skills/sales-assist.md`**: Grounded email drafting and counter-argument generation.
-- **`.agents/skills/sop-auditor.md`**: Automated SOP structural review against `schemas/sop.schema.json`.
+### Slash-Command Skills (`.agents/skills/`)
+- Every skill in section 3 lives in `.agents/skills/<name>/SKILL.md` with a `name` and a one-line `description`. Many skills delegate the detail to a root skill above (for example `/call` follows `skills/skill_call_analyzer.md`).
 
 ---
 
@@ -159,8 +160,8 @@ Autonomous agents should execute specialized tasks using instructions defined in
 | `templates/areas/hr_people/` | Employee handbook, hiring scorecards, 30-60-90 onboarding | `playbooks/05-PEOPLE-PLAYBOOK.md` |
 | `templates/areas/finance_legal/` | Pricing models, discount matrices, compliance policies | `playbooks/06-FINANCE-LEGAL-PLAYBOOK.md` |
 | `skills/` | Standard LLM skill prompts (onboarding, sales copilot, call analyzer, monthly retro, doctor, scaffolder) | Markdown Prompts |
-| `.claude/commands/` | Claude Code slash command definitions | Markdown Slash Commands |
-| `.agents/skills/` | Reusable task execution skills | Native skill prompts |
+| `.agents/skills/` | Slash-command skills, one `<name>/SKILL.md` each (single source) | Agent Skills format |
+| `.claude/skills/`, `.gemini/commands/`, `.windsurf/workflows/` | Generated slash-command shortcuts for Claude Code, Gemini CLI and Windsurf (do not edit) | Generated from `.agents/skills/` |
 | `src/mcp/` | Model Context Protocol (MCP) stdio server & tool handlers | JSON-RPC 2.0 stdio |
 
 ---

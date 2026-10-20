@@ -1,0 +1,5 @@
+# generated from .agents/skills/brain-doctor/SKILL.md — do not edit
+description = "Check the health of this brain (settings, assistant rules, shortcuts, skills, areas, schemas, broken links) and offer fixes after approval. Use when someone asks to check or repair the brain."
+prompt = """Read and follow .agents/skills/brain-doctor/SKILL.md exactly.
+
+User input: {{args}}"""

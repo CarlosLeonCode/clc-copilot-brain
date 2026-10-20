@@ -6,6 +6,7 @@ import { isDemoTemplateAsset } from './demo.js';
 import { BrainError } from './errors.js';
 import { DEFAULT_LANGUAGE, LANGUAGE_HELP, parseLanguage } from './brain-language.js';
 import { copyDirRecursive, ensureDir } from './fs-utils.js';
+import { generateHarnessAdapters } from './harness-adapters.js';
 import { IDE_ADAPTERS, SSOT_FILE, expectedAssets, templateDirs } from './manifest.js';
 import { PLAYBOOKS_DIR, SCHEMAS_DIR, TEMPLATES_BASE_DIR } from './package-paths.js';
 
@@ -38,14 +39,14 @@ function lstatOrNull(p) {
 }
 
 /**
- * Point every IDE adapter at AGENTS.md and copy missing Claude slash commands.
+ * Point every IDE adapter at AGENTS.md.
  * A regular (non-symlink) file is never deleted: with `backupRegularFiles` it is renamed to
  * `<adapter>.bak` before linking (skipped if that backup already exists); otherwise it is kept.
  * @param {string} targetDir
- * @param {{ backupRegularFiles?: boolean, templatesBaseDir?: string }} [opts]
+ * @param {{ backupRegularFiles?: boolean }} [opts]
  * @returns {Array<{ adapter: string, status: string, backup?: string, reason?: string }>}
  */
-export function setupIdeAdapters(targetDir, { backupRegularFiles = true, templatesBaseDir = TEMPLATES_BASE_DIR } = {}) {
+export function setupIdeAdapters(targetDir, { backupRegularFiles = true } = {}) {
   const results = [];
 
   for (const adapter of IDE_ADAPTERS) {
@@ -79,18 +80,21 @@ export function setupIdeAdapters(targetDir, { backupRegularFiles = true, templat
     results.push({ adapter, status: linkAdapter(adapterPath, adapter) });
   }
 
-  const commandsSrc = templateDirs(templatesBaseDir).commands;
-  const commandsDest = path.join(targetDir, '.claude', 'commands');
-  for (const cmdFile of expectedAssets(templatesBaseDir).commands) {
-    const destFile = path.join(commandsDest, cmdFile);
-    if (!fs.existsSync(destFile)) {
-      ensureDir(commandsDest);
-      fs.copyFileSync(path.join(commandsSrc, cmdFile), destFile);
-      results.push({ adapter: `.claude/commands/${cmdFile}`, status: 'copied' });
-    }
-  }
-
   return results;
+}
+
+/** Copy template skills (`.agents/skills/<name>/`) missing from the brain. Returns the copied skill names. */
+export function restoreAgentSkills(targetDir, { templatesBaseDir = TEMPLATES_BASE_DIR } = {}) {
+  const src = templateDirs(templatesBaseDir).agentSkills;
+  const copied = [];
+  for (const name of expectedAssets(templatesBaseDir).agentSkills) {
+    const dest = path.join(targetDir, '.agents', 'skills', name);
+    if (fs.existsSync(path.join(dest, 'SKILL.md'))) continue;
+    ensureDir(dest);
+    fs.copyFileSync(path.join(src, name, 'SKILL.md'), path.join(dest, 'SKILL.md'));
+    copied.push(name);
+  }
+  return copied;
 }
 
 /** Copy template root skills missing from the brain. Returns the copied file names. */
@@ -112,7 +116,7 @@ export function restoreRootSkills(targetDir, { templatesBaseDir = TEMPLATES_BASE
  * Initialize a brain in targetDir.
  * @param {string} targetDir
  * @param {{ companyName?: string, industry?: string, tagline?: string, areas: string[], demo?: boolean, language?: string }} opts
- * @returns {{ targetDir: string, areas: string[], adapters: ReturnType<typeof setupIdeAdapters> }}
+ * @returns {{ targetDir: string, areas: string[], adapters: ReturnType<typeof setupIdeAdapters>, shortcuts: ReturnType<typeof generateHarnessAdapters> }}
  */
 export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, industry = INIT_DEFAULTS.industry, tagline = INIT_DEFAULTS.tagline, areas, demo = false, language = DEFAULT_LANGUAGE }) {
   const lang = parseLanguage(language);
@@ -138,9 +142,11 @@ export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, 
     .replaceAll('{{CREATED_AT}}', nowIso)
     .replaceAll('{{UPDATED_AT}}', nowIso);
 
-  // Base templates: org-kernel.json, company-profile.md, AGENTS.md, .agents/, .claude/, skills/
+  // Base templates: org-kernel.json, company-profile.md, AGENTS.md, .agents/skills/, skills/
   copyDirRecursive(TEMPLATES_BASE_DIR, targetDir, { replacer });
   const adapters = setupIdeAdapters(targetDir);
+  // Slash commands for every harness, generated from .agents/skills/ (the single source).
+  const shortcuts = generateHarnessAdapters(targetDir);
   copyDirRecursive(SCHEMAS_DIR, path.join(targetDir, 'schemas'));
 
   const playbooksDest = path.join(targetDir, 'playbooks');
@@ -159,5 +165,5 @@ export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, 
     });
   }
 
-  return { targetDir, areas, adapters };
+  return { targetDir, areas, adapters, shortcuts };
 }

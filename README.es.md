@@ -231,7 +231,7 @@ Abre la carpeta `acme-brain` en Claude Code, Codex, Google Antigravity, Cursor, 
 
 **4. Haz la entrevista guiada**
 
-Di *"Configuremos mi cerebro"* (en Claude Code también puedes escribir `/brain:onboarding`). El asistente hace una pregunta a la vez, completa el perfil de tu empresa y redacta un primer documento para cada área. Apruebas cada borrador antes de que se guarde.
+Di *"Configuremos mi cerebro"* (también puedes escribir `/brain-onboarding`). El asistente hace una pregunta a la vez, completa el perfil de tu empresa y redacta un primer documento para cada área. Apruebas cada borrador antes de que se guarde.
 
 **5. Comprueba que todo esté bien**
 
@@ -302,7 +302,7 @@ Abre solo la que usas.
 
 Abre la carpeta de tu cerebro. Eso es todo: cada herramienta lee las reglas de `AGENTS.md`, directamente o a través de `CLAUDE.md`, `GEMINI.md`, `.cursorrules` y `.windsurfrules`. Las personas piden las cosas con sus palabras y el asistente sigue el procedimiento correcto.
 
-Los comandos con barra como `/call` o `/flow` son atajos opcionales que solo funcionan en Claude Code. Nadie los necesita.
+Los comandos con barra como `/call` o `/flow` son atajos opcionales que funcionan en todas estas herramientas (mira "Comandos con barra en cada asistente" más abajo). Nadie los necesita.
 
 La página de ventas funciona en cualquiera de estas herramientas: cuando pides *"Muéstrame mi proceso de ventas"*, el asistente ejecuta `clc-brain view --open` por ti. Si no puede ejecutar comandos, abre `sales/sales-system.html` en tu navegador.
 
@@ -351,24 +351,40 @@ Reinicia la app. Podrá buscar en el cerebro, guardar notas de llamadas y objeci
 ## 📚 Referencia
 
 <details>
-<summary><strong>Atajos en Claude Code (opcionales)</strong></summary>
+<summary><strong>Comandos con barra en cada asistente (opcionales)</strong></summary>
 
 <br>
 
-Todo lo de abajo también funciona pidiéndolo con tus palabras, en cualquier herramienta. En Claude Code estos atajos son una entrada más rápida:
+Todo lo de abajo también funciona pidiéndolo con tus palabras, en cualquier herramienta. Los comandos con barra son una entrada más rápida. Cada uno es una skill en `.agents/skills/<nombre>/SKILL.md`; `clc-brain init` y `clc-brain upgrade` generan los archivos extra que algunos asistentes necesitan (`.claude/skills/`, `.gemini/commands/`, `.windsurf/workflows/`). Edita la skill, nunca los archivos generados, y luego ejecuta `clc-brain upgrade`.
+
+| Asistente | Cómo usar un atajo |
+| :--- | :--- |
+| Claude Code | Escribe `/call` (desde `.claude/skills/`). |
+| Codex | Escribe `$call`, o elígelo en `/skills`. |
+| Google Antigravity | Escribe `/call`, o simplemente pídelo: las skills se cargan cuando encajan. |
+| Cursor | Escribe `/call` en el chat del agente. |
+| OpenCode | Escribe `/call`. |
+| Windsurf | Escribe `/call` (workflow de `.windsurf/workflows/`). |
+| Gemini CLI | Escribe `/call` (comando de `.gemini/commands/`). |
+| GitHub Copilot | Escribe `/call` en modo agente, o simplemente pídelo. |
+
+Los cerebros anteriores usaban nombres con dos puntos (`/brain:onboarding`); ahora son `/brain-onboarding`, `/brain-sales`, `/brain-doctor` y `/brain-add-area`. `clc-brain upgrade` elimina los archivos viejos de `.claude/commands/` que nunca cambiaste y te avisa de los que sí.
 
 | Atajo | Qué hace |
 | :--- | :--- |
 | `/brain` | Resumen de tu cerebro y de lo que puedes hacer. |
-| `/brain:onboarding` | Entrevista guiada que configura tu cerebro. |
-| `/brain:sales` | Ayuda de ventas: respuestas a objeciones, comparativas con competidores, qué decir. |
+| `/brain-onboarding` | Entrevista guiada que configura tu cerebro. |
+| `/brain-sales` | Ayuda de ventas: respuestas a objeciones, comparativas con competidores, qué decir. |
 | `/objection` | Respuesta aprobada a una objeción de un comprador, o guarda una nueva. |
 | `/battlecard` | Cómo te comparas con un competidor. |
 | `/call` | Analiza las notas de una llamada y las guarda. |
 | `/flow` | Ve o cambia tu proceso de ventas y tus guías de llamada, o trae un flujo que ya tienes. |
 | `/retro` | Revisión mensual de llamadas y negocios ganados o perdidos. |
-| `/brain:add-area` | Agrega una nueva área o documento. |
-| `/brain:doctor` | Revisión de estado desde el chat. |
+| `/brain-add-area` | Agrega una nueva área o documento. |
+| `/brain-doctor` | Revisión de estado desde el chat. |
+| `/brain-search` | Encuentra la respuesta en cualquier área de tu cerebro. |
+| `/sales-assist` | Redacta mensajes y prepara llamadas con la guía de llamada correcta. |
+| `/sop-auditor` | Revisa un procedimiento (SOP) en busca de huecos. |
 
 </details>
 

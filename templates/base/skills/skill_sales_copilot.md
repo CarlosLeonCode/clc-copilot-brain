@@ -27,7 +27,7 @@ Whenever a user asks a sales-related question, execute this lookup protocol befo
    - If a competitor or objection is **NOT** present in `sales/`:
      - Explicitly inform the user: *"No battlecard or objection card currently exists in `sales/` for '[Query]'."*
      - Provide a proposed draft based on general domain knowledge, but clearly flag it as a draft.
-     - Offer to scaffold it into `sales/battlecards/` or `sales/objections/` using `/brain:add-area` or `skill_area_scaffolder.md`.
+     - Offer to scaffold it into `sales/battlecards/` or `sales/objections/` using `/brain-add-area` or `skill_area_scaffolder.md`.
 3. **Preserve Internal Governance**:
    - Never quote internal win-loss percentages or internal weakness notes directly to prospects unless framed as proactive discovery questions.
 
@@ -88,9 +88,9 @@ When responding to sales inquiries, adhere strictly to this structured format:
 
 ## 4. EXAMPLE USAGE PROMPTS
 
-- `"/brain:sales How do I handle a prospect who says our developer tooling is too expensive?"`
-- `"/brain:sales How do we position against LegacyDocs Cloud?"`
-- `"/brain:sales Draft a 3-question qualification script for an enterprise VP of Engineering."`
+- `"/brain-sales How do I handle a prospect who says our developer tooling is too expensive?"`
+- `"/brain-sales How do we position against LegacyDocs Cloud?"`
+- `"/brain-sales Draft a 3-question qualification script for an enterprise VP of Engineering."`
 
 ---
 

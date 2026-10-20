@@ -105,6 +105,6 @@ Per `org-kernel.json` -> `ecosystemTools.salesFlowDiagrams`, our recommended eco
 ## 8. AI Copilot Integration for Sales Reps
 
 Sales reps running AI copilots (Claude Code, Cursor, Windsurf, Antigravity) leverage the skills library:
-- `/brain:sales`: Surfaces objection pivot scripts, competitor battlecards, and talk tracks.
+- `/brain-sales`: Surfaces objection pivot scripts, competitor battlecards, and talk tracks.
 - `skills/skill_call_analyzer.md`: Ingests raw call transcripts and generates structured call logs.
 - `skills/skill_monthly_retrospective.md`: Runs cross-functional monthly revenue analysis.

@@ -150,8 +150,8 @@ test('plays have mermaid block, learnings section, existing scripts/ links (S4.1
 });
 
 test('/flow (command, base mirror, MCP prompt) routes by destination, never defaulting to stages (S6.1-6.3, S7.1)', async () => {
-  const rootCmd = fs.readFileSync(path.join(PKG_DIR, '.claude', 'commands', 'flow.md'), 'utf8');
-  const baseCmd = fs.readFileSync(path.join(PKG_DIR, 'templates', 'base', '.claude', 'commands', 'flow.md'), 'utf8');
+  const rootCmd = fs.readFileSync(path.join(PKG_DIR, '.agents', 'skills', 'flow', 'SKILL.md'), 'utf8');
+  const baseCmd = fs.readFileSync(path.join(PKG_DIR, 'templates', 'base', '.agents', 'skills', 'flow', 'SKILL.md'), 'utf8');
   assert.equal(rootCmd, baseCmd, 'flow.md root and base must be byte-identical');
   const { getPrompt } = await import('../src/mcp/prompts.js').then((m) => ({ getPrompt: m.getPrompt }));
   const promptText = JSON.stringify(getPrompt ? getPrompt('flow', {}) : '');

@@ -13,8 +13,8 @@
 
 | Path | Who uses it | How it works |
 | :--- | :--- | :--- |
-| Folder access (primary) | Claude Code, the Claude desktop Code tab, Codex, Google Antigravity, Cursor, Windsurf, Gemini CLI | The tool opens the brain folder and reads `AGENTS.md` (directly or through the adapter symlinks). People ask in plain language; the managed "What people ask" table routes each request to a skill, a command file (read as instructions) or a `clc-brain` command. |
-| Slash commands (optional) | Claude Code only | `.claude/commands/*.md` are shortcuts to the same procedures. Nothing requires them. |
+| Folder access (primary) | Claude Code, the Claude desktop Code tab, Codex, Google Antigravity, Cursor, Windsurf, Gemini CLI | The tool opens the brain folder and reads `AGENTS.md` (directly or through the adapter symlinks). People ask in plain language; the managed "What people ask" table routes each request to a skill (read as instructions) or a `clc-brain` command. |
+| Slash commands (optional) | Claude Code, Codex, Google Antigravity, Cursor, OpenCode, Windsurf, Gemini CLI, GitHub Copilot | One source per command: `.agents/skills/<name>/SKILL.md` (Agent Skills format). `src/core/harness-adapters.js` generates `.claude/skills/<name>/SKILL.md`, `.gemini/commands/<name>.toml` and `.windsurf/workflows/<name>.md`; the other tools read `.agents/skills/` directly. Nothing requires them. |
 | Copy-paste guides | ChatGPT custom GPTs, Gemini Gems, Claude Projects | `skills/integrations/*.md`; no file access, so no sales page or computed metrics. |
 | MCP over stdio (optional) | Chat apps without folder access that support MCP | `clc-brain mcp [dir]`, described below. It exposes query, capture and doctor tools; the sales page and metrics are CLI-only. |
 
@@ -98,7 +98,8 @@ src/
 │   ├── i18n.js            t(lang, key, vars) with en/es dictionaries (English fallback), formatMonth, formatPercent (Intl)
 │   ├── brain-language.js  getBrainLanguage (org-kernel.json `language`, default "en"), parseLanguage, detectLanguage (LC_ALL/LANG)
 │   ├── setup-state.js     getSetupState (org-kernel.json `setup`: pending/done/unknown), getBrainSummary (start screen data)
-│   ├── manifest.js        IDE adapters + commands/skills derived from templates/base
+│   ├── manifest.js        IDE adapters + skills derived from templates/base
+│   ├── harness-adapters.js  slash-command shortcuts generated from .agents/skills/
 │   ├── schema-validator.js  ajv Draft 2020-12 (ADR 0002)
 │   ├── text-diff.js       dependency-free line diff for upgrade previews
 │   └── errors.js, fs-utils.js, package-paths.js
@@ -146,9 +147,11 @@ src/
 
 | Policy | Files | Behaviour |
 | :--- | :--- | :--- |
-| `template-owned` | `.claude/commands/*.md`, `skills/*.md` from `templates/base` | Replaced when bytes differ, with a `<file>.bak` copy. Skipped (reported) when the target is a symlink or not a file, when a `.bak` already exists, or when the template still has init placeholders. |
-| `add-if-missing` | New base commands/skills; `sales/system.md` and `sales/plays/*.md` when `sales` is active | Added only when absent, never overwritten. Sales files come from `templates/locales/<brain language>/` when that file exists, else from English. |
+| `template-owned` | `.agents/skills/<name>/SKILL.md`, `skills/*.md` from `templates/base` | Replaced when bytes differ, with a `<file>.bak` copy. Skipped (reported) when the target is a symlink or not a file, when a `.bak` already exists, or when the template still has init placeholders. |
+| `add-if-missing` | New base skills; `sales/system.md` and `sales/plays/*.md` when `sales` is active | Added only when absent, never overwritten. Sales files come from `templates/locales/<brain language>/` when that file exists, else from English. |
 | `managed-block` | `AGENTS.md` | Only the text between the managed markers is refreshed (see section 4). |
+
+After the plan is applied, `generateHarnessAdapters` (also run by `init` and `doctor --fix`) regenerates the slash-command shortcuts. It is idempotent and only overwrites or deletes files it can prove it owns: shortcuts carrying the `generated from .agents/skills/<name>/SKILL.md — do not edit` marker, old `.claude/commands/*.md` and flat `.agents/skills/<name>.md` files whose SHA-256 matches a version this package shipped (`src/core/legacy-assets.js`). Anything else is kept and reported. A flat skill a person added is moved to `<name>/SKILL.md`.
 
 ---
 
@@ -316,7 +319,7 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 ### Sales System: Map and Plays
 - `sales/system.md`: the map from pipeline stage to exit gate to the plays that apply.
 - `sales/plays/<play>.md`: one play (call guide) per kind of conversation (`cold-call`, `discovery-call`, `demo-call`, `follow-up`). Flat frontmatter is parsed by regex, with no YAML dependency (`src/core/plays.js`). Required keys (`PLAY_KEYS`): `play`, `stages`, `goal`, `gate_unlocked`, `version`, `status`. Optional: `motions` (types of sale) and `success` (what success means for this call, in plain words). `stages` is a comma list, so a play can span stages (`stages: 2, 3, 4`). The body holds a Mermaid decision tree, a talk track per branch linking `sales/scripts/`, and a Learnings Log.
-- The flow procedure (`.claude/commands/flow.md`, triggered by a plain request in any tool or `/flow` in Claude Code) routes conversation trees to `sales/plays/` and macro pipeline changes to `sales/stages/pipeline-stages.md`.
+- The flow procedure (`.agents/skills/flow/SKILL.md`, triggered by a plain request or `/flow` in any tool) routes conversation trees to `sales/plays/` and macro pipeline changes to `sales/stages/pipeline-stages.md`.
 
 ### Sales System Page (`clc-brain view`)
 - `sales/sales-system.html` is a generated, self-contained page for non-technical readers: the plain-language part of `sales/system.md`, the pipeline diagram from `sales/stages/pipeline-stages.md`, and one card per play (title, pipeline steps it is used in, goal, version, decision tree, collapsible talk tracks "What to say", and "What we've learned").
@@ -378,7 +381,7 @@ Executed via Node.js native test runner (`node --test tests/**/*.test.js`):
 2. **`tests/schemas.test.js`**: Positive schema validation for all repository files and negative assertions verifying rejection of malformed payloads.
 3. **`tests/areas-integrity.test.js`**: Structural completeness of all 6 operational areas and marketing AI-decoupling verification.
 4. **`tests/sales-intelligence.test.js`**: Call logging, win/loss post-mortems, qualification matrices, and Archify tool declarations.
-5. **`tests/ide-adapters.test.js`**: SSOT mirror integrity, slash commands, and agent skills.
+5. **`tests/ide-adapters.test.js`** and **`tests/harness-adapters.test.js`**: SSOT mirror integrity, skill sources, generated slash-command shortcuts (clean scaffold, idempotence, legacy cleanup on upgrade, path references).
 6. **`tests/mcp-server.test.js`**: JSON-RPC 2.0 handshake, tool registry, query retrieval, call log file writing, and objection validation.
 7. **`tests/mcp-security.test.js`**: Path-traversal and invalid dates, area allow-list, YAML frontmatter injection, no-overwrite of call logs, schema-backed objection validation.
 8. **`tests/schema-validator.test.js`**: Shared ajv validator contract (formats, unknown schemas, cwd independence).
@@ -387,7 +390,7 @@ Executed via Node.js native test runner (`node --test tests/**/*.test.js`):
 11. **`tests/core/*.test.js`**: Unit tests for core use cases (scaffold, areas, doctor, calls, demo, query) without subprocesses.
 12. **`tests/regressions.test.js`**: Regressions fixed during the hexagonal split (custom area id validation, custom areas over MCP, package `files`, `clean-demo` safety, adapter backups) and the `doctor` exit code (1 on errors, also after `--fix`; warnings alone exit 0).
 13. **`tests/mcp-jsonrpc.test.js`**: JSON-RPC 2.0 compliance (notifications vs `id: null`, `-32600`/`-32601`/`-32700`, batch rejection, in-order responses) and protocol version negotiation.
-14. **`tests/agents-intents.test.js`** and **`tests/plain-language.test.js`**: the managed AGENTS.md block (intents in English and Spanish, plain-language rules, slash commands are Claude Code only), plain user-facing procedures, and the README claims about languages, the sales page and `stats`.
+14. **`tests/agents-intents.test.js`** and **`tests/plain-language.test.js`**: the managed AGENTS.md block (intents in English and Spanish, plain-language rules, slash commands come from one skill source), plain user-facing procedures, and the README claims about languages, the sales page and `stats`.
 15. **`tests/init-language.test.js`** and **`tests/locale-parity.test.js`**: `--language`, the locale overlay and parity of translated starter files.
 16. **`tests/stats-cli.test.js`**, **`tests/sales-report-text.test.js`** and **`tests/upgrade-cli.test.js`**: the `stats` and `upgrade` commands end to end.
 

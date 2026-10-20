@@ -1,0 +1,5 @@
+# generated from .agents/skills/brain-add-area/SKILL.md — do not edit
+description = "Add a new area (for example customer success) or a new battlecard, objection card or SOP that follows the brain schemas, written after review. Use when someone wants to add knowledge to the brain."
+prompt = """Read and follow .agents/skills/brain-add-area/SKILL.md exactly.
+
+User input: {{args}}"""

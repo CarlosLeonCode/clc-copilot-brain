@@ -6,7 +6,7 @@
 
 ## 1. COMPREHENSIVE AUDIT PROTOCOL
 
-When triggered (via `/brain:doctor` or when asked to inspect the repository health), execute these 6 diagnostic phases:
+When triggered (via `/brain-doctor` or when asked to inspect the repository health), execute these 6 diagnostic phases:
 
 ### Phase 1: Core Kernel Integrity
 1. Check that `org-kernel.json` exists in the repository root.
@@ -25,12 +25,8 @@ When triggered (via `/brain:doctor` or when asked to inspect the repository heal
    - `GEMINI.md` (symlink or instruction stub referencing `AGENTS.md`)
    - `.cursorrules` (symlink or instruction stub referencing `AGENTS.md`)
    - `.windsurfrules` (symlink or instruction stub referencing `AGENTS.md`)
-3. Verify Claude Code commands in `.claude/commands/`:
-   - `brain.md`
-   - `brain:onboarding.md`
-   - `brain:sales.md`
-   - `brain:doctor.md`
-   - `brain:add-area.md`
+3. Verify the slash-command skills in `.agents/skills/`: each `<name>/SKILL.md` has a `name` equal to its folder and a one-line `description` (for example `brain`, `brain-onboarding`, `brain-sales`, `brain-doctor`, `brain-add-area`, `call`, `flow`, `retro`).
+4. Verify each skill has its generated shortcuts: `.claude/skills/<name>/SKILL.md`, `.gemini/commands/<name>.toml` and `.windsurf/workflows/<name>.md`. Never hand-edit them; `clc-brain doctor --fix` or `clc-brain upgrade` regenerates them.
 
 ### Phase 3: Active Operational Areas Check
 1. For each `areaId` listed in `org-kernel.json` -> `activeAreas`:
@@ -60,7 +56,7 @@ Present the findings clearly in this format:
 | :--- | :--- | :--- | :--- |
 | `org-kernel.json` | Kernel Schema | PASS / FAIL | [Details] |
 | `AGENTS.md` | SSOT Presence | PASS / FAIL | [Details] |
-| `.claude/commands/` | Slash Commands | PASS / WARN | [Missing commands if any] |
+| `.agents/skills/` | Slash-Command Skills & Shortcuts | PASS / WARN | [Missing skills or shortcuts if any] |
 | `CLAUDE.md`, `.cursorrules` | IDE Adapters | PASS / WARN | [Symlink integrity] |
 | `sales/battlecards/` | Battlecard Schemas | PASS / FAIL | [Validated N files] |
 | `sales/objections/` | Objection Schemas | PASS / FAIL | [Validated N files] |
@@ -83,7 +79,7 @@ Ask the user: *"Would you like me to automatically apply these fixes now?"*
 
 When the user approves repairs:
 1. Re-create missing IDE adapter symlinks or stub files pointing to `AGENTS.md`.
-2. Re-scaffold any missing `.claude/commands/` or `skills/` files.
+2. Restore any missing `.agents/skills/` or `skills/` files and regenerate the shortcuts (`clc-brain doctor --fix`).
 3. Repair invalid JSON by adding missing required schema fields with reasonable defaults and alerting the user.
 4. Correct broken relative markdown link targets.
 5. Update `metadata.updatedAt` in `org-kernel.json`.

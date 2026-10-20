@@ -43,62 +43,23 @@ test('IDE Adapters Suite: SSOT AGENTS.md, Multi-IDE Adapters & Skills', async (t
     }
   });
 
-  await t.test('.claude/commands/ contains all required Claude Code slash commands', () => {
-    const expectedCommands = [
-      'brain.md',
-      'brain:onboarding.md',
-      'brain:sales.md',
-      'brain:doctor.md',
-      'brain:add-area.md',
-      'call.md',
-      'objection.md',
-      'battlecard.md',
-      'flow.md',
-      'retro.md'
+  await t.test('.agents/skills/ holds every slash-command skill, identical in root and base templates', () => {
+    const expected = [
+      'battlecard', 'brain', 'brain-add-area', 'brain-doctor', 'brain-onboarding', 'brain-sales',
+      'brain-search', 'call', 'flow', 'objection', 'retro', 'sales-assist', 'sop-auditor'
     ];
-
-    const dirsToCheck = [
-      path.join(PKG_DIR, '.claude', 'commands'),
-      path.join(PKG_DIR, 'templates', 'base', '.claude', 'commands')
-    ];
-
-    for (const dir of dirsToCheck) {
-      assert.ok(fs.existsSync(dir), `Directory ${dir} must exist`);
-      for (const cmd of expectedCommands) {
-        const cmdPath = path.join(dir, cmd);
-        assert.ok(fs.existsSync(cmdPath), `Slash command ${cmd} must exist at ${cmdPath}`);
-        const content = fs.readFileSync(cmdPath, 'utf8');
-        assert.ok(content.length > 50, `Command ${cmd} must not be empty`);
-        assert.match(
-          content,
-          /^# \/(brain|call|objection|battlecard|flow|retro)/m,
-          `Command ${cmd} must start with a valid slash command header`
-        );
-      }
+    for (const name of expected) {
+      const root = path.join(PKG_DIR, '.agents', 'skills', name, 'SKILL.md');
+      const base = path.join(PKG_DIR, 'templates', 'base', '.agents', 'skills', name, 'SKILL.md');
+      assert.ok(fs.existsSync(base), `Skill ${name} must exist at ${base}`);
+      const content = fs.readFileSync(base, 'utf8');
+      assert.match(content, new RegExp(`^---\\nname: ${name}\\ndescription: ".{20,}"\\n`), `${name} frontmatter`);
+      assert.match(content, /^metadata:\n  opencode\/slash: "true"$/m, `${name} is exposed as an OpenCode slash command`);
+      assert.match(content, /\$ARGUMENTS/, `${name} passes the user input`);
+      assert.match(content, /If no arguments were given/, `${name} says what to do without input`);
+      assert.equal(fs.readFileSync(root, 'utf8'), content, `${name} root and base copies must be identical`);
     }
-  });
-
-  await t.test('.agents/skills/ contains all required native agent query skills', () => {
-    const expectedSkills = [
-      'brain-search.md',
-      'sales-assist.md',
-      'sop-auditor.md'
-    ];
-
-    const dirsToCheck = [
-      path.join(PKG_DIR, '.agents', 'skills'),
-      path.join(PKG_DIR, 'templates', 'base', '.agents', 'skills')
-    ];
-
-    for (const dir of dirsToCheck) {
-      assert.ok(fs.existsSync(dir), `Directory ${dir} must exist`);
-      for (const skill of expectedSkills) {
-        const skillPath = path.join(dir, skill);
-        assert.ok(fs.existsSync(skillPath), `Skill ${skill} must exist at ${skillPath}`);
-        const content = fs.readFileSync(skillPath, 'utf8');
-        assert.ok(content.length > 50, `Skill ${skill} must not be empty`);
-      }
-    }
+    assert.equal(fs.existsSync(path.join(PKG_DIR, 'templates', 'base', '.claude')), false, 'templates/base must not ship .claude/');
   });
 
   await t.test('skills/ contains all 6 root execution skills', () => {

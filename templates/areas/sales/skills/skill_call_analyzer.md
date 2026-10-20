@@ -176,6 +176,6 @@ next_meeting: "YYYY-MM-DDTHH:MM:SSZ"
 
 ## 4. EXAMPLE USAGE PROMPTS
 
-- `"/brain:sales Analyze this 30-minute discovery call between Carlos and Acme Corp's VP of Engineering."`
+- `"/brain-sales Analyze this 30-minute discovery call between Carlos and Acme Corp's VP of Engineering."`
 - `"Run skill_call_analyzer on this recording transcript and save to sales/calls/2026-09/."`
 - `"Extract detected objections and coaching feedback from Juanita's demo call with OmniBank."`

@@ -14,7 +14,7 @@ function setup(tmp, { brain = {}, base = {}, areas = {}, active = ['sales'] } = 
   const tpl = path.join(tmp, 'pkg', 'base');
   const tplAreas = path.join(tmp, 'pkg', 'areas');
   const root = path.join(tmp, 'brain');
-  writeFiles(tpl, { '.claude/commands/call.md': 'call v2\n', 'skills/skill_x.md': 'x v2\n', 'AGENTS.md': 'agents\n', ...base });
+  writeFiles(tpl, { '.agents/skills/call/SKILL.md': 'call v2\n', 'skills/skill_x.md': 'x v2\n', 'AGENTS.md': 'agents\n', ...base });
   writeFiles(tplAreas, { 'sales/system.md': 'system\n', 'sales/plays/cold-call.md': 'play\n', 'sales/README.md': 'readme\n', ...areas });
   writeFiles(root, { 'org-kernel.json': kernel(active), ...brain });
   return { root, opts: { templatesBaseDir: tpl, templatesAreasDir: tplAreas } };
@@ -23,11 +23,11 @@ const find = (plan, p) => plan.actions.find((a) => a.path === p);
 
 test('plan classifies per policy: replace differing, add missing, never touch the rest', () => withTmp((tmp) => {
   const { root, opts } = setup(tmp, {
-    brain: { '.claude/commands/call.md': 'call v1\n', 'skills/skill_x.md': 'x v2\n', 'sales/plays/cold-call.md': 'my custom play\n', 'AGENTS.md': 'mine\n' }
+    brain: { '.agents/skills/call/SKILL.md': 'call v1\n', 'skills/skill_x.md': 'x v2\n', 'sales/plays/cold-call.md': 'my custom play\n', 'AGENTS.md': 'mine\n' }
   });
   const plan = planUpgrade(root, opts);
-  assert.deepEqual(find(plan, '.claude/commands/call.md'), {
-    path: '.claude/commands/call.md', policy: 'template-owned', kind: 'replace', current: 'call v1\n', next: 'call v2\n'
+  assert.deepEqual(find(plan, '.agents/skills/call/SKILL.md'), {
+    path: '.agents/skills/call/SKILL.md', policy: 'template-owned', kind: 'replace', current: 'call v1\n', next: 'call v2\n'
   });
   assert.equal(find(plan, 'skills/skill_x.md'), undefined, 'equal bytes are not actions');
   assert.equal(find(plan, 'sales/system.md').kind, 'add');
@@ -43,7 +43,7 @@ test('sales files are only planned when sales is active', () => withTmp((tmp) =>
 }));
 
 test('a new base command or skill is add-if-missing', () => withTmp((tmp) => {
-  const { root, opts } = setup(tmp, { brain: { '.claude/commands/call.md': 'call v2\n' } });
+  const { root, opts } = setup(tmp, { brain: { '.agents/skills/call/SKILL.md': 'call v2\n' } });
   const plan = planUpgrade(root, opts);
   assert.equal(find(plan, 'skills/skill_x.md').kind, 'add');
   assert.equal(find(plan, 'skills/skill_x.md').policy, 'add-if-missing');
@@ -58,63 +58,63 @@ test('non-brain directory throws a typed NOT_A_BRAIN error', () => withTmp((tmp)
 
 test('managed templates containing init placeholders are skipped', () => withTmp((tmp) => {
   const { root, opts } = setup(tmp, {
-    base: { '.claude/commands/call.md': 'hello {{COMPANY_NAME}}\n' }, brain: { '.claude/commands/call.md': 'old\n' }
+    base: { '.agents/skills/call/SKILL.md': 'hello {{COMPANY_NAME}}\n' }, brain: { '.agents/skills/call/SKILL.md': 'old\n' }
   });
-  const a = find(planUpgrade(root, opts), '.claude/commands/call.md');
+  const a = find(planUpgrade(root, opts), '.agents/skills/call/SKILL.md');
   assert.equal(a.kind, 'skip');
   assert.equal(a.reason, 'placeholder');
 }));
 
 test('apply replaces with a .bak backup, adds new files, and reports them', () => withTmp((tmp) => {
-  const { root, opts } = setup(tmp, { brain: { '.claude/commands/call.md': 'call v1\n' } });
+  const { root, opts } = setup(tmp, { brain: { '.agents/skills/call/SKILL.md': 'call v1\n' } });
   const res = applyUpgrade(root, planUpgrade(root, opts));
-  assert.equal(fs.readFileSync(path.join(root, '.claude/commands/call.md'), 'utf8'), 'call v2\n');
-  assert.equal(fs.readFileSync(path.join(root, '.claude/commands/call.md.bak'), 'utf8'), 'call v1\n');
-  assert.deepEqual(res.replaced, [{ path: '.claude/commands/call.md', backup: '.claude/commands/call.md.bak' }]);
+  assert.equal(fs.readFileSync(path.join(root, '.agents/skills/call/SKILL.md'), 'utf8'), 'call v2\n');
+  assert.equal(fs.readFileSync(path.join(root, '.agents/skills/call/SKILL.md.bak'), 'utf8'), 'call v1\n');
+  assert.deepEqual(res.replaced, [{ path: '.agents/skills/call/SKILL.md', backup: '.agents/skills/call/SKILL.md.bak' }]);
   assert.ok(res.added.includes('sales/system.md'));
   assert.equal(fs.readFileSync(path.join(root, 'sales/plays/cold-call.md'), 'utf8'), 'play\n');
   assert.deepEqual(res.skipped, []);
 }));
 
 test('an existing .bak is never clobbered: the file is skipped at plan and apply time', () => withTmp((tmp) => {
-  const { root, opts } = setup(tmp, { brain: { '.claude/commands/call.md': 'call v1\n', '.claude/commands/call.md.bak': 'precious\n' } });
+  const { root, opts } = setup(tmp, { brain: { '.agents/skills/call/SKILL.md': 'call v1\n', '.agents/skills/call/SKILL.md.bak': 'precious\n' } });
   const plan = planUpgrade(root, opts);
-  assert.deepEqual([find(plan, '.claude/commands/call.md').kind, find(plan, '.claude/commands/call.md').reason], ['skip', 'backup-exists']);
+  assert.deepEqual([find(plan, '.agents/skills/call/SKILL.md').kind, find(plan, '.agents/skills/call/SKILL.md').reason], ['skip', 'backup-exists']);
   // A .bak appearing between plan and apply is also respected.
-  const { root: r2, opts: o2 } = setup(path.join(tmp, 'two'), { brain: { '.claude/commands/call.md': 'call v1\n' } });
+  const { root: r2, opts: o2 } = setup(path.join(tmp, 'two'), { brain: { '.agents/skills/call/SKILL.md': 'call v1\n' } });
   const plan2 = planUpgrade(r2, o2);
-  fs.writeFileSync(path.join(r2, '.claude/commands/call.md.bak'), 'late\n');
+  fs.writeFileSync(path.join(r2, '.agents/skills/call/SKILL.md.bak'), 'late\n');
   const res = applyUpgrade(r2, plan2);
-  assert.deepEqual(res.skipped.find((s) => s.path === '.claude/commands/call.md'), { path: '.claude/commands/call.md', reason: 'backup-exists' });
-  assert.equal(fs.readFileSync(path.join(r2, '.claude/commands/call.md'), 'utf8'), 'call v1\n');
-  assert.equal(fs.readFileSync(path.join(r2, '.claude/commands/call.md.bak'), 'utf8'), 'late\n');
+  assert.deepEqual(res.skipped.find((s) => s.path === '.agents/skills/call/SKILL.md'), { path: '.agents/skills/call/SKILL.md', reason: 'backup-exists' });
+  assert.equal(fs.readFileSync(path.join(r2, '.agents/skills/call/SKILL.md'), 'utf8'), 'call v1\n');
+  assert.equal(fs.readFileSync(path.join(r2, '.agents/skills/call/SKILL.md.bak'), 'utf8'), 'late\n');
 }));
 
 test('apply skips files that changed since the plan', () => withTmp((tmp) => {
-  const { root, opts } = setup(tmp, { brain: { '.claude/commands/call.md': 'call v1\n' } });
+  const { root, opts } = setup(tmp, { brain: { '.agents/skills/call/SKILL.md': 'call v1\n' } });
   const plan = planUpgrade(root, opts);
-  fs.writeFileSync(path.join(root, '.claude/commands/call.md'), 'edited meanwhile\n');
+  fs.writeFileSync(path.join(root, '.agents/skills/call/SKILL.md'), 'edited meanwhile\n');
   fs.mkdirSync(path.join(root, 'sales'), { recursive: true });
   fs.writeFileSync(path.join(root, 'sales/system.md'), 'created meanwhile\n');
   const res = applyUpgrade(root, plan);
   const reasons = Object.fromEntries(res.skipped.map((s) => [s.path, s.reason]));
-  assert.equal(reasons['.claude/commands/call.md'], 'changed-since-plan');
+  assert.equal(reasons['.agents/skills/call/SKILL.md'], 'changed-since-plan');
   assert.equal(reasons['sales/system.md'], 'changed-since-plan');
-  assert.equal(fs.readFileSync(path.join(root, '.claude/commands/call.md'), 'utf8'), 'edited meanwhile\n');
+  assert.equal(fs.readFileSync(path.join(root, '.agents/skills/call/SKILL.md'), 'utf8'), 'edited meanwhile\n');
   assert.equal(fs.readFileSync(path.join(root, 'sales/system.md'), 'utf8'), 'created meanwhile\n');
 }));
 
 test('apply skips symlinked targets and paths escaping the brain', () => withTmp((tmp) => {
-  const { root, opts } = setup(tmp, { brain: { '.claude/commands/call.md': 'call v1\n' } });
+  const { root, opts } = setup(tmp, { brain: { '.agents/skills/call/SKILL.md': 'call v1\n' } });
   const outside = path.join(tmp, 'outside.md');
   fs.writeFileSync(outside, 'call v1\n');
-  fs.rmSync(path.join(root, '.claude/commands/call.md'));
-  fs.symlinkSync(outside, path.join(root, '.claude/commands/call.md'));
+  fs.rmSync(path.join(root, '.agents/skills/call/SKILL.md'));
+  fs.symlinkSync(outside, path.join(root, '.agents/skills/call/SKILL.md'));
   const plan = planUpgrade(root, opts);
   plan.actions.push({ path: '../escape.md', policy: 'add-if-missing', kind: 'add', next: 'x' });
   const res = applyUpgrade(root, plan);
   const reasons = Object.fromEntries(res.skipped.map((s) => [s.path, s.reason]));
-  assert.equal(reasons['.claude/commands/call.md'], 'symlink');
+  assert.equal(reasons['.agents/skills/call/SKILL.md'], 'symlink');
   assert.equal(reasons['../escape.md'], 'outside-root');
   assert.equal(fs.readFileSync(outside, 'utf8'), 'call v1\n');
   assert.equal(fs.existsSync(path.join(tmp, 'escape.md')), false);
@@ -131,7 +131,7 @@ test('apply does not write through a symlinked parent directory', () => withTmp(
 }));
 
 test('a second plan after apply is empty (idempotent) and unmanaged files stay byte-identical', () => withTmp((tmp) => {
-  const { root, opts } = setup(tmp, { brain: { '.claude/commands/call.md': 'call v1\n', 'AGENTS.md': 'mine\n', 'sales/icps/a.md': 'icp\n' } });
+  const { root, opts } = setup(tmp, { brain: { '.agents/skills/call/SKILL.md': 'call v1\n', 'AGENTS.md': 'mine\n', 'sales/icps/a.md': 'icp\n' } });
   applyUpgrade(root, planUpgrade(root, opts));
   assert.deepEqual(planUpgrade(root, opts).actions, []);
   assert.equal(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8'), 'mine\n');
@@ -151,7 +151,7 @@ const END = '<!-- copilot-brain:managed:end -->';
 const block = (body) => `${START}\n${body}\n${END}`;
 const TPL_AGENTS = `# Guide\n\n${block('## 0. Rules\nrules v2')}\n\n---\n\n## 1. Identity\nfor {{COMPANY_NAME}}\n`;
 const agentsSetup = (tmp, brainAgents, extra = {}) =>
-  setup(tmp, { base: { 'AGENTS.md': TPL_AGENTS }, brain: { '.claude/commands/call.md': 'call v2\n', 'skills/skill_x.md': 'x v2\n', 'AGENTS.md': brainAgents, ...extra } });
+  setup(tmp, { base: { 'AGENTS.md': TPL_AGENTS }, brain: { '.agents/skills/call/SKILL.md': 'call v2\n', 'skills/skill_x.md': 'x v2\n', 'AGENTS.md': brainAgents, ...extra } });
 
 test('AGENTS.md: replaces only the managed block and keeps user edits elsewhere', () => withTmp((tmp) => {
   const mine = `# My guide\n\nmy intro\n\n${block('rules v1')}\n\n## 1. Identity\nAcme, edited by me\n`;

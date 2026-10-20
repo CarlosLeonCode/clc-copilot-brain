@@ -6,7 +6,7 @@
 
 ## 1. SCAFFOLDING MODES
 
-When invoked via `/brain:add-area` or through conversational requests to add knowledge, determine the user's intent:
+When invoked via `/brain-add-area` or through conversational requests to add knowledge, determine the user's intent:
 
 1. **New Operational Domain Area**: (e.g., `security`, `legal`, `customer_success`, `partnerships`)
 2. **New Competitor Battlecard**: (Adding a competitor profile to `sales/battlecards/`)
@@ -124,4 +124,4 @@ Upon scaffolding any file:
 1. Announce the file path created.
 2. Display a brief JSON preview or markdown summary.
 3. Confirm schema validation status: `✔ Schema validation passed`.
-4. Suggest testing the new asset with the corresponding copilot command (e.g., `/brain:sales` or `/brain:doctor`).
+4. Suggest testing the new asset with the corresponding copilot command (e.g., `/brain-sales` or `/brain-doctor`).

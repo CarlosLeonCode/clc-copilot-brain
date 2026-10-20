@@ -154,8 +154,8 @@ test('Sales plays loop: call attribution and retro play performance', async (t) 
     read('templates', 'areas', 'sales', 'skills', name),
   ];
   const cmdCopies = (name) => [
-    read('.claude', 'commands', name),
-    read('templates', 'base', '.claude', 'commands', name),
+    read('.agents', 'skills', name.replace(/\.md$/, ''), 'SKILL.md'),
+    read('templates', 'base', '.agents', 'skills', name.replace(/\.md$/, ''), 'SKILL.md'),
   ];
 
   await t.test('call analyzer records play, branch, gate_advanced with canonical keys', () => {
@@ -207,7 +207,7 @@ test('Sales plays loop: call attribution and retro play performance', async (t) 
 
 
 test('retro records approved play edits in the play file, not in sales/system.md', () => {
-  for (const rel of ['skills/skill_monthly_retrospective.md', '.claude/commands/retro.md']) {
+  for (const rel of ['skills/skill_monthly_retrospective.md', '.agents/skills/retro/SKILL.md']) {
     const text = fs.readFileSync(path.join(PKG_DIR, rel), 'utf8');
     assert.doesNotMatch(text, /Learnings Log[^\n]*sales\/system\.md/, `${rel} must log play edits in the play itself`);
     assert.match(text, /Learnings Log/);
@@ -218,7 +218,7 @@ test('call, flow and retro record and use type of sale and goal met', async (t) 
   const { getPrompt } = await import('../src/mcp/prompts.js');
   const read = (rel) => fs.readFileSync(path.join(PKG_DIR, rel), 'utf8');
   const skills = (name) => [`skills/${name}`, `templates/base/skills/${name}`, `templates/areas/sales/skills/${name}`].map(read);
-  const cmds = (name) => [`.claude/commands/${name}`, `templates/base/.claude/commands/${name}`].map(read);
+  const cmds = (name) => [`.agents/skills/${name.replace(/\.md$/, '')}/SKILL.md`, `templates/base/.agents/skills/${name.replace(/\.md$/, '')}/SKILL.md`].map(read);
   const prompt = (name) => getPrompt(name, {}).messages[0].content.text;
 
   await t.test('call analyzer infers type of sale, lead source and goal met, and writes the new keys', () => {

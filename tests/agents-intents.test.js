@@ -23,7 +23,7 @@ test('both AGENTS.md files map plain requests (English and Spanish) to procedure
       /set up my brain/i, /configuremos/i,
       /check my brain/i, /update my brain/i, /revisa/i, /actualiza/i
     ]) assert.match(text, phrase, `${rel} is missing intent phrase ${phrase}`);
-    for (const target of ['skills/skill_call_analyzer.md', 'skills/skill_monthly_retrospective.md', 'skills/skill_brain_onboarding.md', '.claude/commands/flow.md']) {
+    for (const target of ['skills/skill_call_analyzer.md', 'skills/skill_monthly_retrospective.md', 'skills/skill_brain_onboarding.md', '.agents/skills/flow/SKILL.md']) {
       assert.ok(text.includes(target), `${rel} must route to ${target}`);
     }
     assert.match(text, /clc-brain doctor/);
@@ -48,13 +48,15 @@ test('both AGENTS.md files carry the plain-language rule for talking to people',
   }
 });
 
-test('no AGENTS.md claims slash commands work outside Claude Code', () => {
+test('both AGENTS.md files say slash commands are optional, from one skill source, in every assistant', () => {
   for (const rel of FILES) {
-    const lines = read(rel).split('\n').filter((l) => /slash command/i.test(l));
-    assert.ok(lines.some((l) => /only[^\n]*Claude Code|Claude Code only/i.test(l)), `${rel} must say slash commands are Claude Code only`);
-    for (const line of lines) {
-      assert.doesNotMatch(line, /Cursor|Antigravity|Windsurf|Gemini/, `${rel} falsely claims slash commands elsewhere: ${line}`);
-    }
+    const text = read(rel);
+    const lines = text.split('\n').filter((l) => /slash command/i.test(l));
+    assert.ok(lines.length > 0, `${rel} must mention slash commands`);
+    assert.doesNotMatch(text, /Claude Code only|work only in Claude Code/i, `${rel} must not limit slash commands to Claude Code`);
+    assert.match(text, /Never tell people they need a slash command/);
+    assert.match(text, /\.agents\/skills\/<name>\/SKILL\.md/, `${rel} must name the single skill source`);
+    assert.doesNotMatch(text, /\.claude\/commands/, `${rel} must not point to the removed .claude/commands`);
   }
 });
 
@@ -81,11 +83,11 @@ test('flow and retro procedures refresh the sales system page after an approved 
   const { getPrompt } = await import('../src/mcp/prompts.js');
   const flowPrompt = getPrompt('flow', {}).messages[0].content.text;
   const sources = {
-    '.claude/commands/flow.md': read('.claude/commands/flow.md'),
-    'templates/base/.claude/commands/flow.md': read('templates/base/.claude/commands/flow.md'),
+    '.agents/skills/flow/SKILL.md': read('.agents/skills/flow/SKILL.md'),
+    'templates/base/.agents/skills/flow/SKILL.md': read('templates/base/.agents/skills/flow/SKILL.md'),
     'src/mcp/prompts.js flow': flowPrompt,
-    '.claude/commands/retro.md': read('.claude/commands/retro.md'),
-    'templates/base/.claude/commands/retro.md': read('templates/base/.claude/commands/retro.md'),
+    '.agents/skills/retro/SKILL.md': read('.agents/skills/retro/SKILL.md'),
+    'templates/base/.agents/skills/retro/SKILL.md': read('templates/base/.agents/skills/retro/SKILL.md'),
     'skills/skill_monthly_retrospective.md': read('skills/skill_monthly_retrospective.md'),
     'templates/base/skills/skill_monthly_retrospective.md': read('templates/base/skills/skill_monthly_retrospective.md'),
     'templates/areas/sales/skills/skill_monthly_retrospective.md': read('templates/areas/sales/skills/skill_monthly_retrospective.md')
@@ -94,7 +96,7 @@ test('flow and retro procedures refresh the sales system page after an approved 
     assert.match(text, /clc-brain view/, `${name} must refresh the page with clc-brain view`);
     assert.match(text, /HITL|Human-in-the-Loop/i, `${name} must keep its HITL checkpoint`);
   }
-  assert.match(sources['.claude/commands/flow.md'], /offer to open/i);
+  assert.match(sources['.agents/skills/flow/SKILL.md'], /offer to open/i);
   assert.match(flowPrompt, /offer to open/i);
 });
 
@@ -108,7 +110,7 @@ test('the "here is my sales flow" intent imports, previews and waits for approva
   for (const row of rows) {
     assert.match(row, /te paso mi diagrama/i);
     assert.match(row, /preview/i);
-    assert.match(row, /\.claude\/commands\/flow\.md/);
+    assert.match(row, /\.agents\/skills\/flow\/SKILL\.md/);
   }
   assert.equal(rows[0], rows[1], 'root and template rows stay identical');
 });
@@ -166,7 +168,7 @@ test('both AGENTS.md files use the brain language and know how to change it', ()
 });
 
 test('onboarding asks for the language first when it is not set and stores it', () => {
-  for (const rel of ['skills/skill_brain_onboarding.md', 'templates/base/skills/skill_brain_onboarding.md', '.claude/commands/brain:onboarding.md', 'templates/base/.claude/commands/brain:onboarding.md']) {
+  for (const rel of ['skills/skill_brain_onboarding.md', 'templates/base/skills/skill_brain_onboarding.md', '.agents/skills/brain-onboarding/SKILL.md', 'templates/base/.agents/skills/brain-onboarding/SKILL.md']) {
     const text = read(rel);
     assert.match(text, /Step 0[^\n]*Language/i, `${rel} needs a language step`);
     assert.match(text, /`language`/, `${rel} must store the language in org-kernel.json`);
@@ -189,7 +191,7 @@ test('READMEs say the brain works in English and Spanish and document --language
 });
 
 test('onboarding marks the brain as set up after approval, then shows a short menu', () => {
-  for (const rel of ['skills/skill_brain_onboarding.md', 'templates/base/skills/skill_brain_onboarding.md', '.claude/commands/brain:onboarding.md', 'templates/base/.claude/commands/brain:onboarding.md']) {
+  for (const rel of ['skills/skill_brain_onboarding.md', 'templates/base/skills/skill_brain_onboarding.md', '.agents/skills/brain-onboarding/SKILL.md', 'templates/base/.agents/skills/brain-onboarding/SKILL.md']) {
     const text = read(rel);
     assert.match(text, /`setup\.completed`[^\n]*`true`/, `${rel} must set setup.completed to true`);
     assert.match(text, /`(setup\.)?completedAt`/, `${rel} must record completedAt`);

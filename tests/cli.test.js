@@ -54,7 +54,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
       assert.ok(fs.existsSync(path.join(TEST_DIR, 'CLAUDE.md')), 'CLAUDE.md must exist');
       assert.ok(fs.existsSync(path.join(TEST_DIR, '.windsurfrules')), '.windsurfrules must exist');
       assert.ok(fs.existsSync(path.join(TEST_DIR, 'GEMINI.md')), 'GEMINI.md must exist');
-      assert.ok(fs.existsSync(path.join(TEST_DIR, '.agents', 'skills', 'brain-search.md')), 'brain-search skill must exist');
+      assert.ok(fs.existsSync(path.join(TEST_DIR, '.agents', 'skills', 'brain-search', 'SKILL.md')), 'brain-search skill must exist');
       assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'battlecards', 'competitor-alpha.json')), 'battlecard json must exist');
       assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'calls', 'README.md')), 'calls README must exist');
       assert.ok(fs.existsSync(path.join(TEST_DIR, 'sales', 'win-loss', 'README.md')), 'win-loss README must exist');
@@ -91,13 +91,13 @@ test('CLI Suite: Copilot Brain', async (t) => {
     assert.match(output, /Warnings: 0/);
   });
 
-  await t.test('Doctor automatic repair (--fix) for missing symlinks, missing skills, missing commands', () => {
+  await t.test('Doctor automatic repair (--fix) for missing symlinks, missing skills, missing shortcuts', () => {
     // 1. Remove a symlink (.cursorrules)
     const symlinkToRemove = path.join(TEST_DIR, '.cursorrules');
     fs.unlinkSync(symlinkToRemove);
 
-    // 2. Remove a Claude command (brain:sales.md)
-    const cmdToRemove = path.join(TEST_DIR, '.claude', 'commands', 'brain:sales.md');
+    // 2. Remove a Claude Code shortcut (brain-sales)
+    const cmdToRemove = path.join(TEST_DIR, '.claude', 'skills', 'brain-sales', 'SKILL.md');
     fs.unlinkSync(cmdToRemove);
 
     // 3. Remove a root skill (skill_sales_copilot.md)
@@ -107,7 +107,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
     // Doctor audit without --fix must detect all 3 missing items as warnings
     const checkOutput = execSync(`"${process.execPath}" ./bin/cli.js doctor "${TEST_DIR}"`, { cwd: PKG_DIR }).toString();
     assert.match(checkOutput, /Missing IDE adapter: \.cursorrules/);
-    assert.match(checkOutput, /Missing Claude slash command: \.claude\/commands\/brain:sales\.md/);
+    assert.match(checkOutput, /Missing slash-command shortcut: \.claude\/skills\/brain-sales\/SKILL\.md/);
     assert.match(checkOutput, /Missing LLM operating skill: skills\/skill_sales_copilot\.md/);
     assert.match(checkOutput, /Warnings: 3/);
 
@@ -117,7 +117,7 @@ test('CLI Suite: Copilot Brain', async (t) => {
 
     // Verify all 3 were restored
     assert.ok(fs.existsSync(symlinkToRemove), '.cursorrules symlink should be repaired');
-    assert.ok(fs.existsSync(cmdToRemove), 'brain:sales.md command should be repaired');
+    assert.ok(fs.existsSync(cmdToRemove), 'brain-sales shortcut should be repaired');
     assert.ok(fs.existsSync(skillToRemove), 'skill_sales_copilot.md skill should be repaired');
 
     // Doctor audit again: must now report 100% healthy

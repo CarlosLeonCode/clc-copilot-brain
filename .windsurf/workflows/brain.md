@@ -1,0 +1,6 @@
+---
+description: "Show what this brain can help with as a short plain menu grouped by its active areas, and offer setup when the brain is not set up yet. Use when someone says hi, asks for help, or asks what you can do."
+---
+<!-- generated from .agents/skills/brain/SKILL.md — do not edit -->
+
+Read and follow `.agents/skills/brain/SKILL.md`. Pass along any text the user typed after the command.

@@ -1,0 +1,5 @@
+# generated from .agents/skills/brain-search/SKILL.md — do not edit
+description = "Find the right answer across every area of this brain (sales, marketing, product, operations, people, finance). Use when someone asks \"what is our policy on...\", \"where do we document...\", or \"who owns...\"."
+prompt = """Read and follow .agents/skills/brain-search/SKILL.md exactly.
+
+User input: {{args}}"""

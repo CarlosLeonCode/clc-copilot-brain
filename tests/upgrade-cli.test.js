@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = path.join(REPO_ROOT, 'bin', 'cli.js');
-const FLOW = path.join('.claude', 'commands', 'flow.md');
+const FLOW = path.join('.agents', 'skills', 'flow', 'SKILL.md');
 
 function cli(...args) {
   return spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', input: '' });
@@ -40,7 +40,7 @@ test('upgrade without a TTY and without --yes prints the plan, writes nothing an
     fs.writeFileSync(file, '# my edit\n');
     const res = cli('upgrade', brain);
     assert.equal(res.status, 1);
-    assert.match(res.stdout, /flow\.md/);
+    assert.match(res.stdout, /flow\/SKILL\.md/);
     assert.match(res.stdout, /--yes/);
     assert.equal(fs.readFileSync(file, 'utf8'), '# my edit\n');
     assert.equal(fs.existsSync(`${file}.bak`), false);
@@ -68,7 +68,7 @@ test('upgrade --yes restores the template file, keeps a .bak and reports it', ()
     assert.equal(res.status, 0);
     assert.equal(fs.readFileSync(file, 'utf8'), original);
     assert.equal(fs.readFileSync(`${file}.bak`, 'utf8'), '# my edit\n');
-    assert.match(res.stdout, /flow\.md\.bak/);
+    assert.match(res.stdout, /SKILL\.md\.bak/);
     assert.match(cli('upgrade', brain).stdout, /nothing to do/i);
   });
 });

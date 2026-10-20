@@ -10,7 +10,7 @@ import { getPrompt } from '../src/mcp/prompts.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 const skillCopies = (name) => [`skills/${name}`, `templates/base/skills/${name}`, `templates/areas/sales/skills/${name}`];
-const cmdCopies = (name) => [`.claude/commands/${name}`, `templates/base/.claude/commands/${name}`];
+const cmdCopies = (name) => [`.agents/skills/${name.replace(/\.md$/, '')}/SKILL.md`, `templates/base/.agents/skills/${name.replace(/\.md$/, '')}/SKILL.md`];
 const promptText = (name) => getPrompt(name, {}).messages[0].content.text;
 
 test('call analyzer asks only missing essentials, confirms in one plain sentence and hides internals', () => {
@@ -67,7 +67,7 @@ test('brain menu is plain and by area, without maintenance commands', () => {
     const text = read(rel);
     assert.match(text, /What I can help with/i);
     assert.match(text, /check or update your brain if you ask/i);
-    assert.doesNotMatch(text, /\/brain:doctor|\/brain:add-area/);
+    assert.doesNotMatch(text, /\/brain-doctor|\/brain-add-area/);
   }
 });
 
@@ -103,13 +103,13 @@ test('web chatbot integrations know the sales system map and call guides, and us
 
 test('agent skills carry a name/description header and sales-assist knows call guides and plain language', () => {
   for (const dir of ['.agents/skills', 'templates/base/.agents/skills']) {
-    for (const name of ['brain-search.md', 'sales-assist.md', 'sop-auditor.md']) {
-      const text = read(`${dir}/${name}`);
-      assert.match(text, new RegExp(`^---\\nname: ${name.replace(/\.md$/, '')}\\ndescription: .{20,}\\n---\\n`), `${dir}/${name} header`);
+    for (const name of ['brain-search', 'sales-assist', 'sop-auditor']) {
+      const text = read(`${dir}/${name}/SKILL.md`);
+      assert.match(text, new RegExp(`^---\\nname: ${name}\\ndescription: ".{20,}"\\n`), `${dir}/${name} header`);
       assert.match(text, /review|confirm|checkpoint/i, `${dir}/${name} keeps a review checkpoint`);
     }
-    const sales = read(`${dir}/sales-assist.md`);
-    assert.ok(sales.includes('sales/system.md') && sales.includes('sales/plays/'), `${dir}/sales-assist.md must use the call guides`);
+    const sales = read(`${dir}/sales-assist/SKILL.md`);
+    assert.ok(sales.includes('sales/system.md') && sales.includes('sales/plays/'), `${dir}/sales-assist must use the call guides`);
     assert.match(sales, /plain/i);
     assert.match(sales, /never show internal IDs/i);
   }

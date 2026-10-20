@@ -1,0 +1,5 @@
+# generated from .agents/skills/sales-assist/SKILL.md — do not edit
+description = "Draft sales emails, answer buyer objections, beat competitors, and prepare calls with the right call guide from this brain. Use for any sales help request."
+prompt = """Read and follow .agents/skills/sales-assist/SKILL.md exactly.
+
+User input: {{args}}"""

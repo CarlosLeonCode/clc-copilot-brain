@@ -159,6 +159,6 @@ Main bottleneck: {{STAGE_NAME}}, because {{BOTTLENECK_ROOT_CAUSE}}. Suggested fi
 
 ## 5. EXAMPLE USAGE PROMPTS
 
-- `"/brain:sales Run skill_monthly_retrospective for 2026-09 and highlight rep objection handling."`
+- `"/brain-sales Run skill_monthly_retrospective for 2026-09 and highlight rep objection handling."`
 - `"Analyze all calls in sales/calls/2026-09/ and win-loss reviews to generate our monthly RevOps report."`
 - `"What were our top 3 competitive threats last month and which battlecards need updating?"`

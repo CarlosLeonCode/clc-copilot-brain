@@ -42,17 +42,20 @@ test('runDoctor flags invalid schema assets, wrong symlinks and missing areas', 
     assert.ok(messages.includes('Active area "ghost" declared in org-kernel.json but directory missing.'));
   }));
 
-test('repairBrain restores adapters, commands and skills without touching regular adapter files', () =>
+test('repairBrain restores adapters, shortcuts and skills without touching regular adapter files', () =>
   withTmp((dir) => {
     initBrain(dir, { areas: ['sales'] });
     fs.unlinkSync(path.join(dir, '.cursorrules'));
-    fs.unlinkSync(path.join(dir, '.claude', 'commands', 'call.md'));
+    fs.unlinkSync(path.join(dir, '.claude', 'skills', 'call', 'SKILL.md'));
+    fs.rmSync(path.join(dir, '.agents', 'skills', 'retro'), { recursive: true });
     fs.unlinkSync(path.join(dir, 'skills', 'skill_brain_doctor.md'));
     fs.unlinkSync(path.join(dir, 'CLAUDE.md'));
     fs.writeFileSync(path.join(dir, 'CLAUDE.md'), 'hand-written');
 
-    const { skills } = repairBrain(dir);
+    const { skills, agentSkills, shortcuts } = repairBrain(dir);
     assert.deepEqual(skills, ['skill_brain_doctor.md']);
+    assert.deepEqual(agentSkills, ['retro']);
+    assert.ok(shortcuts.written.includes('.claude/skills/call/SKILL.md'));
     assert.equal(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), 'hand-written');
     assert.equal(fs.existsSync(path.join(dir, 'CLAUDE.md.bak')), false);
     assert.equal(runDoctor(dir).healthy, true);

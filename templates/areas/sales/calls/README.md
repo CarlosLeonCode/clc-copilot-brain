@@ -73,6 +73,6 @@ next_meeting: "2026-09-24T15:00:00Z"
 Use the AI skill `skill_call_analyzer.md`:
 ```bash
 # In Claude Code or your agent terminal:
-/brain:sales Analyze this call transcript and save to sales/calls/2026-09/
+/brain-sales Analyze this call transcript and save to sales/calls/2026-09/
 ```
 Or paste the transcript directly to your LLM copilot using the prompt in `skills/skill_call_analyzer.md`.

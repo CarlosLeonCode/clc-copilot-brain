@@ -231,7 +231,7 @@ Not sure what comes next? Run `clc-brain` on its own inside the folder: it shows
 
 **4. Run the guided interview**
 
-Say *"Set up my brain"* (in Claude Code you can also type `/brain:onboarding`). The assistant asks one question at a time, fills in your company profile and drafts a first document for each area. You approve each draft before it is saved.
+Say *"Set up my brain"* (you can also type `/brain-onboarding`). The assistant asks one question at a time, fills in your company profile and drafts a first document for each area. You approve each draft before it is saved.
 
 **5. Check everything is healthy**
 
@@ -268,7 +268,7 @@ clc-brain init brain --name "Acme"
 
 Every brain file stays inside `brain/`. Other commands take the same path, for example `clc-brain doctor brain`.
 
-**Opening your AI assistant at `acme/`.** Claude Code only loads `CLAUDE.md`/`AGENTS.md` from `acme/` and its parent folders. The brain's rules and `.claude/skills` load only after the assistant reads a file inside `brain/`, and the shortcuts in `brain/.claude/commands` (such as `/call`) are not documented to be found from the parent. So either:
+**Opening your AI assistant at `acme/`.** Claude Code only loads `CLAUDE.md`/`AGENTS.md` from `acme/` and its parent folders. The brain's rules and `.claude/skills` load only after the assistant reads a file inside `brain/`, and the shortcuts in `brain/.claude/skills` (such as `/call`) are not documented to be found from the parent. So either:
 
 1. **Open the assistant inside `brain/`** for day-to-day brain work (simplest), or
 2. **Add a short router** at `acme/AGENTS.md`, with a `CLAUDE.md` link to it (`ln -s AGENTS.md CLAUDE.md`), that sends each topic to its folder:
@@ -343,7 +343,7 @@ Open only the one you use.
 
 Open your brain folder. That's it: every tool reads the rules in `AGENTS.md`, directly or through `CLAUDE.md`, `GEMINI.md`, `.cursorrules` and `.windsurfrules`. People ask in plain words, and the assistant follows the right procedure.
 
-Slash commands such as `/call` or `/flow` are optional shortcuts that work only in Claude Code. Nobody needs them.
+Slash commands such as `/call` or `/flow` are optional shortcuts that work in all of these tools (see "Slash commands in every assistant" below). Nobody needs them.
 
 The sales page works in any of these tools: when you ask *"Show me my sales process"*, the assistant runs `clc-brain view --open` for you. If it can't run commands, open `sales/sales-system.html` in your browser.
 
@@ -392,24 +392,40 @@ Restart the app. It can search the brain, save call notes and objections, and ru
 ## 📚 Reference
 
 <details>
-<summary><strong>Shortcuts in Claude Code (optional)</strong></summary>
+<summary><strong>Slash commands in every assistant (optional)</strong></summary>
 
 <br>
 
-Everything below also works by asking in plain words, in any tool. In Claude Code these shortcuts are a quicker way in:
+Everything below also works by asking in plain words, in any tool. Slash commands are a quicker way in. Each one is a skill in `.agents/skills/<name>/SKILL.md`; `clc-brain init` and `clc-brain upgrade` generate the extra files some assistants need (`.claude/skills/`, `.gemini/commands/`, `.windsurf/workflows/`). Edit the skill, never the generated files, then run `clc-brain upgrade`.
+
+| Assistant | How to use a shortcut |
+| :--- | :--- |
+| Claude Code | Type `/call` (from `.claude/skills/`). |
+| Codex | Type `$call`, or pick it from `/skills`. |
+| Google Antigravity | Type `/call`, or just ask: skills load when they fit the request. |
+| Cursor | Type `/call` in the agent chat. |
+| OpenCode | Type `/call`. |
+| Windsurf | Type `/call` (workflow from `.windsurf/workflows/`). |
+| Gemini CLI | Type `/call` (command from `.gemini/commands/`). |
+| GitHub Copilot | Type `/call` in agent mode, or just ask. |
+
+Older brains used names with a colon (`/brain:onboarding`); they are now `/brain-onboarding`, `/brain-sales`, `/brain-doctor` and `/brain-add-area`. `clc-brain upgrade` removes the old `.claude/commands/` files you never changed and tells you about the ones you did.
 
 | Shortcut | What it does |
 | :--- | :--- |
 | `/brain` | Overview of your brain and what you can do. |
-| `/brain:onboarding` | Guided interview that sets up your brain. |
-| `/brain:sales` | Sales help: objection replies, competitor comparisons, what to say. |
+| `/brain-onboarding` | Guided interview that sets up your brain. |
+| `/brain-sales` | Sales help: objection replies, competitor comparisons, what to say. |
 | `/objection` | Approved reply to a buyer objection, or save a new one. |
 | `/battlecard` | How you compare against a competitor. |
 | `/call` | Analyze call notes and save them. |
 | `/flow` | See or change your sales process and call guides, or bring in a flow you already have. |
 | `/retro` | Monthly review of calls and won/lost deals. |
-| `/brain:add-area` | Add a new area or document. |
-| `/brain:doctor` | Health check from inside the chat. |
+| `/brain-add-area` | Add a new area or document. |
+| `/brain-doctor` | Health check from inside the chat. |
+| `/brain-search` | Find the answer across every area of your brain. |
+| `/sales-assist` | Draft outreach and prepare calls with the right call guide. |
+| `/sop-auditor` | Check a procedure (SOP) for gaps. |
 
 </details>
 

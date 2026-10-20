@@ -90,7 +90,7 @@ Once Question 8 is answered:
 
 4. **Final Summary & Next Steps**:
    - Provide a concise summary of all updated files.
-   - Recommend the user run `/brain:doctor` (or `clc-brain doctor`) to verify integrity.
+   - Recommend the user run `/brain-doctor` (or `clc-brain doctor`) to verify integrity.
    - Suggest **one example question per seeded area**, built from the user's own data (see 9.5).
    - Mention `/brain` as the dashboard for everything else.
 
@@ -185,7 +185,7 @@ For each active area, in order:
 3. **Do not write any file until the user explicitly approves.** Apply edits and confirm again.
 4. Write the approved file. For sales objections, optionally add a short human-readable `.md` companion, as `/objection` does.
 
-After all areas, run `clc-brain doctor` (or `/brain:doctor`) and confirm the JSON assets pass schema validation. If validation fails, fix the reported fields, show the change, and re-run.
+After all areas, run `clc-brain doctor` (or `/brain-doctor`) and confirm the JSON assets pass schema validation. If validation fails, fix the reported fields, show the change, and re-run.
 
 ### 9.5 Close with one example question per seeded area
 Build each from the user's data, for example:

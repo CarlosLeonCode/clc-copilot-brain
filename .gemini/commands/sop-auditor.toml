@@ -1,0 +1,5 @@
+# generated from .agents/skills/sop-auditor/SKILL.md — do not edit
+description = "Review a Standard Operating Procedure against schemas/sop.schema.json for missing fields, unclear roles, and missing fallbacks. Use when asked to audit or check an SOP."
+prompt = """Read and follow .agents/skills/sop-auditor/SKILL.md exactly.
+
+User input: {{args}}"""

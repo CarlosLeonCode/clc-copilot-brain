@@ -2,7 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { IDE_ADAPTERS, SSOT_FILE, expectedAssets } from './manifest.js';
-import { restoreRootSkills, setupIdeAdapters } from './scaffold.js';
+import { adapterPaths, generateHarnessAdapters, listSourceSkills } from './harness-adapters.js';
+import { restoreAgentSkills, restoreRootSkills, setupIdeAdapters } from './scaffold.js';
 import { validateAgainstSchema } from './schema-validator.js';
 import { TEMPLATES_BASE_DIR } from './package-paths.js';
 import { PLAY_TITLE_PREFIX, hasDecisionTree, validatePlay } from './plays.js';
@@ -168,6 +169,28 @@ function checkSalesMetrics(rootDir, report) {
   if (problems === 0) report.pass('Sales records are readable and every call guide defines success.');
 }
 
+/** Every valid skill needs its slash-command shortcuts for Claude Code, Gemini CLI and Windsurf. */
+function checkSkillShortcuts(rootDir, report) {
+  let problems = 0;
+  for (const skill of listSourceSkills(rootDir)) {
+    if (skill.problems.length > 0) {
+      problems++;
+      report.issue({ level: 'warning', message: `Skill .agents/skills/${skill.name}/SKILL.md is not valid: ${skill.problems.join('; ')}.` });
+      continue;
+    }
+    for (const rel of Object.values(adapterPaths(skill.name))) {
+      if (fs.existsSync(path.join(rootDir, ...rel.split('/')))) continue;
+      problems++;
+      report.issue({ level: 'warning', message: `Missing slash-command shortcut: ${rel}`, repairable: true, action: 'generate_shortcuts', skill: skill.name });
+    }
+  }
+  if (fs.existsSync(path.join(rootDir, '.claude', 'commands'))) {
+    report.issue({ level: 'warning', message: 'Old .claude/commands/ folder found: skills in .agents/skills/ replace it. Run "clc-brain upgrade" to remove the unchanged old files.' });
+    problems++;
+  }
+  if (problems === 0) report.pass('Slash-command shortcuts (.claude/skills/, .gemini/commands/, .windsurf/workflows/) verified.');
+}
+
 /**
  * Audit a brain.
  * @returns {{ passed: string[], issues: Array<{ level: 'error'|'warning', message: string, repairable?: boolean }>,
@@ -186,13 +209,11 @@ export function runDoctor(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR } = {
 
   checkAdapters(rootDir, report);
 
-  checkFiles(path.join(rootDir, '.claude', 'commands'), expected.commands,
-    (cmd) => ({ level: 'warning', message: `Missing Claude slash command: .claude/commands/${cmd}`, repairable: true, action: 'create_claude_command', command: cmd }),
-    'All Claude Code slash commands (.claude/commands/) verified.', report);
+  checkFiles(path.join(rootDir, '.agents', 'skills'), expected.agentSkills.map((name) => path.join(name, 'SKILL.md')),
+    (rel) => ({ level: 'warning', message: `Missing skill: .agents/skills/${rel.split(path.sep).join('/')}`, repairable: true, action: 'create_agent_skill', skill: rel.split(path.sep)[0] }),
+    'Skills (.agents/skills/) present.', report);
 
-  checkFiles(path.join(rootDir, '.agents', 'skills'), expected.agentSkills,
-    (skill) => ({ level: 'warning', message: `Missing agent skill: .agents/skills/${skill}` }),
-    'Agent query and audit skills present in .agents/skills/.', report);
+  checkSkillShortcuts(rootDir, report);
 
   checkFiles(path.join(rootDir, 'skills'), expected.rootSkills,
     (skill) => ({ level: 'warning', message: `Missing LLM operating skill: skills/${skill}`, repairable: true, action: 'create_skill', skill }),
@@ -218,11 +239,13 @@ export function runDoctor(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR } = {
 }
 
 /**
- * Apply non-destructive repairs: missing/broken adapters, missing slash commands and root skills.
- * Existing regular adapter files are kept as-is.
+ * Apply non-destructive repairs: missing/broken adapters, missing skills, and slash-command shortcuts.
+ * Existing regular adapter files are kept as-is; old command files are left to `upgrade`.
  */
 export function repairBrain(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR } = {}) {
-  const adapters = setupIdeAdapters(rootDir, { backupRegularFiles: false, templatesBaseDir });
+  const adapters = setupIdeAdapters(rootDir, { backupRegularFiles: false });
   const skills = restoreRootSkills(rootDir, { templatesBaseDir });
-  return { adapters, skills };
+  const agentSkills = restoreAgentSkills(rootDir, { templatesBaseDir });
+  const shortcuts = generateHarnessAdapters(rootDir, { removeLegacy: false });
+  return { adapters, skills, agentSkills, shortcuts };
 }

@@ -2,19 +2,23 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { initBrain, setupIdeAdapters, fallbackAdapterContent } from '../../src/core/scaffold.js';
+import { initBrain, restoreAgentSkills, setupIdeAdapters, fallbackAdapterContent } from '../../src/core/scaffold.js';
 import { expectedAssets } from '../../src/core/manifest.js';
 import { BrainError } from '../../src/core/errors.js';
 import { withTmp, writeFiles } from './helpers.js';
 
-test('initBrain scaffolds kernel, adapters, commands and selected areas without demo data', () =>
+test('initBrain scaffolds kernel, adapters, skills, shortcuts and selected areas without demo data', () =>
   withTmp((dir) => {
     const { areas } = initBrain(dir, { companyName: 'Core Co', areas: ['sales'] });
     assert.deepEqual(areas, ['sales']);
     const kernel = JSON.parse(fs.readFileSync(path.join(dir, 'org-kernel.json'), 'utf8'));
     assert.equal(kernel.organization.name, 'Core Co');
     assert.equal(fs.readlinkSync(path.join(dir, 'CLAUDE.md')), 'AGENTS.md');
-    for (const cmd of expectedAssets().commands) assert.ok(fs.existsSync(path.join(dir, '.claude', 'commands', cmd)));
+    for (const name of expectedAssets().agentSkills) {
+      assert.ok(fs.existsSync(path.join(dir, '.agents', 'skills', name, 'SKILL.md')));
+      assert.ok(fs.existsSync(path.join(dir, '.claude', 'skills', name, 'SKILL.md')));
+    }
+    assert.equal(fs.existsSync(path.join(dir, '.claude', 'commands')), false);
     assert.ok(fs.existsSync(path.join(dir, 'playbooks', '01-SALES-PLAYBOOK.md')));
     assert.equal(fs.existsSync(path.join(dir, 'sales', 'objections', 'pricing-too-high.json')), false);
     const callsEntries = fs.readdirSync(path.join(dir, 'sales', 'calls'));
@@ -58,21 +62,22 @@ test('setupIdeAdapters keeps regular files when backups are disabled and keeps i
     assert.equal(fs.existsSync(path.join(dir, 'CLAUDE.md.bak')), false);
   }));
 
-test('setupIdeAdapters copies every command found in the templates commands directory', () =>
+test('restoreAgentSkills copies every skill folder found in the templates', () =>
   withTmp((dir) => {
     const templates = path.join(dir, 'templates');
     const brain = path.join(dir, 'brain');
-    writeFiles(templates, { '.claude/commands/custom-cmd.md': '# /custom', '.claude/commands/notes.txt': 'ignored' });
+    writeFiles(templates, { '.agents/skills/custom-cmd/SKILL.md': '# /custom', '.agents/skills/notes.txt': 'ignored' });
     writeFiles(brain, { 'AGENTS.md': '# SSOT' });
-    const copied = setupIdeAdapters(brain, { templatesBaseDir: templates }).filter((r) => r.status === 'copied');
-    assert.deepEqual(copied.map((r) => r.adapter), ['.claude/commands/custom-cmd.md']);
-    assert.ok(fs.existsSync(path.join(brain, '.claude', 'commands', 'custom-cmd.md')));
+    assert.deepEqual(restoreAgentSkills(brain, { templatesBaseDir: templates }), ['custom-cmd']);
+    assert.ok(fs.existsSync(path.join(brain, '.agents', 'skills', 'custom-cmd', 'SKILL.md')));
+    assert.deepEqual(restoreAgentSkills(brain, { templatesBaseDir: templates }), []);
   }));
 
-test('expectedAssets derives commands and skills from templates/base', () => {
+test('expectedAssets derives skills from templates/base', () => {
   const assets = expectedAssets();
-  assert.ok(assets.commands.includes('brain:sales.md'));
-  assert.ok(assets.commands.includes('retro.md'));
-  assert.deepEqual(assets.agentSkills, ['brain-search.md', 'sales-assist.md', 'sop-auditor.md']);
+  for (const name of ['brain', 'brain-sales', 'brain-onboarding', 'brain-doctor', 'brain-add-area', 'call', 'flow', 'retro', 'brain-search', 'sales-assist', 'sop-auditor']) {
+    assert.ok(assets.agentSkills.includes(name), name);
+  }
+  assert.equal(assets.commands, undefined);
   assert.equal(assets.rootSkills.length, 6);
 });

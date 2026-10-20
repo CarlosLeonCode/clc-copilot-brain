@@ -61,7 +61,7 @@ test('check_package_files', async (t) => {
 
 test('check_template_sync', async (t) => {
   const synced = {
-    '.claude/commands/brain.md': '# brain\n',
+    '.agents/skills/brain/SKILL.md': '# brain\n',
     'skills/skill_a.md': '# a\n',
     'skills/integrations/x.md': '# x\n',
   };
@@ -82,12 +82,12 @@ test('check_template_sync', async (t) => {
       ...synced,
       ...mirrored,
       'skills/integrations/x.md': '# x changed\n',
-      '.claude/commands/root-only.md': '# root only\n',
+      '.agents/skills/root-only/SKILL.md': '# root only\n',
       'templates/base/skills/template-only.md': '# template only\n',
     });
     assert.strictEqual(result.exitCode, 1);
     assert.deepStrictEqual(violationFiles(result).sort(), [
-      '.claude/commands/root-only.md',
+      '.agents/skills/root-only/SKILL.md',
       'skills/integrations/x.md',
       'templates/base/skills/template-only.md',
     ]);
@@ -95,7 +95,7 @@ test('check_template_sync', async (t) => {
 });
 
 test('check_template_sync: managed sales skills', async (t) => {
-  const base = { '.claude/commands/brain.md': '# brain\n', 'templates/base/.claude/commands/brain.md': '# brain\n' };
+  const base = { '.agents/skills/brain/SKILL.md': '# brain\n', 'templates/base/.agents/skills/brain/SKILL.md': '# brain\n' };
 
   await t.test('passes when every sales skill matches its root counterpart', async () => {
     const result = await runOn(checkTemplateSync, {

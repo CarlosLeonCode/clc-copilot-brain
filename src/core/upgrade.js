@@ -1,7 +1,8 @@
 // Upgrade planner: bring template-owned files of an existing brain up to date. Plan first, apply second.
 // Allowlist only: everything not listed here is never touched.
-//   template-owned  = base .claude/commands/*.md and skills/*.md  -> replace (with .bak backup) when bytes differ
-//   add-if-missing  = new base commands/skills, plus sales/system.md and sales/plays/*.md when `sales` is active
+//   template-owned  = base .agents/skills/<name>/SKILL.md and skills/*.md  -> replace (with .bak backup) when bytes differ
+//   add-if-missing  = new base skills, plus sales/system.md and sales/plays/*.md when `sales` is active
+// Slash-command shortcuts and old .claude/commands files are handled after apply by generateHarnessAdapters.
 //                     (in the brain language when templates/locales has that file, else in English)
 //   managed-block   = AGENTS.md: only the text between the copilot-brain managed markers is refreshed
 import fs from 'node:fs';
@@ -10,6 +11,7 @@ import { localeAreaDir, readKernel } from './areas.js';
 import { getBrainLanguage } from './brain-language.js';
 import { BrainError } from './errors.js';
 import { ensureDir, isInside, listMarkdownFiles } from './fs-utils.js';
+import { listSkillNames } from './harness-adapters.js';
 import { TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR, TEMPLATES_LOCALES_DIR } from './package-paths.js';
 
 const PLACEHOLDER = /\{\{(COMPANY_NAME|INDUSTRY|TAGLINE|ACTIVE_AREAS_[A-Z]+|CREATED_AT|UPDATED_AT)\}\}/;
@@ -34,9 +36,12 @@ function lstatOrNull(p) {
 /** Managed template files as { rel (posix), src, policy } where policy applies to an existing file. */
 function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOverlayDir) {
   const files = [];
-  for (const [dir, rel] of [[path.join(templatesBaseDir, '.claude', 'commands'), '.claude/commands'], [path.join(templatesBaseDir, 'skills'), 'skills']]) {
-    for (const name of listMarkdownFiles(dir)) files.push({ rel: `${rel}/${name}`, src: path.join(dir, name), owned: true });
+  const agentSkills = path.join(templatesBaseDir, '.agents', 'skills');
+  for (const name of listSkillNames(agentSkills)) {
+    files.push({ rel: `.agents/skills/${name}/SKILL.md`, src: path.join(agentSkills, name, 'SKILL.md'), owned: true });
   }
+  const rootSkills = path.join(templatesBaseDir, 'skills');
+  for (const name of listMarkdownFiles(rootSkills)) files.push({ rel: `skills/${name}`, src: path.join(rootSkills, name), owned: true });
   if (activeAreas.includes('sales')) {
     const sales = path.join(templatesAreasDir, 'sales');
     // The translated file when the brain language has one, else the English template.

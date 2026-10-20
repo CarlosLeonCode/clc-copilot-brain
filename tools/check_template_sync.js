@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 /**
  * Template Sync Guard
- * The repo root dogfoods the same commands and skills that `templates/base/`
- * scaffolds into new projects. Files under `.claude/commands/` and `skills/`
- * must exist on both sides and be byte-identical.
+ * The repo root dogfoods the same skills that `templates/base/` scaffolds into
+ * new projects. Files under `.agents/skills/` (the single source of every slash
+ * command) and `skills/` must exist on both sides and be byte-identical.
+ * CLC Kernel tool folders in `.agents/skills/` (git-ignored) are not compared.
  * Managed sales skills in `templates/areas/sales/skills/*.md` must also be
  * byte-identical to the matching `skills/*.md`.
- * Intentionally NOT compared (filled-in at root): AGENTS.md, org-kernel.json,
- * `.agents/skills/`.
+ * Intentionally NOT compared (filled-in at root): AGENTS.md, org-kernel.json.
+ * Generated shortcuts (`.claude/skills/`, `.gemini/commands/`, `.windsurf/workflows/`)
+ * are checked by tests/harness-adapters.test.js.
  * Self-contained: uses only Node.js built-ins.
  *
  * @param {string} targetDir - Directory to scan (defaults to cwd)
@@ -17,7 +19,8 @@ const fs = require('fs');
 const path = require('path');
 
 const NAME = 'check_template_sync';
-const SYNCED_DIRS = ['.claude/commands', 'skills'];
+const SYNCED_DIRS = ['.agents/skills', 'skills'];
+const IGNORED_DIRS = new Set(['.agents/skills/clckernel_cli', '.agents/skills/clc_forge_cli']);
 const TEMPLATE_BASE = 'templates/base';
 const SALES_SKILLS_DIR = 'templates/areas/sales/skills';
 
@@ -27,6 +30,7 @@ function listFiles(baseDir, relDir) {
   if (!fs.existsSync(absDir)) return out;
   for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
     const rel = `${relDir}/${entry.name}`;
+    if (IGNORED_DIRS.has(rel)) continue;
     if (entry.isDirectory()) out.push(...listFiles(baseDir, rel));
     else if (entry.isFile()) out.push(rel);
   }
