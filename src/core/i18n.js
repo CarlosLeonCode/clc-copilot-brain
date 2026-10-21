@@ -132,7 +132,21 @@ const en = {
   'init.example.product': '"What are this quarter\'s product themes?"',
   'init.example.operations': '"A P1 incident just started, what do I do?"',
   'init.example.hr_people': '"What is the onboarding plan for a new engineer?"',
-  'init.example.finance_legal': '"Can I give a customer a 25% discount?"'
+  'init.example.finance_legal': '"Can I give a customer a 25% discount?"',
+  // sales scripts
+  'script.draftBadge': 'Draft: validate it before judging it',
+  'script.goal': 'Goal',
+  'script.rules': 'Rules',
+  'script.backToMenu': 'Back to the menu',
+  'script.backToPage': 'Back to the sales page',
+  'script.next': 'Next:',
+  'script.end': 'End of this conversation',
+  'script.routes': { one: '{count} route depending on the answer', other: '{count} routes depending on the answer' },
+  'script.route': 'Route {number}',
+  'script.legend.yes': 'Good sign',
+  'script.legend.no': 'Not a fit or a no',
+  'script.legend.action': 'Key moment',
+  'script.legend.follow': 'Follow up later'
 };
 
 const es = {
@@ -255,7 +269,21 @@ const es = {
   'init.example.product': '"¿Cuáles son los temas de producto de este trimestre?"',
   'init.example.operations': '"Acaba de empezar un incidente P1, ¿qué hago?"',
   'init.example.hr_people': '"¿Cuál es el plan de incorporación para una persona nueva en ingeniería?"',
-  'init.example.finance_legal': '"¿Puedo darle a un cliente un 25% de descuento?"'
+  'init.example.finance_legal': '"¿Puedo darle a un cliente un 25% de descuento?"',
+  // guiones de venta
+  'script.draftBadge': 'Borrador a validar: valida el guion antes de juzgarlo',
+  'script.goal': 'Objetivo',
+  'script.rules': 'Reglas',
+  'script.backToMenu': 'Volver al menú',
+  'script.backToPage': 'Volver a la página de ventas',
+  'script.next': 'Sigue:',
+  'script.end': 'Fin de esta conversación',
+  'script.routes': { one: '{count} ruta según la respuesta', other: '{count} rutas según la respuesta' },
+  'script.route': 'Ruta {number}',
+  'script.legend.yes': 'Buena señal',
+  'script.legend.no': 'No encaja o es un no',
+  'script.legend.action': 'Momento clave',
+  'script.legend.follow': 'Retomar más adelante'
 };
 
 export const DICTIONARIES = Object.freeze({ en, es });
