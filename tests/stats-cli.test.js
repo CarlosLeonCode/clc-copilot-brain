@@ -119,7 +119,7 @@ test('stats --json reports scorecard dimensions, sample label and matrix criteri
     assert.ok(s.dimensions.every((d) => d.count === 6 && d.sample === 'too-early'));
     assert.equal(s.dimensions.find((d) => d.id === 'discovery').average, 2.7);
     assert.equal(s.criteriaSource, 'matrix');
-    assert.equal(s.criteria.length, 8);
+    assert.equal(s.criteria.length, 9);
   });
 });
 

@@ -1,5 +1,6 @@
 ---
-criteria: metrics, economic_buyer, decision_criteria, decision_process, paper_process, identified_pain, champion, competition
+criteria: metrics, economic_buyer, decision_criteria, decision_process, paper_process, identified_pain, champion, competition, deal_size
+advance_requires: champion, economic_buyer, identified_pain, deal_size
 label_metrics: "Measurable impact"
 label_economic_buyer: "Budget owner"
 label_decision_criteria: "How they will choose"
@@ -8,6 +9,7 @@ label_paper_process: "Contract and approvals"
 label_identified_pain: "Problem that hurts"
 label_champion: "Internal supporter"
 label_competition: "Other options"
+label_deal_size: "Deal size known"
 ---
 # Sales Qualification Matrix & Disqualification Framework (`sales/qualification/`)
 
@@ -17,7 +19,7 @@ label_competition: "Other options"
 
 ## 1. The MEDDPICC Qualification Matrix
 
-Every enterprise opportunity in the pipeline must be evaluated against the eight core pillars:
+Every enterprise opportunity in the pipeline must be evaluated against the core pillars (the eight MEDDPICC pillars plus deal size):
 
 | Pillar | Focus | Probing Discovery Questions | Verification Evidence (Green Flags) | Risk Indicators (Red Flags) |
 | :--- | :--- | :--- | :--- | :--- |
@@ -29,6 +31,7 @@ Every enterprise opportunity in the pipeline must be evaluated against the eight
 | **C — Champion** | Internal advocate with political capital and personal interest | • *"What does solving this mean for your personal charter and team visibility?"*<br>• *"Will you introduce us to the Economic Buyer this week to review the findings?"*<br>• *"Are you comfortable partnering on an internal business case presentation?"* | • Champion provides internal organizational roadmap and backstage intelligence.<br>• Actively arranges access to the Economic Buyer.<br>• Sells internally when vendor is not in the room. | • Contact is friendly ("Coach") but lacks political capital or authority.<br>• Unwilling to introduce team to executive leadership.<br>• Passively forwards brochures without internal advocacy. |
 | **P — Paper Process** | Legal, security and procurement steps to get a contract signed | • *"Which legal, security and procurement reviews does a contract go through here?"*<br>• *"Who signs, and how long did the last vendor take to onboard?"*<br>• *"Can we share our standard paperwork early so reviews run in parallel?"* | • Named contact for legal and procurement.<br>• Review steps and dates written into the mutual plan.<br>• Standard paperwork shared and under review. | • Nobody can describe how contracts get approved.<br>• Security or legal review is first mentioned late.<br>• Signature date is promised without any review steps. |
 | **C — Competition** | Other vendors, internal builds and the do-nothing option | • *"Which other options are you looking at, including building it yourselves?"*<br>• *"What would make you stay with what you have today?"*<br>• *"What would the winning option need to prove to you?"* | • Alternatives are known and our advantages are tied to their criteria.<br>• The prospect explains why the status quo falls short. | • The prospect will not say who else is involved.<br>• An internal build or "do nothing" is quietly the favorite. |
+| **$ — Deal Size** | What the deal is worth and whether the prospect has confirmed it | • *"What budget range have you set aside for this?"*<br>• *"How many people or teams would use it in the first year?"*<br>• *"What would a successful rollout be worth to you?"* | • A budget range or contract value is stated by the prospect.<br>• The number of users or teams is known.<br>• The size matches what we can deliver and support. | • The prospect will not talk about money or scale.<br>• The deal is much smaller or larger than we can serve.<br>• The value is only our guess. |
 
 ---
 

@@ -13,8 +13,10 @@ export const COUNT_KEYS = Object.freeze({
 });
 // Used only when the matrix declares no `criteria` list.
 export const FALLBACK_CRITERIA = Object.freeze([
-  'metrics', 'economic_buyer', 'decision_criteria', 'decision_process', 'paper_process', 'identified_pain', 'champion', 'competition'
+  'metrics', 'economic_buyer', 'decision_criteria', 'decision_process', 'paper_process', 'identified_pain', 'champion', 'competition', 'deal_size'
 ]);
+// Used when the matrix declares no usable `advance_requires` list.
+export const DEFAULT_ADVANCE_REQUIRES = Object.freeze(['champion', 'economic_buyer', 'identified_pain', 'deal_size']);
 
 const SCORE = /^[1-5]$/;
 const COUNT = /^\d+$/;
@@ -30,7 +32,7 @@ export function parseCriteria(value) {
   return ids.length ? ids : null;
 }
 
-/** @returns {{ ids: string[], labels: Record<string,string>, source: 'matrix'|'fallback' }} */
+/** @returns {{ ids: string[], labels: Record<string,string>, source: 'matrix'|'fallback', advanceRequires: string[], advanceSource: 'matrix'|'default' }} */
 export function resolveCriteria(frontmatter) {
   const fields = frontmatter ?? {};
   const parsed = parseCriteria(fields.criteria);
@@ -40,7 +42,11 @@ export function resolveCriteria(frontmatter) {
     const label = String(fields[`label_${id}`] ?? '').trim();
     if (label) labels[id] = label;
   }
-  return { ids, labels, source: parsed ? 'matrix' : 'fallback' };
+  const declared = (parseCriteria(fields.advance_requires) ?? []).filter((id) => ids.includes(id));
+  let advanceRequires = declared;
+  if (!advanceRequires.length) advanceRequires = DEFAULT_ADVANCE_REQUIRES.filter((id) => ids.includes(id));
+  if (!advanceRequires.length) advanceRequires = [...ids];
+  return { ids, labels, source: parsed ? 'matrix' : 'fallback', advanceRequires, advanceSource: declared.length ? 'matrix' : 'default' };
 }
 
 export function criterionLabel(id, labels = {}) {

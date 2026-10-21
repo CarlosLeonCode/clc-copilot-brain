@@ -6,7 +6,7 @@ import { parseFrontmatter } from '../../src/core/plays.js';
 import { readCallLog } from '../../src/core/calls.js';
 import { readSalesRecords } from '../../src/core/sales-records.js';
 import {
-  DIMENSIONS, NOT_ENOUGH, FALLBACK_CRITERIA, COUNT_KEYS, parseCriteria, resolveCriteria, criterionLabel, readScorecard, scorecardProblems
+  DIMENSIONS, NOT_ENOUGH, FALLBACK_CRITERIA, DEFAULT_ADVANCE_REQUIRES, COUNT_KEYS, parseCriteria, resolveCriteria, criterionLabel, readScorecard, scorecardProblems
 } from '../../src/core/scorecard.js';
 
 const fm = (text) => parseFrontmatter(`---\n${text}\n---\n`);
@@ -68,8 +68,31 @@ test('readCallLog attaches the scorecard', () => {
   assert.equal(log.scorecard.scores.discovery, 4);
 });
 
-test('FALLBACK_CRITERIA is the pinned MEDDPICC list', () => {
-  assert.deepEqual(FALLBACK_CRITERIA, ['metrics', 'economic_buyer', 'decision_criteria', 'decision_process', 'paper_process', 'identified_pain', 'champion', 'competition']);
+test('FALLBACK_CRITERIA is the pinned MEDDPICC list plus deal_size last', () => {
+  assert.deepEqual(FALLBACK_CRITERIA, ['metrics', 'economic_buyer', 'decision_criteria', 'decision_process', 'paper_process', 'identified_pain', 'champion', 'competition', 'deal_size']);
+  assert.deepEqual(DEFAULT_ADVANCE_REQUIRES, ['champion', 'economic_buyer', 'identified_pain', 'deal_size']);
+});
+
+test('advance_requires: parsed from the matrix, unknown ids filtered', () => {
+  const r = resolveCriteria(fm('criteria: champion, economic_buyer\nadvance_requires: economic_buyer, bogus, champion'));
+  assert.deepEqual(r.advanceRequires, ['economic_buyer', 'champion']);
+  assert.equal(r.advanceSource, 'matrix');
+  assert.deepEqual(resolveCriteria(fm('criteria: champion\nadvance_requires: champion, bogus')).advanceRequires, ['champion']);
+});
+
+test('advance_requires: absent or empty uses the default filtered by the criteria', () => {
+  const none = resolveCriteria(fm('criteria: champion, economic_buyer, identified_pain'));
+  assert.deepEqual(none.advanceRequires, ['champion', 'economic_buyer', 'identified_pain']);
+  assert.equal(none.advanceSource, 'default');
+  assert.deepEqual(resolveCriteria(fm('criteria: champion, deal_size\nadvance_requires:')).advanceRequires, ['champion', 'deal_size']);
+  assert.deepEqual(resolveCriteria(null).advanceRequires, [...DEFAULT_ADVANCE_REQUIRES]);
+  assert.equal(resolveCriteria(null).advanceSource, 'default');
+});
+
+test('advance_requires: no overlap with the criteria falls back to all criteria ids', () => {
+  const r = resolveCriteria(fm('criteria: budget, need\nadvance_requires: bogus'));
+  assert.deepEqual(r.advanceRequires, ['budget', 'need']);
+  assert.deepEqual(resolveCriteria(fm('criteria: budget, need')).advanceRequires, ['budget', 'need']);
 });
 
 test('parseCriteria normalizes, dedupes and keeps order; empty is null', () => {
@@ -98,11 +121,13 @@ test('labels: declared label wins, else title-cased id, malformed label falls ba
   assert.equal(r.labels.other, undefined);
 });
 
-test('shipped matrix declares exactly the fallback criteria', () => {
+test('shipped matrix declares exactly the fallback criteria and the default advance requirements', () => {
   const r = resolveCriteria(parseFrontmatter(fs.readFileSync(MATRIX, 'utf8')));
   assert.equal(r.source, 'matrix');
   assert.deepEqual(r.ids, FALLBACK_CRITERIA);
   for (const id of r.ids) assert.ok(r.labels[id], `label for ${id}`);
+  assert.deepEqual(r.advanceRequires, [...DEFAULT_ADVANCE_REQUIRES]);
+  assert.equal(r.advanceSource, 'matrix');
 });
 
 test('readSalesRecords exposes criteria from the brain matrix, fallback when missing', () => withTmp((dir) => {
