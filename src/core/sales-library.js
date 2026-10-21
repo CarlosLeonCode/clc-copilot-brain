@@ -21,8 +21,8 @@ const readText = (file) => {
 };
 
 /** Build one library entry from a script source text. */
-export function scriptEntry(slug, text, htmlPath = '') {
-  return { slug, file: `${slug}.md`, parsed: parseScript(text, { fileStem: slug }), htmlPath };
+export function scriptEntry(slug, text, htmlPath = '', { draft = false } = {}) {
+  return { slug, file: `${slug}.md`, parsed: parseScript(text, draft ? {} : { fileStem: slug }), htmlPath };
 }
 
 export const hasErrors = (entry) => entry.parsed.diagnostics.some((d) => d.level === 'error');

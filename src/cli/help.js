@@ -46,7 +46,7 @@ ${pc.bold('UPGRADE OPTIONS:')}
 
 ${pc.bold('VIEW OPTIONS:')}
   --open              Open the page in your default browser after building it
-  --draft <file>      Preview a draft call guide or pipeline without saving it (repeatable);
+  --draft <file>      Preview a draft call guide, script or pipeline without saving it (repeatable);
                       the preview goes to a temp file and sales/sales-system.html is untouched
 
 ${pc.bold('STATS OPTIONS:')}

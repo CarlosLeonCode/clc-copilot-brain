@@ -11,6 +11,9 @@ import { DEFAULT_LANGUAGE, t } from './i18n.js';
 import { EMPTY_LOG_LINE, SECTION_HEADINGS, plainSystemSection, section, stageNames } from './sales-stages.js';
 import { loadSalesReport } from './sales-records.js';
 import { DASHBOARD_CSS, renderDashboard } from './sales-dashboard.js';
+import { linkInline } from './script-view.js';
+import { loadLibrary, writeScriptPages } from './sales-library.js';
+import { mergeDraftScripts, renderGlossarySection, renderScriptsSection } from './sales-sections.js';
 import { FLOWCHART_CSS, layoutFlowchart, parseFlowchart, renderFlowchartSvg } from './flowchart.js';
 
 export const SALES_VIEW_FILE = 'sales-system.html';
@@ -22,13 +25,8 @@ const FRONTMATTER_BLOCK = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
 
 export { escapeHtml, stageNames };
 
-/** Escape first, then apply **bold**; inline code and links become plain text. */
-function inline(text) {
-  return escapeHtml(text)
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-}
+/** Escape first, then **bold**; only allowlisted script and glossary links stay clickable, other links become plain text. */
+const inline = (text) => linkInline(text, { page: true });
 
 /**
  * Tiny safe markdown converter: headings (shifted to h3/h4), paragraphs, ordered and
@@ -91,8 +89,9 @@ function parseBranches(markdown) {
   const header = rows[0].map((c) => c.toLowerCase());
   const triggerCol = header.indexOf('trigger') === -1 ? 1 : header.indexOf('trigger');
   const talkCol = header.indexOf('talk track') === -1 ? 2 : header.indexOf('talk track');
+  const scriptCol = ['script link', 'guion'].map((h) => header.indexOf(h)).find((i) => i >= 0) ?? (header.length >= 4 ? 3 : -1);
   return rows.slice(1)
-    .map((cells) => ({ when: cells[triggerCol] || '', say: cells[talkCol] || '' }))
+    .map((cells) => ({ when: cells[triggerCol] || '', say: cells[talkCol] || '', script: scriptCol >= 0 ? cells[scriptCol] || '' : '' }))
     .filter((b) => b.say);
 }
 
@@ -177,6 +176,12 @@ function diagram(code, { wide = false, title, idPrefix, lang = DEFAULT_LANGUAGE 
   return { html: `<div class="diagram${wide ? ' diagram-wide' : ''}">${renderFlowchartSvg(graph, layout, { title, idPrefix, minWidth })}</div>`, ok: true };
 }
 
+/** The Guion cell of a play row, shown only when it holds an allowed script link. */
+function scriptLink(cell) {
+  const html = cell ? inline(cell) : '';
+  return html.includes('<a ') ? `<span class="script-link">${html}</span>` : '';
+}
+
 const draftBadge = (draft, lang) => (draft ? `<span class="badge badge-draft">${escapeHtml(t(lang, 'view.draftBadge'))}</span>` : '');
 
 function renderPlay(play, lang) {
@@ -185,7 +190,7 @@ function renderPlay(play, lang) {
   const goal = play.goal ? `<p class="goal">${label('play.goal')} ${inline(play.goal)}</p>` : '';
   const version = play.version ? `<span class="badge">${escapeHtml(t(lang, 'play.version', { version: play.version }))}</span>` : '';
   const say = play.branches.length > 0
-    ? `<details><summary>${escapeHtml(t(lang, 'play.whatToSay'))}</summary><ul class="talk">${play.branches.map((b) => `<li>${b.when ? `<span class="when">${inline(b.when)}</span>` : ''}<span class="say">${inline(b.say)}</span></li>`).join('')}</ul></details>`
+    ? `<details><summary>${escapeHtml(t(lang, 'play.whatToSay'))}</summary><ul class="talk">${play.branches.map((b) => `<li>${b.when ? `<span class="when">${inline(b.when)}</span>` : ''}<span class="say">${inline(b.say)}</span>${scriptLink(b.script)}</li>`).join('')}</ul></details>`
     : '';
   const learned = play.learnings.length > 0
     ? `<details><summary>${escapeHtml(t(lang, 'play.learned'))}</summary><ul>${play.learnings.map((l) => `<li>${inline(l)}</li>`).join('')}</ul></details>`
@@ -229,6 +234,11 @@ h2{margin:40px 0 12px;font-size:1.4rem}
 details{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
 summary{cursor:pointer;font-weight:600;color:var(--accent)}
 ul.talk{list-style:none;padding:0}
+table{border-collapse:collapse;width:100%;margin-top:8px;font-size:.95rem}
+th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--border);padding:6px 10px}
+th{color:var(--muted);font-weight:600}
+.script-link{display:block;font-size:.9rem}
+.needs-fix{background:var(--draft-bg);color:var(--draft-text)}
 ul.talk li{margin:12px 0;padding-left:12px;border-left:3px solid var(--soft)}
 .when{display:block;font-size:.9rem;color:var(--muted)}
 .say{display:block}
@@ -238,9 +248,10 @@ ${FLOWCHART_CSS}`;
 
 const FLOWCHART_START = /^\s*(?:flowchart|graph)\b/m;
 
-/** 'play' when the draft has play frontmatter, 'pipeline' when it holds a flowchart, else null. */
+/** 'script' when the draft has script frontmatter, 'play' when it has play frontmatter, 'pipeline' when it holds a flowchart, else null. */
 export function detectDraftKind(content) {
   const fm = parseFrontmatter(content);
+  if (fm && typeof fm.script === 'string' && fm.script.trim()) return 'script';
   if (fm && typeof fm.play === 'string' && fm.play.trim()) return 'play';
   const text = String(content ?? '');
   if (MERMAID_FENCE.test(text) || FLOWCHART_START.test(text)) return 'pipeline';
@@ -257,7 +268,7 @@ export function loadDraft(file) {
   }
   const kind = detectDraftKind(content);
   if (!kind) {
-    throw new BrainError('DRAFT_INVALID', `The draft ${file} is neither a call guide (no "play:" line at the top) nor a pipeline (no flowchart diagram).`);
+    throw new BrainError('DRAFT_INVALID', `The draft ${file} is neither a call guide (no "play:" line at the top), a script (no "script:" line at the top) nor a pipeline (no flowchart diagram).`);
   }
   return { kind, path: file, content };
 }
@@ -294,7 +305,11 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
   const pipelineMd = readIfExists(path.join(salesDir, 'stages', 'pipeline-stages.md'));
   let pipeline = pipelineMd ? MERMAID_FENCE.exec(pipelineMd)?.[1]?.trim() || '' : '';
   let pipelineDraft = false;
+  const scriptDrafts = drafts.filter((d) => d.kind === 'script');
+  const library = loadLibrary(rootDir);
+  const merged = mergeDraftScripts(library.scripts, scriptDrafts);
   const draftIds = drafts.map((d) => {
+    if (d.kind === 'script') return merged.status[scriptDrafts.indexOf(d)].id;
     if (d.kind !== 'play') return 'pipeline';
     const play = parsePlay(d.path || 'draft.md', d.content, names, { draft: true, lang });
     byId.set(play.id, play);
@@ -322,9 +337,11 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
     ok: Boolean(pipelineRendered?.ok), error: pipelineRendered ? pipelineRendered.error : 'No diagram found.'
   });
   const draftStatus = drafts.map((d, i) => {
+    if (d.kind === 'script') return merged.status[scriptDrafts.indexOf(d)];
     const status = diagrams.find((x) => x.kind === (d.kind === 'play' ? 'play' : 'pipeline') && x.id === draftIds[i]);
     return { path: d.path, kind: d.kind, id: draftIds[i], ok: status.ok, error: status.error };
   });
+  const glossary = library.glossary && library.glossary.groups.length > 0 ? library.glossary : null;
   const preview = drafts.length > 0;
   const company = readCompanyName(kernelPath, lang);
   const date = now.toISOString().slice(0, 10);
@@ -345,7 +362,7 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
 <h1>${heading}</h1>
 <p>${text('view.updated', { date })}</p>
 </header>
-${preview ? `<p class="note preview-note">${text('view.previewNote')}</p>\n` : ''}<nav aria-label="${text('view.navLabel')}">${plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`).join('')}</nav>
+${preview ? `<p class="note preview-note">${text('view.previewNote')}</p>\n` : ''}<nav aria-label="${text('view.navLabel')}">${[...plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`), ...(glossary ? [`<a href="#scripts">${text('view.scripts.title')}</a>`, `<a href="#glossary">${text('view.glossary.title')}</a>`] : merged.entries.length > 0 ? [`<a href="#scripts">${text('view.scripts.title')}</a>`] : [])].join('')}</nav>
 <h2>${text('view.system.title')}</h2>
 <section class="card">
 ${markdownToHtml(plainSystemSection(systemMd))}
@@ -357,12 +374,14 @@ ${pipelineDraft ? `<div class="card-head">${draftBadge(true, lang)}</div>\n` : '
 </section>
 <h2>${text('view.guides.title')}</h2>
 ${plays.map((play) => renderPlay(play, lang)).join('\n')}
+${renderScriptsSection(merged.entries, lang)}
+${renderGlossarySection(glossary, lang)}
 <footer>${text('view.footer')}</footer>
 </main>
 </body>
 </html>
 `;
-  return { html, plays, diagrams, drafts: draftStatus, outputPath: path.join(salesDir, SALES_VIEW_FILE) };
+  return { html, plays, diagrams, drafts: draftStatus, library: merged.entries, lang, company, outputPath: path.join(salesDir, SALES_VIEW_FILE) };
 }
 
 /** Build a preview with drafts and write it to a new OS temp folder (never inside the brain). */
@@ -371,12 +390,16 @@ export function writeSalesPreview(rootDir, { drafts = [], now, tmpRoot = os.tmpd
   const dir = fs.mkdtempSync(path.join(tmpRoot, 'clc-brain-preview-'));
   const outputPath = path.join(dir, SALES_PREVIEW_FILE);
   fs.writeFileSync(outputPath, view.html);
-  return { ...view, outputPath };
+  const draftSlugs = view.drafts.filter((d) => d.kind === 'script').map((d) => d.id);
+  const pages = writeScriptPages({ scripts: view.library }, { rootDir, outDir: dir, lang: view.lang, company: view.company, draftSlugs });
+  const draftPages = Object.fromEntries(draftSlugs.filter((slug) => pages.written.includes(slug)).map((slug) => [slug, path.join(dir, 'scripts', `${slug}.html`)]));
+  return { ...view, outputPath, pages, draftPages };
 }
 
 /** Build and write the page to sales/sales-system.html. */
 export function writeSalesView(rootDir, options) {
   const view = buildSalesView(rootDir, options);
+  const pages = writeScriptPages({ scripts: view.library }, { rootDir, lang: view.lang, company: view.company });
   fs.writeFileSync(view.outputPath, view.html);
-  return view;
+  return { ...view, pages };
 }
