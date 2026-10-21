@@ -23,7 +23,7 @@ flowchart LR
 - **Duración objetivo**: 10 a 14 días naturales
 - **Objetivo**: comprobar que el cliente potencial encaja con nuestro perfil de cliente ideal, entender el problema y lo que le cuesta, y averiguar quién decide.
 - **Actividades clave**:
-  - Hacer la llamada de descubrimiento con `sales/scripts/discovery-call-framework.md`.
+  - Hacer la llamada de descubrimiento con la guía de `sales/plays/discovery-call.md`.
   - Registrar la llamada en `sales/calls/YYYY-MM/` con `skill_call_analyzer.md`.
   - Revisar el negocio con `sales/qualification/qualification-matrix.md`.
 - **Criterios de salida de la Puerta 1 (todos obligatorios para pasar a la Etapa 2)**:

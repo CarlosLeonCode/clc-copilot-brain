@@ -33,15 +33,15 @@ flowchart TD
 
 | Branch | Trigger | Talk track | Script link |
 | :--- | :--- | :--- | :--- |
-| B1 | Demo starts | "Last time you told us about [pain]. Let me show exactly how that changes. Did I get your priorities right?" | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B2 | Pain confirmed | Show only the workflow tied to their pain; skip unrelated features. | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B3 | Prospect asks a technical question | Answer from verified material only; never invent features. | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B4 | No blockers | "Who else should see this before a decision?" | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B5 | Blocker raised | "What would you need to see to be comfortable? Who owns that and by when?" | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B6 | Budget owner engaged | Propose a shared plan with dates, working back from the day they want to decide. | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B7 | Blocker unresolved | Pause new work, log the reason, escalate internally. | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B8 | Budget owner not on the call | "Could you bring the budget owner to a 20-minute session?" | [Discovery framework](../scripts/discovery-call-framework.md) |
-| B9 | Plan agreed | Note in the call log that the deal moved forward. | [Discovery framework](../scripts/discovery-call-framework.md) |
+| B1 | Demo starts | "Last time you told us about [pain]. Let me show exactly how that changes. Did I get your priorities right?" | — |
+| B2 | Pain confirmed | Show only the workflow tied to their pain; skip unrelated features. | — |
+| B3 | Prospect asks a technical question | Answer from verified material only; never invent features. | — |
+| B4 | No blockers | "Who else should see this before a decision?" | — |
+| B5 | Blocker raised | "What would you need to see to be comfortable? Who owns that and by when?" | — |
+| B6 | Budget owner engaged | Propose a shared plan with dates, working back from the day they want to decide. | — |
+| B7 | Blocker unresolved | Pause new work, log the reason, escalate internally. | — |
+| B8 | Budget owner not on the call | "Could you bring the budget owner to a 20-minute session?" | — |
+| B9 | Plan agreed | Note in the call log that the deal moved forward. | — |
 
 ## Learnings Log
 

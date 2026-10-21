@@ -15,6 +15,8 @@ How to use it day to day:
 - **Before each call**, ask your assistant for the right guide ("I have a cold call with Acme in an hour, help me prepare").
 - **After each call**, tell your assistant how it went, or paste your notes ("Log this call").
 - **Once a month**, ask your assistant how it's going ("How did this month go?"). It suggests changes, and you decide which ones to keep.
+- **Need the words to say?** Ask your assistant for a script ("Make me a script for X"). You see a preview and decide before anything is saved.
+- **Not sure what a term means?** Ask ("What does X mean?"). Your assistant keeps a glossary of your terms and adds new ones when you say yes.
 
 You never need to edit this page by hand: ask your assistant to change a step or improve a guide.
 
@@ -44,3 +46,17 @@ Gate criteria live in [stages/pipeline-stages.md](./stages/pipeline-stages.md). 
 - A play can span several stages (`stages: 2, 3, 4`).
 - Log which play and branch was run in each call log (`play`, `branch`, `gate_advanced`) so the monthly retro can show what works. Infer them from the notes; do not ask the person for them.
 - Change a play only through the `/flow` or `/retro` rules, after the person says yes.
+
+### Scripts, glossary and industry packs
+
+> The brain ships no script, glossary or industry content. Build and change all of it through `.agents/skills/script/SKILL.md`: ask one question at a time, preview with `clc-brain view --draft`, and save only after the person says yes.
+
+- Scripts live in `sales/scripts/<slug>.md` (one file per script set, English file names). `clc-brain view` writes the page `<slug>.html` beside each one. Add a row below for each script, and put `../scripts/<slug>.html#<anchor>` in the Guion cell of the play rows it covers.
+- The glossary is `sales/glossary.md`, created with the first term. Add a line here that points to it.
+- An industry pack is an ICP in `sales/icps/<industry>.md`, a script, and play rows named `<Branch> · <Industry>`. Add one row below per pack.
+
+| Script | Industry | Conversations |
+| :--- | :--- | :--- |
+
+| Industry | Buyer profile | Script |
+| :--- | :--- | :--- |

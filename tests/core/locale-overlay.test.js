@@ -98,3 +98,20 @@ test('a fresh Spanish brain is healthy and clean-demo keeps its starter guides',
     assert.ok(removed.length > 0, 'demo files removed');
     for (const rel of STARTER) assert.equal(read(root, 'sales', rel), read(ES_SALES, rel), `${rel} kept`);
   }));
+
+test('the starter scripts do not ship: fresh en and es brains hold only the scripts README, no glossary, and 0 doctor warnings', () =>
+  withTmp((dir) => {
+    for (const language of ['en', 'es']) {
+      const root = path.join(dir, `brain-${language}`);
+      initBrain(root, { areas: ['sales'], language, demo: true });
+      assert.deepEqual(fs.readdirSync(path.join(root, 'sales', 'scripts')), ['README.md'], language);
+      assert.equal(fs.existsSync(path.join(root, 'sales', 'glossary.md')), false, `${language}: no glossary ships`);
+      const readme = read(root, 'sales', 'scripts', 'README.md');
+      assert.equal(readme, read(language === 'es' ? ES_SALES : path.join(TEMPLATES_AREAS_DIR, 'sales'), 'scripts', 'README.md'), language);
+      const report = runDoctor(root);
+      assert.equal(report.errors, 0, JSON.stringify(report.issues));
+      assert.equal(report.warnings, 0, `${language}: ${JSON.stringify(report.issues)}`);
+      const { html } = buildSalesView(root);
+      assert.doesNotMatch(html, /Sample Co|cold-outreach-email|discovery-call-framework/, language);
+    }
+  }));

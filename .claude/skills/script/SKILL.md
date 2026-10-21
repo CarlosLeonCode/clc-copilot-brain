@@ -103,7 +103,7 @@ Ask one yes/no question: "Save it like this?" / "¿Lo guardo así?". On changes,
 ## 5. Save and link (only after the yes)
 
 1. **Save** the script as `sales/scripts/<slug>.md` with `status: active` and `script:` equal to the slug. Use a stable English slug (lowercase letters, digits, hyphens), even in a Spanish brain, for example `sample-co`. One file holds one script set (several conversations), not one file per conversation.
-2. **Link it from the system map** `sales/system.md`: add a plain bullet to the part people read, and a row in the AI table. Add the section `Scripts, glossary and industry packs` first if it is missing (older brains), with an empty table and a short instruction.
+2. **Link it from the system map** `sales/system.md`: add a plain bullet to the part people read, and a row in the AI table. Add the section `Scripts, glossary and industry packs` first if it is missing (older brains; use the brain's language, for example "Guiones, glosario y paquetes por industria"), with empty tables and a short instruction.
 3. **Fill the play Guion cells**: in each play's table, put `../scripts/<slug>.html#<anchor>` in the Guion cell of the branch (the anchor is `<play>-<branch lowercase>`, for example `cold-call-b1`). Add the link only for steps the script covers. Never overwrite a cell the person wrote by hand without asking.
 4. **Glossary upkeep**: if the script used method terms the person may not know, list them and ask "Add these to your glossary?". After a yes, add them (section 6).
 5. **Refresh the page** by running `clc-brain view` in this folder, then tell the person in plain words that their sales page is up to date and offer to open it. Open it with `clc-brain view --open` only after a yes.

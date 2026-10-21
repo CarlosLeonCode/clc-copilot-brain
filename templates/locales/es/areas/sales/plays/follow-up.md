@@ -33,14 +33,14 @@ flowchart TD
 
 | Situación | Cuándo pasa | Qué decir | Guion |
 | :--- | :--- | :--- | :--- |
-| B1 | Acaba de terminar la reunión | Resume las decisiones, los responsables y el siguiente paso acordado en cinco líneas o menos. | [Marcos de contacto](../scripts/cold-outreach-email.md) |
-| B2 | Esperando respuesta | Espera 3 días hábiles antes del siguiente contacto. | [Marcos de contacto](../scripts/cold-outreach-email.md) |
-| B3 | El cliente respondió | Confirma por escrito el siguiente paso, el responsable y la fecha. | [Marcos de contacto](../scripts/cold-outreach-email.md) |
-| B4 | Sin respuesta | Aporta algo nuevo de valor (un caso de cliente, la respuesta a una duda pendiente), no un simple recordatorio. | [Marcos de contacto](../scripts/cold-outreach-email.md) |
-| B5 | Paso confirmado | Agenda la reunión, actualiza el registro de la llamada y anota que el negocio avanzó. | [Marcos de contacto](../scripts/cold-outreach-email.md) |
-| B6 | Responde sin comprometerse | "¿Qué tendría que pasar para que esto avance?" | [Marcos de contacto](../scripts/cold-outreach-email.md) |
-| B7 | Sigue en silencio | "¿Prefieres que lo dejemos por ahora, o es que no es el momento?" | [Marcos de contacto](../scripts/cold-outreach-email.md) |
-| B8 | No responde al mensaje de cierre | Ciérralo por ahora o mantén el contacto de vez en cuando, y registra el motivo. | [Marcos de contacto](../scripts/cold-outreach-email.md) |
+| B1 | Acaba de terminar la reunión | Resume las decisiones, los responsables y el siguiente paso acordado en cinco líneas o menos. | — |
+| B2 | Esperando respuesta | Espera 3 días hábiles antes del siguiente contacto. | — |
+| B3 | El cliente respondió | Confirma por escrito el siguiente paso, el responsable y la fecha. | — |
+| B4 | Sin respuesta | Aporta algo nuevo de valor (un caso de cliente, la respuesta a una duda pendiente), no un simple recordatorio. | — |
+| B5 | Paso confirmado | Agenda la reunión, actualiza el registro de la llamada y anota que el negocio avanzó. | — |
+| B6 | Responde sin comprometerse | "¿Qué tendría que pasar para que esto avance?" | — |
+| B7 | Sigue en silencio | "¿Prefieres que lo dejemos por ahora, o es que no es el momento?" | — |
+| B8 | No responde al mensaje de cierre | Ciérralo por ahora o mantén el contacto de vez en cuando, y registra el motivo. | — |
 
 ## Registro de aprendizajes
 

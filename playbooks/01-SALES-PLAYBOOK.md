@@ -19,7 +19,7 @@ sales/
 ├── icps/           # Ideal Customer Profiles (roles, pain points, triggers, disqualifiers)
 ├── battlecards/    # Competitor intelligence (dual format: JSON schema + Markdown)
 ├── objections/     # Root-cause matrices, live pivot scripts, and counter-arguments
-├── scripts/        # Cold outreach cadences, discovery interview frameworks, closing guides
+├── scripts/        # Your script sets (one file each), built with the script skill; none ship
 └── case-studies/   # Metric-driven proof points, customer stories, and reference clips
 ```
 

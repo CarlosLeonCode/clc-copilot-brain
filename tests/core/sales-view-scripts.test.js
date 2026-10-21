@@ -68,8 +68,8 @@ test('a Guion link in a play row works from the page; unsafe links and ./glossar
   const file = path.join(dir, 'sales/plays/cold-call.md');
   let md = fs.readFileSync(file, 'utf8');
   md = md
-    .replace(/\[Cold outreach\]\(\.\.\/scripts\/cold-outreach-email\.md\)/, '[Cold script](../scripts/sample-co.html#cold-call-b1)')
-    .replace(/\[Cold outreach\]\(\.\.\/scripts\/cold-outreach-email\.md\)/, '[Bad](javascript:alert(1)) see [words](./glossary.md)');
+    .replace('| — |', '| [Cold script](../scripts/sample-co.html#cold-call-b1) |')
+    .replace('| — |', '| [Bad](javascript:alert(1)) see [words](./glossary.md) |');
   fs.writeFileSync(file, md);
   const { html } = buildSalesView(dir);
   assert.match(html, /<a href="\.\/scripts\/sample-co\.html#cold-call-b1">Cold script<\/a>/);

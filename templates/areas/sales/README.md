@@ -16,7 +16,7 @@ Welcome to the **Sales** area of the Organizational Second Brain. This directory
 - [battlecards/](./battlecards/): Field-tested competitor intelligence with strengths, weaknesses, and silver bullets (JSON + Markdown).
 - [objections/](./objections/): Root-cause objection matrices and conversational pivot scripts (JSON + Markdown).
 - [icps/](./icps/): Ideal Customer Profiles detailing demographics, pain points, triggers, and decision criteria.
-- [scripts/](./scripts/): Structured outreach, discovery call questions, and closing frameworks.
+- [scripts/](./scripts/): Your sales script sets (the words to say), one file per set, built with your assistant (`.agents/skills/script/SKILL.md`). The brain ships none.
 - [case-studies/](./case-studies/): Metric-backed proof points and customer stories.
 
 ---

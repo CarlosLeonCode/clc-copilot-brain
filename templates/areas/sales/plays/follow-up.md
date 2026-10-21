@@ -33,14 +33,14 @@ flowchart TD
 
 | Branch | Trigger | Talk track | Script link |
 | :--- | :--- | :--- | :--- |
-| B1 | Meeting just ended | Recap decisions, owners, and the agreed next step in five lines or fewer. | [Outreach frameworks](../scripts/cold-outreach-email.md) |
-| B2 | Waiting for reply | Wait 3 business days before the next touch. | [Outreach frameworks](../scripts/cold-outreach-email.md) |
-| B3 | Prospect replied | Confirm the next step, owner, and date in writing. | [Outreach frameworks](../scripts/cold-outreach-email.md) |
-| B4 | No reply | Add one new piece of value (case study, answer to an open question), not a nudge. | [Outreach frameworks](../scripts/cold-outreach-email.md) |
-| B5 | Step confirmed | Book the meeting, update the call log, and note that the deal moved forward. | [Outreach frameworks](../scripts/cold-outreach-email.md) |
-| B6 | Reply without commitment | "What would need to be true for this to move forward?" | [Outreach frameworks](../scripts/cold-outreach-email.md) |
-| B7 | Still silent | "Should I close this out for now, or is the timing just off?" | [Outreach frameworks](../scripts/cold-outreach-email.md) |
-| B8 | No response to the close-the-loop note | Close it for now or keep in touch from time to time, and log the reason. | [Outreach frameworks](../scripts/cold-outreach-email.md) |
+| B1 | Meeting just ended | Recap decisions, owners, and the agreed next step in five lines or fewer. | — |
+| B2 | Waiting for reply | Wait 3 business days before the next touch. | — |
+| B3 | Prospect replied | Confirm the next step, owner, and date in writing. | — |
+| B4 | No reply | Add one new piece of value (case study, answer to an open question), not a nudge. | — |
+| B5 | Step confirmed | Book the meeting, update the call log, and note that the deal moved forward. | — |
+| B6 | Reply without commitment | "What would need to be true for this to move forward?" | — |
+| B7 | Still silent | "Should I close this out for now, or is the timing just off?" | — |
+| B8 | No response to the close-the-loop note | Close it for now or keep in touch from time to time, and log the reason. | — |
 
 ## Learnings Log
 

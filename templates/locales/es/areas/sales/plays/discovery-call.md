@@ -33,14 +33,14 @@ flowchart TD
 
 | Situación | Cuándo pasa | Qué decir | Guion |
 | :--- | :--- | :--- | :--- |
-| B1 | Empieza la llamada | "La idea es entender cómo trabajan hoy y decidir juntos si tiene sentido un siguiente paso. ¿Te parece bien?" | [Marco de descubrimiento](../scripts/discovery-call-framework.md) |
-| B2 | El cliente describe un problema | Repítelo en una frase con tus palabras y pregunta cuánto le cuesta. | [Marco de descubrimiento](../scripts/discovery-call-framework.md) |
-| B3 | Las respuestas siguen siendo vagas | "Si esto sigue igual durante un año, ¿cuánto les cuesta en horas o en ingresos?" | [Marco de descubrimiento](../scripts/discovery-call-framework.md) |
-| B4 | El problema está claro | "¿Quién más tendría que estar de acuerdo para resolverlo y cómo se toman este tipo de decisiones?" | [Marco de descubrimiento](../scripts/discovery-call-framework.md) |
-| B5 | Aliado y responsable del presupuesto identificados | Resume el problema, el impacto y los responsables; propone una reunión de validación con agenda. | [Marco de descubrimiento](../scripts/discovery-call-framework.md) |
-| B6 | No se sabe quién tiene el presupuesto | "¿Quién maneja el presupuesto para esto? ¿Podrías presentarnos?" | [Marco de descubrimiento](../scripts/discovery-call-framework.md) |
-| B7 | No hay problema medible ni acceso | Cierra la conversación con cortesía, registra el motivo y mantén el contacto de vez en cuando. | [Marco de descubrimiento](../scripts/discovery-call-framework.md) |
-| B8 | Reunión agendada | Anota en el registro de la llamada que el negocio avanzó. | [Marco de descubrimiento](../scripts/discovery-call-framework.md) |
+| B1 | Empieza la llamada | "La idea es entender cómo trabajan hoy y decidir juntos si tiene sentido un siguiente paso. ¿Te parece bien?" | — |
+| B2 | El cliente describe un problema | Repítelo en una frase con tus palabras y pregunta cuánto le cuesta. | — |
+| B3 | Las respuestas siguen siendo vagas | "Si esto sigue igual durante un año, ¿cuánto les cuesta en horas o en ingresos?" | — |
+| B4 | El problema está claro | "¿Quién más tendría que estar de acuerdo para resolverlo y cómo se toman este tipo de decisiones?" | — |
+| B5 | Aliado y responsable del presupuesto identificados | Resume el problema, el impacto y los responsables; propone una reunión de validación con agenda. | — |
+| B6 | No se sabe quién tiene el presupuesto | "¿Quién maneja el presupuesto para esto? ¿Podrías presentarnos?" | — |
+| B7 | No hay problema medible ni acceso | Cierra la conversación con cortesía, registra el motivo y mantén el contacto de vez en cuando. | — |
+| B8 | Reunión agendada | Anota en el registro de la llamada que el negocio avanzó. | — |
 
 ## Registro de aprendizajes
 

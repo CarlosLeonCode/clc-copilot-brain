@@ -136,15 +136,21 @@ test('play frontmatter has keys play,stages,goal,gate_unlocked,version,status by
   assert.equal(cold.stages.split(',').length, 1);
 });
 
-test('plays have mermaid block, learnings section, existing scripts/ links (S4.1)', () => {
+test('plays have mermaid block, learnings section; Guion links are optional but must exist when present (S4.1)', () => {
   for (const file of listPlays()) {
     const text = fs.readFileSync(path.join(PLAYS_DIR, file), 'utf8');
     assert.match(text, /```mermaid\n[\s\S]*?```/, `${file} needs a mermaid tree`);
     assert.match(text, /^## Learnings Log/m, `${file} needs a Learnings Log`);
+    // The brain ships no script content: the cell is empty ("-", an em dash or nothing) until a script is saved.
     const links = [...text.matchAll(/\]\((\.\.\/scripts\/[^)#]+)\)/g)].map((m) => m[1]);
-    assert.ok(links.length > 0, `${file} must link scripts/`);
     for (const link of links) {
       assert.ok(fs.existsSync(path.join(PLAYS_DIR, link)), `${file} links missing ${link}`);
+    }
+    const rows = text.split('\n').filter((l) => /^\| B\d+ \|/.test(l));
+    assert.ok(rows.length > 0, `${file} needs branch rows`);
+    for (const row of rows) {
+      const last = row.split('|').slice(-2, -1)[0].trim();
+      assert.match(last, /^(—|-|)$|^\[[^\]]+\]\(\.\.\/scripts\/[^)]+\)$/, `${file}: bad Guion cell in ${row.slice(0, 40)}`);
     }
   }
 });

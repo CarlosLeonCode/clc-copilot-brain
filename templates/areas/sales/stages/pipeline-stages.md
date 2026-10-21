@@ -23,7 +23,7 @@ flowchart LR
 - **Target Cycle Duration**: 10 – 14 calendar days
 - **Objective**: Check that the prospect fits our ideal customer profile, understand the problem and what it costs them, and find out who decides.
 - **Key Activities**:
-  - Run the discovery call using `sales/scripts/discovery-call-framework.md`.
+  - Run the discovery call using the guide in `sales/plays/discovery-call.md`.
   - Log the call in `sales/calls/YYYY-MM/` using `skill_call_analyzer.md`.
   - Check the deal against `sales/qualification/qualification-matrix.md`.
 - **Gate 1 Exit Criteria (all required to move to Stage 2)**:
