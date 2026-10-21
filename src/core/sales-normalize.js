@@ -29,6 +29,11 @@ export function toSlug(value) {
   return text(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
+/** Lowercase text with accents removed ("Próximo Paso" -> "proximo paso"), for case and accent insensitive matching. */
+export function foldText(value) {
+  return text(value).normalize('NFD').replace(/\p{M}+/gu, '').toLowerCase();
+}
+
 /** Lowercase company name without punctuation or trailing legal suffixes ("Acme, Inc." -> "acme"). */
 export function normalizeCompany(name) {
   const words = text(name)
