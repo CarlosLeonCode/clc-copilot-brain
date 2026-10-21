@@ -4,10 +4,12 @@
 //   add-if-missing  = new base skills, plus sales/system.md and sales/plays/*.md when `sales` is active
 // Slash-command shortcuts and old .claude/commands files are handled after apply by generateHarnessAdapters.
 //                     (in the brain language when templates/locales has that file, else in English)
+//   frontmatter-keys = sales/qualification/qualification-matrix.md: adds the template's `criteria` and label lines only when `criteria` is missing
 //   managed-block   = AGENTS.md: only the text between the copilot-brain managed markers is refreshed
 import fs from 'node:fs';
 import path from 'node:path';
 import { localeAreaDir, readKernel } from './areas.js';
+import { parseFrontmatter } from './plays.js';
 import { getBrainLanguage } from './brain-language.js';
 import { BrainError } from './errors.js';
 import { ensureDir, isInside, listMarkdownFiles } from './fs-utils.js';
@@ -86,9 +88,38 @@ export function planUpgrade(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, te
       else actions.push({ path: file.rel, policy, kind: 'replace', current, next });
     }
   }
+  const matrix = planMatrixCriteria(rootDir, templatesAreasDir, activeAreas);
+  if (matrix) actions.push(matrix);
   const agents = planAgentsBlock(rootDir, templatesBaseDir);
   if (agents) actions.push(agents);
   return { actions };
+}
+
+const MATRIX_REL = 'sales/qualification/qualification-matrix.md';
+const FRONTMATTER_BLOCK = /^(\uFEFF?)---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
+
+/**
+ * The user's matrix is theirs: only the missing `criteria` list (and labels they do not have) is added to its
+ * frontmatter, so existing brains keep working with the qualification scorecard. Never overwrites a declared list.
+ */
+function planMatrixCriteria(rootDir, templatesAreasDir, activeAreas) {
+  const src = path.join(templatesAreasDir, ...MATRIX_REL.split('/'));
+  const dest = path.join(rootDir, ...MATRIX_REL.split('/'));
+  const stat = lstatOrNull(dest);
+  if (!activeAreas.includes('sales') || !stat?.isFile() || !fs.existsSync(src)) return null;
+  const tpl = FRONTMATTER_BLOCK.exec(fs.readFileSync(src, 'utf8'));
+  if (!tpl) return null;
+  const current = fs.readFileSync(dest, 'utf8');
+  const fm = parseFrontmatter(current);
+  if (fm && Object.hasOwn(fm, 'criteria')) return null;
+  const lines = tpl[2].split(/\r?\n/).filter((l) => !fm || !Object.hasOwn(fm, l.slice(0, Math.max(l.indexOf(':'), 0)).trim()));
+  const base = { path: MATRIX_REL, policy: 'frontmatter-keys' };
+  const own = FRONTMATTER_BLOCK.exec(current);
+  const next = own
+    ? `${own[1]}---\n${own[2]}\n${lines.join('\n')}\n---\n${current.slice(own[0].length)}`
+    : `${tpl[0].replace(/\r?\n?$/, '\n')}${current}`;
+  if (lstatOrNull(`${dest}.bak`)) return { ...base, kind: 'skip', reason: 'backup-exists', current, next };
+  return { ...base, kind: 'replace', current, next };
 }
 
 /** Marker positions as { start, end } (end is exclusive), null when absent, or 'invalid' when unpaired or reversed. */

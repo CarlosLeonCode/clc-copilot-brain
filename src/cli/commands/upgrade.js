@@ -21,7 +21,8 @@ function renderPlan(actions) {
   const skips = group('skip');
   if (adds.length) console.log('\n' + pc.bold('Will add (new files):') + '\n' + adds.map((a) => `  ${pc.green('+')} ${a.path}`).join('\n'));
   for (const a of replaces) {
-    const verb = a.policy === 'managed-block' ? 'Will refresh the assistant rules block in' : 'Will replace';
+    const verbs = { 'managed-block': 'Will refresh the assistant rules block in', 'frontmatter-keys': 'Will add the qualification list to' };
+    const verb = verbs[a.policy] ?? 'Will replace';
     console.log(`\n${pc.bold(verb)} ${a.path} ${pc.dim('(backup: ' + a.path + '.bak)')}\n${renderDiff(a)}`);
   }
   if (skips.length) console.log('\n' + pc.bold('Will skip:') + '\n' + skips.map((a) => `  ${pc.yellow('~')} ${a.path} ${pc.dim(`(${a.reason})`)}`).join('\n'));
