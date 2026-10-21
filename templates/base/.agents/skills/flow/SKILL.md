@@ -1,6 +1,6 @@
 ---
 name: flow
-description: "See, improve or import the sales process and call guides from a photo, file or description, preview the result with clc-brain view --draft and save only after a yes. Use when someone shares a sales flow or wants to change a call script."
+description: "See, improve or import the sales process and call guides from a photo, file or description, preview the result with clc-brain view --draft and save only after a yes. Use when someone shares a sales flow or wants to change how a call guide works. Scripts (the words to say) belong to /script."
 argument-hint: "[what to see or change]"
 metadata:
   opencode/slash: "true"
@@ -17,6 +17,8 @@ If no arguments were given, ask the user what they need (see step 2 below).
 ---
 
 ## Instructions for the AI Assistant:
+
+If the person asks for a script (the exact words to say, "hazme un guion para..."), or to improve one, follow `.agents/skills/script/SKILL.md` instead. This skill is for the sales process and the structure of call guides.
 
 Keep all routing internal: never show file paths, play IDs, branch codes, Mermaid code, or words like gate, play, or HITL to the person unless they use them. Talk about "your sales process" and "the cold call guide".
 

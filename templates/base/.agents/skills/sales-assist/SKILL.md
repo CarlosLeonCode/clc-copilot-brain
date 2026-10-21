@@ -26,7 +26,7 @@ Empowers agents to draft high-converting cold outreach, live objection pivots, a
 2. Load target persona from `sales/icps/`.
 3. Check for relevant competitor intel in `sales/battlecards/` and objection answers in `sales/objections/`.
 4. Reference concrete metrics or proof points from `sales/case-studies/`.
-5. Follow script flow from `sales/scripts/`:
+5. Use the saved scripts in `sales/scripts/` when they exist. If the person needs a new script, or a script for another industry, follow `.agents/skills/script/SKILL.md`. For outreach, follow this flow:
    - Pattern interrupt / genuine hook.
    - Specific quantified business impact.
    - Low-friction call to action (e.g., 15-minute intro vs high-pressure demo).

@@ -41,7 +41,11 @@ Most people who use this brain are not technical. They write in plain English or
 | "How did this month go?" / "¿Cómo me fue este mes?" | Follow `skills/skill_monthly_retrospective.md`. |
 | "How are we doing?" / "¿Cómo vamos?" / "What's working?" / "¿Qué está funcionando?" | Run `clc-brain stats` in this folder (or `clc-brain stats --json` to read the numbers) and explain the result in plain words: what is working by type of sale, call guide and person, and what is too early to tell. Never count by hand. Then offer to open the sales page (`clc-brain view --open`). If you cannot run commands, say plainly that you can only give approximate numbers. |
 | "Classify my old calls" / "Clasifica mis llamadas viejas" | Find the calls that are still "Not classified yet" (from `clc-brain stats --json`). Propose a type of sale (and goal met, when the notes show it) for each one in a short plain list. Write only after they say yes, then refresh the page with `clc-brain view`. |
-| "Let's improve the cold call script" / "Mejoremos el guion de la llamada en frío" / "Here's my sales flow" (photo, PDF, file or description) / "Este es mi flujo de ventas" / "Te paso mi diagrama" | Follow `.agents/skills/flow/SKILL.md`: understand what they sent, explain it back, show a preview with `clc-brain view --draft`, and save only after they say yes. |
+| "Make me a script for X" / "Hazme un guion para X" / "Let's improve the cold call script" / "Mejoremos el guion de la llamada en frío" | Follow `.agents/skills/script/SKILL.md`: ask one question at a time, explain it back, show a preview with `clc-brain view --draft`, and save only after they say yes. |
+| "What does X mean?" / "¿Qué significa X?" | Read the glossary (sales/glossary.md) and answer in plain words. If the term is not there, say so and offer to add it. |
+| "Add X to the glossary" / "Agrega X al glosario" | Follow `.agents/skills/script/SKILL.md` (glossary): show the term, meaning and example in one plain sentence, ask "Save it?" / "¿Lo guardo?", and add it only after they say yes. |
+| "Convert my scripts to the new format" / "Convierte mis guiones al formato nuevo" | Follow `.agents/skills/script/SKILL.md` (convert old scripts): propose a new script, never overwrite hand-made pages, and change or remove old files only after an explicit yes. |
+| "Here's my sales flow" (photo, PDF, file or description) / "Este es mi flujo de ventas" / "Te paso mi diagrama" | Follow `.agents/skills/flow/SKILL.md`: understand what they sent, explain it back, show a preview with `clc-brain view --draft`, and save only after they say yes. |
 | "What do I say when they say it's too expensive?" / "El cliente dice que es caro" | Answer from the matching objection card (section 2 lookup rules). Give the words to say first. |
 | "How do we beat X?" / "¿Cómo le ganamos a X?" | Answer from that competitor's battlecard (section 2 lookup rules). |
 | "Set up my brain" / "Configuremos mi cerebro" | Follow `skills/skill_brain_onboarding.md`. |
@@ -54,7 +58,9 @@ After any approved change to the sales pipeline or a call guide, refresh the sal
 
 If `clc-brain` isn't available, tell the person in one plain sentence that the setup person needs to install it (see the README's "Get started" section), and carry on with what you can do without it. If you cannot run commands (for example in a web chat), tell the person the one command to type in a terminal opened in this folder.
 
-Slash commands (`/call`, `/retro`, `/flow`, ...) are optional shortcuts. Each one is a skill in `.agents/skills/<name>/SKILL.md`, and `clc-brain upgrade` keeps the shortcut files of every assistant in line with it; MCP apps such as Claude Desktop offer the main flows as prompts. Never tell people they need a slash command.
+Scripts and glossary: scripts live in `sales/scripts/<slug>.md` (one file per script set, English file names) and the glossary in sales/glossary.md. Read them before answering about what to say in a conversation or what a term means, and never invent script content: build or change them only through `.agents/skills/script/SKILL.md`.
+
+Slash commands (`/call`, `/retro`, `/flow`, `/script`, ...) are optional shortcuts. Each one is a skill in `.agents/skills/<name>/SKILL.md`, and `clc-brain upgrade` keeps the shortcut files of every assistant in line with it; MCP apps such as Claude Desktop offer the main flows as prompts. Never tell people they need a slash command.
 <!-- copilot-brain:managed:end -->
 
 ---
@@ -81,7 +87,7 @@ When the user asks conversational questions about **sales, operations, marketing
    - For deal qualification and gate progression, consult `templates/areas/sales/qualification/qualification-matrix.md` and `templates/areas/sales/stages/pipeline-stages.md`.
    - For how to run a conversation (cold call, discovery, demo, follow-up), consult `templates/areas/sales/system.md` and the matching play in `templates/areas/sales/plays/`. Use `templates/areas/sales/stages/` for gate criteria only.
    - For buyer personas and qualification, consult `templates/areas/sales/icps/`.
-   - For call scripts and discovery frameworks, consult `templates/areas/sales/scripts/`.
+   - For call scripts and the glossary, follow the "Scripts and glossary" line in section 0 (managed block).
    - For historical call context and stakeholder history, inspect `templates/areas/sales/calls/YYYY-MM/`.
    - For closed deal win/loss drivers and competitor learnings, consult `templates/areas/sales/win-loss/`.
    - For sales lifecycle diagrams, refer to `org-kernel.json` -> `ecosystemTools.salesFlowDiagrams` (Archify).
@@ -119,6 +125,7 @@ Every slash command is one skill in `.agents/skills/<name>/SKILL.md` (the single
 | `/objection` | `.agents/skills/objection/SKILL.md` | Exact words for a buyer objection, or a new objection card after approval. |
 | `/battlecard` | `.agents/skills/battlecard/SKILL.md` | How to win against a competitor, or a new battlecard after approval. |
 | `/flow` | `.agents/skills/flow/SKILL.md` | Import any drawing, file or description of a sales flow, explain it back, preview it with `clc-brain view --draft`, and save it after approval. |
+| `/script` | `.agents/skills/script/SKILL.md` | Build a sales script for any industry, preview it with `clc-brain view --draft`, save it after approval, and keep the glossary and industry packs up to date. |
 | `/retro` | `.agents/skills/retro/SKILL.md` | Monthly sales review from `clc-brain stats`, with suggested changes applied only after a yes. |
 | `/brain-search` | `.agents/skills/brain-search/SKILL.md` | Find the right answer across every area of the brain. |
 | `/sales-assist` | `.agents/skills/sales-assist/SKILL.md` | Draft outreach, answer objections and prepare calls with the right call guide. |

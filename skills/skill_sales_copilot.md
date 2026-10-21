@@ -13,7 +13,7 @@ Whenever a user asks a sales-related question, execute this lookup protocol befo
 | **Competitor / Battlecard** | "How do we beat [Competitor]?", "Difference vs [X]?", "Why choose us over [Incumbent]?" | `sales/battlecards/*.json` | `schemas/sales-battlecard.schema.json` |
 | **Objection Handling** | "Prospect says too expensive", "No budget this quarter", "Already using legacy tool", "Needs feature X" | `sales/objections/*.json` | `schemas/sales-objection.schema.json` |
 | **ICP & Qualification** | "Who is our target buyer?", "What are their pain points?", "Disqualification criteria for [Vertical]" | `sales/icps/*.md` | ICP Markdown Template |
-| **Discovery & Pitch** | "Give me discovery questions", "Cold email hook", "Demo call script for CTO" | `sales/scripts/*.md` | Sales Script Template |
+| **Discovery & Pitch** | "Give me discovery questions", "Cold email hook", "Demo call script for CTO" | `sales/scripts/*.md` (new scripts: follow `.agents/skills/script/SKILL.md`) | Sales Script Grammar |
 | **Proof Points & References** | "Customer case studies", "ROI proof", "Who else uses this in our sector?" | `sales/case-studies/*.md` | Case Study Markdown |
 
 ---

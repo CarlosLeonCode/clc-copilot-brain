@@ -121,6 +121,7 @@ test('upgrade moves a flat skill a person added into its own folder and gives it
 // Paths that only exist once the brain is used, or are examples. Keep this list short.
 const RUNTIME_PATHS = new Set([
   'sales/sales-system.html', // written by `clc-brain view`; listed in case init stops pre-rendering it
+  'sales/glossary.md', // created when the first glossary term is added (the brain ships no glossary)
   'path/to/file.md' // placeholder in the brain-search link example
 ]);
 

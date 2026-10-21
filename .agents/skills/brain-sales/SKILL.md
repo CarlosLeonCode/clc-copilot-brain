@@ -27,7 +27,7 @@ If no arguments were given, ask the user what they need (see step 3 below).
        - Battlecards in `sales/battlecards/` (validate against `schemas/sales-battlecard.schema.json`).
        - Objections in `sales/objections/` (validate against `schemas/sales-objection.schema.json`).
        - ICP criteria in `sales/icps/`.
-       - Discovery scripts in `sales/scripts/`.
+       - Saved scripts in `sales/scripts/`. To write a new script, follow `.agents/skills/script/SKILL.md`.
      - Respond using the structured response format:
        - **Instant Talk Track** (verbatim script for calls/emails)
        - **Strategic Rationale & Root Cause**
