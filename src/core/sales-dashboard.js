@@ -2,7 +2,7 @@
 // No scripts, links, images or URLs; bars are plain divs. Every text from brain files is escaped.
 import { escapeHtml as esc } from './html-escape.js';
 import { DEFAULT_LANGUAGE, formatMonth, t } from './i18n.js';
-import { comparisonParts, plural, rateText, windowTitle } from './sales-report-text.js';
+import { comparisonParts, plural, rateText, scoreComparisonText, scorecardView, windowTitle } from './sales-report-text.js';
 
 export const DASHBOARD_CSS = `.metric{margin:10px 0}
 .metric-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px}
@@ -36,6 +36,19 @@ function guideBlock(p, lang) {
   return metric(p.title, `${plural(p.calls, 'calls', lang)}. ${goalText(p.success, lang)}`, p.success, successLine(p, lang) + misses);
 }
 
+function scoreSection(sc, lang) {
+  const v = scorecardView(sc, lang);
+  const rows = (list) => list.map((x) => metric(x.name, x.text, x.fraction == null ? null : { value: x.fraction })).join('\n');
+  const block = (title, list) => (list.length ? `<h4>${esc(title)}</h4>\n${rows(list)}` : '');
+  return [
+    `<h4>${esc(t(lang, 'score.title'))}</h4>`,
+    `<p class="note">${esc(v.summary.join(', '))}</p>`,
+    rows(v.dimensions),
+    block(t(lang, 'score.countsTitle'), v.counts),
+    block(t(lang, 'score.coverage'), v.criteria)
+  ].filter(Boolean).join('\n');
+}
+
 function windowCard(w, lang) {
   const title = windowTitle(w, lang);
   if (w.totals.calls === 0) return `<section class="card dash"><h3>${esc(title)}</h3><p>${esc(t(lang, 'dash.noCalls'))}</p></section>`;
@@ -54,6 +67,7 @@ function windowCard(w, lang) {
   const guides = w.byPlay.filter((p) => p.calls > 0);
   if (guides.length > 0) parts.push(`<h4>${esc(t(lang, 'dash.byPlay'))}</h4>`, ...guides.map((p) => guideBlock(p, lang)));
   parts.push(`<h4>${esc(t(lang, 'dash.byRep'))}</h4>`, ...w.byRep.map((r) => metric(r.rep, `${plural(r.calls, 'calls', lang)}. ${goalText(r.success, lang)}`, r.success)));
+  parts.push(scoreSection(w.scorecard, lang));
   return `<section class="card dash"><h3>${esc(title)}</h3>\n${parts.join('\n')}\n</section>`;
 }
 
@@ -84,6 +98,7 @@ export function renderDashboard(report, lang = report.language ?? DEFAULT_LANGUA
   return `<h2 id="how-its-going">${esc(t(lang, 'dash.title'))}</h2>
 ${report.windows.map((w) => windowCard(w, lang)).join('\n')}
 ${comparisonLine(report.comparison, lang)}
+${scoreComparisonText(report.comparison, lang) ? `<p class="note">${esc(scoreComparisonText(report.comparison, lang))}</p>` : ''}
 ${notes.map((n) => `<p class="note">${esc(n)}</p>`).join('\n')}
 ${journeys(report.journeys, lang)}`;
 }

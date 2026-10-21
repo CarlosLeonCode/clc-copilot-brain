@@ -1,5 +1,7 @@
 // Plain-language text rendering of the sales report for people, in the report's language. Pure: no I/O, no UI imports.
 import { DEFAULT_LANGUAGE, formatMonth, formatPercent, t } from './i18n.js';
+import { COUNT_KEYS } from './scorecard.js';
+import { COUNT_ONLY_BELOW } from './sales-metrics.js';
 
 /** "October 2026" / "Octubre de 2026". */
 export const monthTitle = (month, lang = DEFAULT_LANGUAGE) => formatMonth(lang, month);
@@ -32,6 +34,55 @@ export function comparisonParts(c, lang = DEFAULT_LANGUAGE) {
   return parts;
 }
 
+const shownRate = (r) => (r.sample === 'count-only' ? { ...r, value: null } : r);
+
+function dimensionText(d, lang) {
+  if (d.count === 0) return t(lang, 'score.noneYet');
+  if (d.sample === 'count-only') return t(lang, 'score.fewScored', { count: d.count });
+  return t(lang, d.sample === 'too-early' ? 'score.valueEarly' : 'score.value', { value: d.average, count: d.count });
+}
+
+/**
+ * Plain-language parts of a window's score section, shared by the text report and the page.
+ * `fraction` (0-1) is set only when the sample is big enough for a bar.
+ */
+export function scorecardView(sc, lang = DEFAULT_LANGUAGE) {
+  const summary = [
+    sc.scored > 0 ? t(lang, 'score.scoredCalls', { count: sc.scored }) : '',
+    sc.tooThin > 0 ? t(lang, 'score.tooThin', { count: sc.tooThin }) : '',
+    sc.notScored > 0 ? t(lang, 'score.notScored', { count: sc.notScored }) : ''
+  ].filter(Boolean);
+  if (sc.scored === 0) return { summary, dimensions: [], counts: [], criteria: [] };
+  const dimensions = sc.dimensions.map((d) => ({ name: t(lang, `score.dim.${d.id}`), text: dimensionText(d, lang), fraction: d.sample === 'count-only' || d.average == null ? null : d.average / 5 }));
+  const counts = sc.scored < COUNT_ONLY_BELOW ? [] : Object.keys(COUNT_KEYS).filter((k) => sc.counts[k].count > 0).map((k) => {
+    const value = k === 'repTalkShare' ? `${sc.counts[k].average}%` : String(sc.counts[k].average);
+    return { name: t(lang, `score.count.${k}`), text: t(lang, 'score.estimated', { value }) };
+  });
+  const criteria = sc.criteria.map((c) => {
+    const rate = shownRate(c.coverage);
+    const base = rate.of === 0 ? t(lang, 'dash.notRecorded') : rateText(rate, 'calls', lang);
+    const text = c.notRecorded > 0 && rate.of > 0 ? `${base}. ${t(lang, 'score.notRecordedCount', { count: c.notRecorded })}` : base;
+    return { name: c.label, text, fraction: rate.value };
+  });
+  return { summary, dimensions, counts, criteria };
+}
+
+/** One sentence on score changes against the month before; null unless the report carries `comparison.scorecard`. */
+export function scoreComparisonText(c, lang = DEFAULT_LANGUAGE) {
+  if (!c?.scorecard) return null;
+  const parts = c.scorecard.dimensions.filter((d) => d.delta != null).map((d) => `${t(lang, `score.dim.${d.id}`)} ${d.delta >= 0 ? '+' : '-'}${Math.abs(d.delta)}`);
+  return parts.length ? t(lang, 'score.compare', { month: formatMonth(lang, c.from, { capitalize: false }), parts: parts.join(', ') }) : null;
+}
+
+function scoreLines(sc, lang) {
+  const v = scorecardView(sc, lang);
+  const lines = ['', `${t(lang, 'score.title')}: ${v.summary.join(', ')}`];
+  for (const d of v.dimensions) lines.push(`  ${d.name}: ${d.text}`);
+  if (v.counts.length) lines.push('', t(lang, 'score.countsTitle'), ...v.counts.map((c) => `  ${c.name}: ${c.text}`));
+  if (v.criteria.length) lines.push('', t(lang, 'score.coverage'), ...v.criteria.map((c) => `  ${c.name}: ${c.text}`));
+  return lines;
+}
+
 function windowLines(w, lang) {
   const title = windowTitle(w, lang);
   const lines = [title, '='.repeat(title.length)];
@@ -61,7 +112,7 @@ function windowLines(w, lang) {
 
   lines.push('', t(lang, 'dash.byRep'));
   for (const r of w.byRep) lines.push(`  ${r.rep}: ${plural(r.calls, 'calls', lang)}, ${t(lang, 'report.goalReached', { value: rateText(r.success, 'calls', lang) })}`);
-  return [...lines, ''];
+  return [...lines, ...scoreLines(w.scorecard, lang), ''];
 }
 
 /** Render the whole report (from buildSalesReport) as plain, non-technical text in its language. */
@@ -73,6 +124,8 @@ export function formatSalesReport(report, lang = report.language ?? DEFAULT_LANG
   } else {
     out.push(t(lang, 'compare.tooEarly'), '');
   }
+  const scores = scoreComparisonText(c, lang);
+  if (scores) out.push(scores, '');
   if (report.unclassified.length) out.push(t(lang, 'report.unclassified', { records: plural(report.unclassified.length, 'records', lang) }), '');
   if (report.excluded.demo) out.push(t(lang, 'report.sample', { count: report.excluded.demo }), '');
   if (report.excluded.skipped) out.push(t(lang, 'notes.skipped', { count: report.excluded.skipped }), '');
