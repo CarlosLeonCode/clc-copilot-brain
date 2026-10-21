@@ -91,3 +91,10 @@ export function readScorecard(fields) {
     problems
   };
 }
+
+/** Parse problems of a scorecard plus qual_ ids outside the resolved criteria. [] when unscored. */
+export function scorecardProblems(card, criteriaIds) {
+  if (!card) return [];
+  const unknown = Object.keys(card.qualification).filter((id) => !criteriaIds.includes(id));
+  return [...card.problems, ...unknown.map((id) => `unknown qualification key qual_${id}`)];
+}

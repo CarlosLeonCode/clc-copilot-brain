@@ -66,3 +66,33 @@ test('doctor skips the sales metric checks when sales is not active', () =>
     initBrain(dir, { areas: ['operations'] });
     assert.deepEqual(runDoctor(dir).issues, []);
   }));
+
+test('call logs with unusable scores or qualification notes get one warning naming each log', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    writeFiles(dir, {
+      'sales/calls/2026-10/bad-score.md': callLog(['scorecard_status: scored', 'score_discovery: 9', 'score_charm: 4']),
+      'sales/calls/2026-10/bad-qual.md': callLog(['scorecard_status: too-thin', 'qual_champion: partial', 'qual_budget: evidenced']),
+      'sales/calls/2026-10/no-status.md': callLog(['score_listening: 3']),
+      'sales/calls/2026-10/good.md': callLog(['scorecard_status: scored', 'score_discovery: not-enough-evidence', 'qual_champion: evidenced'])
+    });
+    const found = warnings(dir).filter((m) => /scores or qualification notes/i.test(m));
+    assert.equal(found.length, 1, 'grouped in one message');
+    for (const fragment of ['bad-score.md', 'score_discovery "9"', 'score_charm', 'bad-qual.md', 'qual_champion "partial"', 'qual_budget', 'no-status.md', 'missing scorecard_status']) {
+      assert.ok(found[0].includes(fragment), `mentions ${fragment}`);
+    }
+    assert.doesNotMatch(found[0], /good\.md/);
+    assert.equal(runDoctor(dir).errors, 0, 'warnings, never errors');
+  }));
+
+test('qualification notes are checked against the criteria the matrix declares', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const matrix = path.join(dir, 'sales', 'qualification', 'qualification-matrix.md');
+    fs.writeFileSync(matrix, fs.readFileSync(matrix, 'utf8').replace(/^criteria:.*$/m, 'criteria: budget, need'));
+    writeFiles(dir, { 'sales/calls/2026-10/a.md': callLog(['scorecard_status: scored', 'qual_budget: evidenced', 'qual_champion: missing']) });
+    const found = warnings(dir).filter((m) => /scores or qualification notes/i.test(m));
+    assert.equal(found.length, 1);
+    assert.match(found[0], /qual_champion/);
+    assert.doesNotMatch(found[0], /qual_budget/);
+  }));

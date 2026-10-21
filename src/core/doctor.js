@@ -11,6 +11,7 @@ import { parseFlowchart } from './flowchart.js';
 import { readSalesRecords } from './sales-records.js';
 import { DEFAULT_MOTIONS, toSlug } from './sales-normalize.js';
 import { checkSalesLibrary } from './sales-library.js';
+import { scorecardProblems } from './scorecard.js';
 
 const FIRST_MERMAID = /```mermaid\r?\n([\s\S]*?)```/;
 
@@ -162,6 +163,14 @@ function checkSalesMetrics(rootDir, report) {
   if (unknown.size > 0) {
     const list = [...unknown].map(([slug, n]) => `"${slug}" (${n})`).join(', ');
     warn(`Some records use a type of sale that no call guide lists: ${list}. Check the spelling, or ask your assistant to add it to the call guides it belongs to.`);
+  }
+
+  const unusable = records.calls.flatMap((c) => {
+    const found = scorecardProblems(c.scorecard, records.criteria.ids);
+    return found.length ? [`${c.relPath} (${found.join('; ')})`] : [];
+  });
+  if (unusable.length > 0) {
+    warn(`These call logs have scores or qualification notes that can't be used and are left out of the numbers: ${unusable.join(', ')}. Ask your assistant to fix them.`);
   }
 
   if (records.skipped.length > 0) {

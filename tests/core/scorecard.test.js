@@ -6,7 +6,7 @@ import { parseFrontmatter } from '../../src/core/plays.js';
 import { readCallLog } from '../../src/core/calls.js';
 import { readSalesRecords } from '../../src/core/sales-records.js';
 import {
-  DIMENSIONS, NOT_ENOUGH, FALLBACK_CRITERIA, COUNT_KEYS, parseCriteria, resolveCriteria, criterionLabel, readScorecard
+  DIMENSIONS, NOT_ENOUGH, FALLBACK_CRITERIA, COUNT_KEYS, parseCriteria, resolveCriteria, criterionLabel, readScorecard, scorecardProblems
 } from '../../src/core/scorecard.js';
 
 const fm = (text) => parseFrontmatter(`---\n${text}\n---\n`);
@@ -122,3 +122,13 @@ test('readSalesRecords attaches scorecard to call records', () => withTmp((dir) 
   assert.equal(calls[0].scorecard.scores.discovery, 4);
   assert.equal(calls[1].scorecard, null);
 }));
+
+test('scorecardProblems: parse problems plus qual_ ids outside the criteria', () => {
+  const card = readScorecard(fm('scorecard_status: scored\nscore_discovery: 9\nqual_champion: evidenced\nqual_budget: missing'));
+  const problems = scorecardProblems(card, FALLBACK_CRITERIA).join('\n');
+  assert.match(problems, /score_discovery "9"/);
+  assert.match(problems, /unknown qualification key qual_budget/);
+  assert.doesNotMatch(problems, /qual_champion/);
+  assert.deepEqual(scorecardProblems(null, FALLBACK_CRITERIA), []);
+  assert.deepEqual(scorecardProblems(readScorecard(fm('scorecard_status: scored\nqual_champion: missing')), FALLBACK_CRITERIA), []);
+});
