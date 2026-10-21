@@ -132,3 +132,27 @@ test('stats works on an old brain with no scored calls', () => {
     assert.deepEqual([s.scored, s.notScored], [0, 3]);
   });
 });
+
+test('stats --json always has deals: [] when there are no calls', () => {
+  withBrain('sales', (brain) => {
+    const report = JSON.parse(run('stats', brain, '--json').stdout);
+    assert.deepEqual(report.deals, []);
+    assert.equal(report.dealSummary.advance, 0);
+  });
+});
+
+test('stats --json deals cover all months and are identical with and without --month', () => {
+  withBrain('sales', (brain) => {
+    const dir = path.join(brain, 'sales', 'calls', '2020-01');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, '2020-01-05_old.md'), '---\nrep: "Ana"\nprospect_company: "Old Deal"\ndate: "2020-01-05"\ndeal_stage: "Discovery"\noutcome: "Advanced"\nscorecard_status: scored\nqual_champion: evidenced\nqual_economic_buyer: evidenced\nqual_identified_pain: evidenced\nqual_deal_size: evidenced\n---\n\nBody\n');
+    addCall(brain, 1);
+    const all = JSON.parse(run('stats', brain, '--json').stdout);
+    const picked = JSON.parse(run('stats', brain, '--month', month, '--json').stdout);
+    const old = all.deals.find((d) => d.dealKey === 'old deal');
+    assert.equal(old.verdict, 'advance');
+    assert.deepEqual(old.missing, []);
+    assert.deepEqual(picked.deals, all.deals);
+    assert.deepEqual(picked.dealSummary, all.dealSummary);
+  });
+});

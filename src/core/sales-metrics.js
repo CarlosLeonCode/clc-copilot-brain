@@ -2,6 +2,7 @@
 import { toSlug, motionName, DEFAULT_MOTIONS } from './sales-normalize.js';
 import { DEFAULT_LANGUAGE, t } from './i18n.js';
 import { DIMENSIONS, COUNT_KEYS, resolveCriteria, criterionLabel } from './scorecard.js';
+import { computeDealVerdicts } from './deal-verdict.js';
 
 export const COUNT_ONLY_BELOW = 5;
 export const TOO_EARLY_BELOW = 10;
@@ -256,10 +257,15 @@ export function buildSalesReport(records, { now = new Date(), month, lang = DEFA
   const resolved = [...calls, ...wins].map((r) => ({ r, motion: resolveMotion(r, dealIndex, playsById) }));
   const motionSlugs = new Set([...Object.keys(DEFAULT_MOTIONS), ...plays.flatMap((p) => (Array.isArray(p.motions) ? p.motions : [])), ...resolved.map((x) => x.motion).filter((m) => m !== UNCLASSIFIED)]);
 
+  // Verdicts ignore the month window: computed once over every call.
+  const verdicts = computeDealVerdicts({ calls, wins, criteria: records.criteria });
+
   return {
     language: lang,
     windows,
     comparison,
+    deals: verdicts.deals,
+    dealSummary: verdicts.summary,
     journeys: journeysOf(records, motionSlugs, lang),
     unclassified: resolved.filter((x) => x.motion === UNCLASSIFIED).map((x) => x.r.relPath),
     excluded: { demo: records.demoExcluded ?? 0, skipped: (records.skipped ?? []).length }
