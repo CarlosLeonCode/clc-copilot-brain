@@ -152,3 +152,24 @@ test('CALL_FIELDS gains the new keys while the MCP brain_capture_call schema sta
   ]);
   assert.deepEqual(tool.inputSchema.required, ['rep', 'prospect', 'date', 'summary', 'stage', 'outcome']);
 });
+
+test('captureCall writes disqualify only when true, rejects a string, round-trips', () =>
+  withTmp((dir) => {
+    const { relPath } = captureCall(dir, { ...call, disqualify: true });
+    const text = fs.readFileSync(path.join(dir, relPath), 'utf8');
+    assert.match(text, /^disqualify: true$/m);
+    assert.equal(readCallLog(text).disqualify, true);
+    const none = captureCall(dir, { ...call, rep: 'Bo Lee' });
+    assert.doesNotMatch(fs.readFileSync(path.join(dir, none.relPath), 'utf8'), /disqualify/);
+    const off = captureCall(dir, { ...call, rep: 'Cy Fox', disqualify: false });
+    assert.doesNotMatch(fs.readFileSync(path.join(dir, off.relPath), 'utf8'), /disqualify/);
+    assert.throws(() => captureCall(dir, { ...call, rep: 'Di Ox', disqualify: 'yes' }), (e) => e instanceof BrainError && e.code === 'VALIDATION');
+  }));
+
+test('readCallLog reads disqualify tolerantly: true, TRUE, garbage, absent', () => {
+  assert.equal(CALL_FIELDS.disqualify, 'disqualify');
+  assert.equal(readCallLog('---\ndisqualify: true\n---\n').disqualify, true);
+  assert.equal(readCallLog('---\ndisqualify: "TRUE"\n---\n').disqualify, true);
+  assert.equal(readCallLog('---\ndisqualify: maybe\n---\n').disqualify, undefined);
+  assert.equal(readCallLog('---\nrep: "A"\n---\n').disqualify, undefined);
+});

@@ -101,3 +101,13 @@ test('tagged demo samples carry motion data', () => {
     assert.match(fs.readFileSync(path.join(sales, 'win-loss', f), 'utf8'), /^---\n[\s\S]*?^result: (won|lost)$/m);
   }
 });
+
+test('call records carry disqualify: true only when the flag is true, else false', () => withTmp((dir) => {
+  writeFiles(dir, {
+    'sales/calls/2026-09/a.md': call('disqualify: true\n'),
+    'sales/calls/2026-09/b.md': call('disqualify: garbage\n'),
+    'sales/calls/2026-09/c.md': call('')
+  });
+  const by = Object.fromEntries(readSalesRecords(dir).calls.map((c) => [c.relPath.split('/').pop(), c.disqualify]));
+  assert.deepEqual(by, { 'a.md': true, 'b.md': false, 'c.md': false });
+}));

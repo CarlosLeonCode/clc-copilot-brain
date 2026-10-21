@@ -26,12 +26,13 @@ export const CALL_FIELDS = Object.freeze({
   play: 'play',
   branch: 'branch',
   goalMet: 'goal_met',
-  gateAdvanced: 'gate_advanced'
+  gateAdvanced: 'gate_advanced',
+  disqualify: 'disqualify'
 });
 
 // Frontmatter key order. Optional fields are omitted when absent.
-const FRONTMATTER_ORDER = Object.freeze(['rep', 'prospect', 'date', 'stage', 'outcome', 'motion', 'leadSource', 'dealId', 'play', 'branch', 'goalMet', 'gateAdvanced']);
-const OPTIONAL = new Set(['motion', 'leadSource', 'dealId', 'play', 'branch', 'goalMet', 'gateAdvanced']);
+const FRONTMATTER_ORDER = Object.freeze(['rep', 'prospect', 'date', 'stage', 'outcome', 'motion', 'leadSource', 'dealId', 'play', 'branch', 'goalMet', 'gateAdvanced', 'disqualify']);
+const OPTIONAL = new Set(['motion', 'leadSource', 'dealId', 'play', 'branch', 'goalMet', 'gateAdvanced', 'disqualify']);
 // Free-text tags stored as slugs so the same motion or source always reads the same.
 const SLUGGED = Object.freeze(['motion', 'leadSource', 'dealId']);
 
@@ -67,6 +68,8 @@ function renderFrontmatter(call) {
   for (const input of FRONTMATTER_ORDER) {
     const value = call[input];
     if (OPTIONAL.has(input) && (value === undefined || value === null || value === '')) continue;
+    // The disqualify flag is written only when true; absent means false.
+    if (input === 'disqualify' && value !== true) continue;
     // Booleans are bare YAML scalars; everything else is a JSON-escaped string.
     lines.push(`${CALL_FIELDS[input]}: ${typeof value === 'boolean' ? String(value) : yamlString(value)}`);
   }
@@ -101,7 +104,7 @@ ${rawTranscript ? `## 6. Raw Call Transcript\n\`\`\`text\n${rawTranscript}\n\`\`
 /**
  * @param {string} rootDir
  * @param {{ rep: string, prospect: string, date: string, summary: string, stage: string, outcome: string,
- *   motion?: string, leadSource?: string, dealId?: string, play?: string, branch?: string, goalMet?: boolean, gateAdvanced?: boolean, notes?: string, objections?: string[], actionItems?: string[], rawTranscript?: string }} call
+ *   motion?: string, leadSource?: string, dealId?: string, play?: string, branch?: string, goalMet?: boolean, gateAdvanced?: boolean, disqualify?: boolean, notes?: string, objections?: string[], actionItems?: string[], rawTranscript?: string }} call
  * @returns {{ relPath: string }} path relative to rootDir (posix separators)
  */
 export function captureCall(rootDir, call) {
@@ -116,6 +119,9 @@ export function captureCall(rootDir, call) {
   }
   if (call.goalMet !== undefined && typeof call.goalMet !== 'boolean') {
     throw new BrainError('VALIDATION', 'Error: goalMet must be a boolean.');
+  }
+  if (call.disqualify !== undefined && typeof call.disqualify !== 'boolean') {
+    throw new BrainError('VALIDATION', 'Error: disqualify must be a boolean.');
   }
   call = { ...call };
   for (const field of SLUGGED) if (call[field] !== undefined) call[field] = toSlug(call[field]);
@@ -159,6 +165,7 @@ export function readCallLog(text) {
   if (fm.deal_id) record.dealId = toSlug(fm.deal_id) || undefined;
   if (parseBool(fm.goal_met) !== undefined) record.goalMet = parseBool(fm.goal_met);
   if (fm.gate_advanced !== undefined) record.gateAdvanced = fm.gate_advanced === 'true';
+  if (parseBool(fm.disqualify) !== undefined) record.disqualify = parseBool(fm.disqualify);
   record.scorecard = readScorecard(fm);
   return record;
 }

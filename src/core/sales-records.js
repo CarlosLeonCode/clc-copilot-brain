@@ -67,6 +67,7 @@ function parseCall(relPath, _fileName, text) {
       leadSource: log.leadSource,
       goalMet: log.goalMet,
       gateAdvanced: log.gateAdvanced,
+      disqualify: log.disqualify === true,
       scorecard: log.scorecard,
       outcome: normalizeOutcome(log.outcome)
     }
