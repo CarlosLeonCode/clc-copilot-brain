@@ -74,6 +74,34 @@ export function scoreComparisonText(c, lang = DEFAULT_LANGUAGE) {
   return parts.length ? t(lang, 'score.compare', { month: formatMonth(lang, c.from, { capitalize: false }), parts: parts.join(', ') }) : null;
 }
 
+/**
+ * Plain-language deal verdicts, shared by the text report and the page. Reads report.deals only:
+ * labels, never ids. `none` is set (and rows empty) when there is nothing to review.
+ */
+export function dealsView(report, lang = DEFAULT_LANGUAGE) {
+  const deals = report.deals ?? [];
+  const s = report.dealSummary ?? { advance: 0, notEnough: 0, close: 0 };
+  if (deals.length === 0) return { summary: '', rows: [], none: t(lang, 'deal.none') };
+  const rows = deals.map((d) => {
+    const parts = [t(lang, `deal.verdict.${d.verdict}`)];
+    let text = parts[0];
+    if (d.verdict === 'close' && d.reason) text = `${text} (${t(lang, `deal.reason.${d.reason}`)})`;
+    if (d.verdict === 'not-enough-information') {
+      if (d.scoredCalls === 0) text = `${text}. ${t(lang, 'deal.noScored')}`;
+      else if (d.missing.length) text = `${text}. ${t(lang, 'deal.missing', { list: d.missing.map((m) => m.label).join(', ') })}`;
+    }
+    return { name: d.company || d.dealKey, text };
+  });
+  return { summary: t(lang, 'deal.summary', { advance: s.advance, notEnough: s.notEnough, close: s.close }), rows, none: '' };
+}
+
+function dealLines(report, lang) {
+  const v = dealsView(report, lang);
+  const lines = [t(lang, 'deal.title'), '='.repeat(t(lang, 'deal.title').length), t(lang, 'deal.allMonths')];
+  if (v.none) return [...lines, v.none, ''];
+  return [...lines, v.summary, ...v.rows.map((r) => `  ${r.name}: ${r.text}`), ''];
+}
+
 function scoreLines(sc, lang) {
   const v = scorecardView(sc, lang);
   const lines = ['', `${t(lang, 'score.title')}: ${v.summary.join(', ')}`];
@@ -118,6 +146,7 @@ function windowLines(w, lang) {
 /** Render the whole report (from buildSalesReport) as plain, non-technical text in its language. */
 export function formatSalesReport(report, lang = report.language ?? DEFAULT_LANGUAGE) {
   const out = report.windows.flatMap((w) => windowLines(w, lang));
+  out.push(...dealLines(report, lang));
   const c = report.comparison;
   if (c) {
     out.push(t(lang, 'compare.with', { month: formatMonth(lang, c.from, { capitalize: false }), parts: comparisonParts(c, lang).join(', ') }), '');

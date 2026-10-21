@@ -74,3 +74,56 @@ test('comparison with 10+ scored calls in both months is mentioned in plain word
   const out = text([...sept, ...scored(10).map((c, i) => ({ ...c, relPath: `x${i}`, dealKey: `n${i}` }))]);
   assert.match(out, /Scores compared with September 2026: .*Listening \+1/);
 });
+
+const ALL4 = { champion: 'evidenced', economic_buyer: 'evidenced', identified_pain: 'evidenced', deal_size: 'evidenced' };
+const deals = () => [
+  call(1, card({}, { qualification: ALL4 }), { company: 'Ready <Co>', dealKey: 'ready' }),
+  call(2, card({}, { qualification: { champion: 'evidenced' } }), { company: 'Needs Info', dealKey: 'needs' }),
+  call(3, null, { company: 'Dead Deal', dealKey: 'dead', outcome: 'disqualified' })
+];
+
+test('en and es define the same deal keys', () => {
+  const keys = (d) => Object.keys(d).filter((k) => k.startsWith('deal.')).sort();
+  assert.ok(keys(DICTIONARIES.en).length >= 10);
+  assert.deepEqual(keys(DICTIONARIES.es), keys(DICTIONARIES.en));
+});
+
+test('text: deals section sits after the windows and before the comparison, with the all-months note', () => {
+  const out = text(deals());
+  assert.match(out, /Deals: what to do next/);
+  assert.match(out, /Based on all calls, not only this month\./);
+  assert.match(out, /1 ready, 1 need more information, 1 to close/);
+  assert.match(out, /Ready <Co>: ready to move forward/);
+  assert.match(out, /Needs Info: not enough information yet\. still missing: Economic Buyer, Identified Pain, Deal Size/);
+  assert.match(out, /Dead Deal: close it \(the last call ended it\)/);
+  assert.ok(out.indexOf('Deals: what to do next') > out.indexOf('Call scores'));
+  assert.ok(out.indexOf('Deals: what to do next') < out.search(/Comparison with|Compared with/));
+  assert.doesNotMatch(out, /economic_buyer|deal_size|not-enough-information|lost-record/);
+});
+
+test('deals: zero scored calls say so; empty state is a plain line', () => {
+  assert.match(text([call(1, null, { company: 'Plain', dealKey: 'plain' })]), /Plain: not enough information yet\. no scored calls yet/i);
+  assert.match(text([]), /No deals to review yet\./);
+  assert.match(html([]), /No deals to review yet\./);
+});
+
+test('page: deals card shows labels, the all-months note, escapes HTML and has no ids', () => {
+  const out = html(deals());
+  assert.match(out, /<section class="card dash">/);
+  assert.match(out, /Deals: what to do next/);
+  assert.match(out, /Based on all calls, not only this month\./);
+  assert.match(out, /Ready &lt;Co&gt;/);
+  assert.doesNotMatch(out, /Ready <Co>/);
+  assert.match(out, /Economic Buyer/);
+  assert.doesNotMatch(out, /economic_buyer|deal_size|not-enough-information|lost-record/);
+  assert.doesNotMatch(out, /<script|<link|<img|http|url\(|`/);
+});
+
+test('deals are labelled in Spanish', () => {
+  const es = formatSalesReport(report(deals()), 'es');
+  assert.match(es, /Negocios: qué hacer ahora/);
+  assert.match(es, /Con todas las llamadas, no solo las de este mes\./);
+  assert.match(es, /listo para avanzar/);
+  assert.match(renderDashboard(report(deals()), 'es'), /Negocios: qué hacer ahora/);
+  assert.match(formatSalesReport(report([]), 'es'), /Todavía no hay negocios para revisar\./);
+});

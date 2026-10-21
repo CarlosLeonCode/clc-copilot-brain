@@ -2,7 +2,7 @@
 // No scripts, links, images or URLs; bars are plain divs. Every text from brain files is escaped.
 import { escapeHtml as esc } from './html-escape.js';
 import { DEFAULT_LANGUAGE, formatMonth, t } from './i18n.js';
-import { comparisonParts, plural, rateText, scoreComparisonText, scorecardView, windowTitle } from './sales-report-text.js';
+import { comparisonParts, dealsView, plural, rateText, scoreComparisonText, scorecardView, windowTitle } from './sales-report-text.js';
 
 export const DASHBOARD_CSS = `.metric{margin:10px 0}
 .metric-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px}
@@ -47,6 +47,14 @@ function scoreSection(sc, lang) {
     block(t(lang, 'score.countsTitle'), v.counts),
     block(t(lang, 'score.coverage'), v.criteria)
   ].filter(Boolean).join('\n');
+}
+
+function dealsCard(report, lang) {
+  const v = dealsView(report, lang);
+  const body = v.none
+    ? `<p>${esc(v.none)}</p>`
+    : `<p>${esc(v.summary)}</p>\n${v.rows.map((r) => metric(r.name, r.text, null)).join('\n')}`;
+  return `<section class="card dash"><h3>${esc(t(lang, 'deal.title'))}</h3>\n<p class="note">${esc(t(lang, 'deal.allMonths'))}</p>\n${body}\n</section>`;
 }
 
 function windowCard(w, lang) {
@@ -100,5 +108,6 @@ ${report.windows.map((w) => windowCard(w, lang)).join('\n')}
 ${comparisonLine(report.comparison, lang)}
 ${scoreComparisonText(report.comparison, lang) ? `<p class="note">${esc(scoreComparisonText(report.comparison, lang))}</p>` : ''}
 ${notes.map((n) => `<p class="note">${esc(n)}</p>`).join('\n')}
+${dealsCard(report, lang)}
 ${journeys(report.journeys, lang)}`;
 }
