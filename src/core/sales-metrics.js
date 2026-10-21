@@ -1,10 +1,12 @@
 // Pure sales metrics: month windows, sample-size rules and motion resolution. No I/O.
 import { toSlug, motionName, DEFAULT_MOTIONS } from './sales-normalize.js';
 import { DEFAULT_LANGUAGE, t } from './i18n.js';
+import { DIMENSIONS, COUNT_KEYS, resolveCriteria, criterionLabel } from './scorecard.js';
 
 export const COUNT_ONLY_BELOW = 5;
 export const TOO_EARLY_BELOW = 10;
 export const UNCLASSIFIED = 'unclassified';
+export const LOW_SCORE_BELOW = 3;
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -16,10 +18,52 @@ export function monthWindows(now = new Date()) {
   return { current: `${year}-${pad(month + 1)}`, lastComplete: `${last.y}-${pad(last.m)}` };
 }
 
+/** Sample label for n items: under 5 counts only, under 10 too early to tell, else ok. */
+export function sampleOf(n) {
+  if (n < COUNT_ONLY_BELOW) return 'count-only';
+  return n < TOO_EARLY_BELOW ? 'too-early' : 'ok';
+}
+
 /** A rate with its sample label: under 5 counts only, under 10 too early to tell, else ok. */
 export function makeRate(count, of) {
-  if (of < COUNT_ONLY_BELOW) return { count, of, value: null, sample: 'count-only' };
-  return { count, of, value: count / of, sample: of < TOO_EARLY_BELOW ? 'too-early' : 'ok' };
+  const sample = sampleOf(of);
+  return { count, of, value: sample === 'count-only' ? null : count / of, sample };
+}
+
+/** Mean to one decimal (null when empty) with its sample label; renderers show only counts when sample is count-only. */
+export function makeAverage(sum, n) {
+  return { average: n === 0 ? null : Math.round((sum / n) * 10) / 10, count: n, sample: sampleOf(n) };
+}
+
+function scorecardOf(calls, records) {
+  const cards = calls.map((c) => c.scorecard);
+  const scoredCards = cards.filter((c) => c && c.status === 'scored');
+  const dimensions = DIMENSIONS.map((id) => {
+    const values = scoredCards.map((c) => c.scores[id]).filter(Number.isInteger);
+    const avg = makeAverage(values.reduce((a, b) => a + b, 0), values.length);
+    return { id, ...avg, low: avg.sample !== 'count-only' && avg.average < LOW_SCORE_BELOW };
+  });
+  const counts = Object.fromEntries(Object.keys(COUNT_KEYS).map((name) => {
+    const values = scoredCards.map((c) => c.counts[name]).filter(Number.isFinite);
+    const { average, count } = makeAverage(values.reduce((a, b) => a + b, 0), values.length);
+    return [name, { average, count }];
+  }));
+  const resolved = records.criteria ?? resolveCriteria(null);
+  const criteria = resolved.ids.map((id) => {
+    const seen = scoredCards.map((c) => c.qualification[id]).filter(Boolean);
+    const of = seen.length;
+    const coverage = { ...makeRate(seen.filter((v) => v === 'evidenced').length, of), value: of === 0 ? null : seen.filter((v) => v === 'evidenced').length / of };
+    return { id, label: criterionLabel(id, resolved.labels), coverage, notRecorded: scoredCards.length - of };
+  });
+  return {
+    scored: scoredCards.length,
+    tooThin: cards.filter((c) => c && c.status === 'too-thin').length,
+    notScored: cards.filter((c) => !c).length,
+    dimensions,
+    counts,
+    criteria,
+    criteriaSource: resolved.source
+  };
 }
 
 /** Map of deal key to the motion of that deal's earliest tagged record (calls and win-loss). */
@@ -135,7 +179,8 @@ export function computeSalesMetrics(records, { month, complete = false, lang = D
     outcomes,
     byMotion,
     byPlay,
-    byRep
+    byRep,
+    scorecard: scorecardOf(inMonth, records)
   };
 }
 
@@ -146,14 +191,27 @@ const previousMonth = (month) => {
 
 const delta = (a, b) => (a.value == null || b.value == null ? null : b.value - a.value);
 
+const gap = (a, b) => (a == null || b == null ? null : Math.round((b - a) * 10) / 10);
+
+// Only when both months have 10+ scored calls; otherwise the key is left out.
+function compareScorecard(from, to) {
+  if (from.scored < TOO_EARLY_BELOW || to.scored < TOO_EARLY_BELOW) return undefined;
+  return {
+    dimensions: to.dimensions.map((d, i) => ({ id: d.id, delta: gap(from.dimensions[i].average, d.average) })),
+    criteria: to.criteria.map((c, i) => ({ id: c.id, delta: delta(from.criteria[i].coverage, c.coverage) }))
+  };
+}
+
 function compare(from, to) {
   if (from.totals.calls < TOO_EARLY_BELOW || to.totals.calls < TOO_EARLY_BELOW) return null;
+  const scorecard = compareScorecard(from.scorecard, to.scorecard);
   return {
     from: from.month,
     to: to.month,
     calls: to.totals.calls - from.totals.calls,
     success: delta(from.totals.success, to.totals.success),
-    stageAdvance: delta(from.totals.stageAdvance, to.totals.stageAdvance)
+    stageAdvance: delta(from.totals.stageAdvance, to.totals.stageAdvance),
+    ...(scorecard ? { scorecard } : {})
   };
 }
 

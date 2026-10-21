@@ -101,3 +101,34 @@ test('stats on a brain without the sales area says so clearly', () => {
     assert.match(res.stdout + res.stderr, /no sales area/i);
   });
 });
+
+function addScored(brain, i, status = 'scored') {
+  const dir = path.join(brain, 'sales', 'calls', month);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, `${month}-02_s${i}.md`), `---\nrep: "Ana"\nprospect_company: "Sc${i}"\ndate: "${month}-02"\ndeal_stage: "Discovery"\noutcome: "Advanced"\nscorecard_status: ${status}\nscore_discovery: ${i % 5 + 1}\nscore_talk_ratio: 3\nscore_listening: 3\nscore_objection_handling: 3\nscore_value_framing: 3\nscore_next_step: 4\nqual_metrics: evidenced\nrep_talk_share: 60\n---\n\nBody\n`);
+}
+
+test('stats --json reports scorecard dimensions, sample label and matrix criteria', () => {
+  withBrain('sales', (brain) => {
+    for (let i = 0; i < 6; i++) addScored(brain, i);
+    const res = run('stats', brain, '--json');
+    assert.equal(res.status, 0, res.stderr);
+    const s = JSON.parse(res.stdout).windows[0].scorecard;
+    assert.equal(s.scored, 6);
+    assert.deepEqual(s.dimensions.map((d) => d.id), ['talk_ratio', 'discovery', 'listening', 'objection_handling', 'value_framing', 'next_step']);
+    assert.ok(s.dimensions.every((d) => d.count === 6 && d.sample === 'too-early'));
+    assert.equal(s.dimensions.find((d) => d.id === 'discovery').average, 2.7);
+    assert.equal(s.criteriaSource, 'matrix');
+    assert.equal(s.criteria.length, 8);
+  });
+});
+
+test('stats works on an old brain with no scored calls', () => {
+  withBrain('sales', (brain) => {
+    for (let i = 0; i < 3; i++) addCall(brain, i);
+    const res = run('stats', brain, '--json');
+    assert.equal(res.status, 0, res.stderr);
+    const s = JSON.parse(res.stdout).windows[0].scorecard;
+    assert.deepEqual([s.scored, s.notScored], [0, 3]);
+  });
+});
