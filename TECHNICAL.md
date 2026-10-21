@@ -88,11 +88,17 @@ src/
 │   ├── plays.js           play frontmatter parse/validate (PLAY_KEYS), parseMotions, readPlayMeta, PLAY_TITLE_PREFIX
 │   ├── sales-stages.js    plain sections of system.md (SECTION_HEADINGS in en/es), stage number -> name
 │   ├── sales-normalize.js slugs, company/deal keys, outcomes, booleans, DEFAULT_MOTIONS, motionName(slug, lang)
+│   ├── sales-scripts.js   parseScript: script markdown grammar -> conversations/steps/answers/cards + diagnostics (ADR 0008)
+│   ├── sales-glossary.js  parseGlossary, lookupTerm (glossary tables)
+│   ├── script-view.js     renderScriptPage + SCRIPT_CSS (one offline HTML page per script, generator meta)
+│   ├── sales-library.js   loadLibrary, writeScriptPages (only I/O of the feature), checkSalesLibrary (doctor)
+│   ├── sales-sections.js  Scripts and Glossary sections of the sales page, script draft merge
 │   ├── sales-view.js      buildSalesView/writeSalesView/writeSalesPreview (plain-language HTML page of the sales system)
 │   ├── flowchart.js       offline renderer: Mermaid flowchart subset -> layered layout -> inline SVG (no deps, no network)
 │   ├── html-escape.js     single HTML escaper for generated pages
 │   ├── sales-records.js   tolerant reader of call logs, win-loss notes and guides under sales/ (ADR 0007)
 │   ├── sales-metrics.js   pure metrics: month windows, sample-size rules, type-of-sale resolution
+│   ├── legacy-assets.js   sha256 lists of removed legacy files (commands, flat skills, LEGACY_STARTER_SCRIPT_HASHES)
 │   ├── sales-dashboard.js "How it's going" section of the sales page
 │   ├── sales-report-text.js  plain-text `stats` report
 │   ├── i18n.js            t(lang, key, vars) with en/es dictionaries (English fallback), formatMonth, formatPercent (Intl)
@@ -333,6 +339,24 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 - `doctor` warns (never errors) when a call guide or the pipeline has no Mermaid diagram or one `src/core/flowchart.js` can't draw, in plain words ("The cold call guide's diagram can't be drawn; ask your assistant to fix it").
 - The page is a generated artifact: `upgrade` does not manage it, `clean-demo` never removes it, and `doctor` and `brain_query` only read `.md`/`.json`.
 
+### Sales Scripts and Glossary (ADR 0008)
+- The package ships the method, not content: the `script` skill (`/script`), AGENTS intents, an empty "Scripts, glossary and industry packs" section in `sales/system.md`, and `sales/scripts/README.md`. No script, glossary or industry pack is shipped.
+- Script source: `sales/scripts/<slug>.md` (slug = file stem, `^[a-z0-9]+(-[a-z0-9]+)*$`). Files without a `script:` key are ignored. `clc-brain view` writes `<slug>.html` beside it.
+- Grammar contract (`src/core/sales-scripts.js`, never throws; problems are `{level, line, message}` diagnostics):
+  - Frontmatter: `script` (= stem), `title`, `industry?`, `version` (integer), `status` (`draft` or `active`). Text before the first `##` is the intro.
+  - Heading levels: `## ` conversation (`play:`, `goal:`, `note:`, and `- ` rules before the first step), `### ` step (`branch:`, `tag:`, `say:`, `detail:`, `tip:`, `tone:`, `next:`), `#### ` answer (its title is the pill; same keys plus `when:`).
+  - Cards: a new card starts when `say:` or `tag:` repeats in the same step or answer; `detail:` is repeatable (secondary paragraph). Tones: `start`, `plain`, `action`, `yes`, `no`, `follow`.
+  - `next:` is a step title, a conversation title (case-insensitive) or `end`.
+  - Anchors (stable, English): conversation = ascii-folded slug of its title; step = `<play>-<branch lowercase>` when both are set, else `<conversation-slug>-step-N`; duplicates get `-2` plus a warning.
+  - Errors: no frontmatter, missing title, bad `status`/`version`, no conversation, a conversation without steps, a card without `say`, an unknown tone. Warnings: unknown line, unresolved `next:`, duplicate anchor, `script:` not matching the file stem.
+- Layout rules (`script-view.js`): no answers = one column; any answer with more than one card, or 4 or more answers = lanes (2, 3 or 4 columns); otherwise 1 answer = column, 2 = pair, 3 = a row of three. Pills take their class from the tone. Pages are fully offline (no `<script>`, no `http`, no `url()` except `#` references), escape all text first, and follow light/dark through `prefers-color-scheme`.
+- Generator marker: pages carry `<meta name="generator" content="clc-brain">`. `writeScriptPages` never overwrites a page without it, skips symlinks, paths outside the brain and scripts with errors, and reports each skip.
+- Links: a play row's Guion cell holds `../scripts/<slug>.html#<anchor>`. Only `[text](./scripts/<slug>.html[#anchor])` and `./glossary.md` become links on the sales page (the latter as `#glossary`); every other URL stays plain text.
+- Glossary format (`sales/glossary.md`, `src/core/sales-glossary.js`): `# Title`, then `## group` sections each with one three-column table (term, meaning, example; read by column position, bold term allowed). It renders as the "Glossary" section of the sales page. `lookupTerm` matches ignoring case and accents.
+- `view`: writes every script page, then the sales page with a Scripts section (one card per script) and a Glossary section. `view --draft <file>` accepts a script draft (frontmatter has `script:`): it writes the page and all script pages into the temporary preview folder, never into the brain, and exits 1 when the draft has errors; `--open` opens the first script draft's page.
+- `doctor` (`checkSalesLibrary`, warnings only, silent on a fresh brain): script diagnostics; a conversation `play` that is not in `sales/plays/`; a `branch` missing from that play's situations; a script or the glossary not linked from `sales/system.md`; a Guion link to a missing script or anchor; a page that is missing or older than its `.md` (suggests `clc-brain view`); a malformed glossary; and legacy starter scripts. Legacy starters are matched only by sha256 (`LEGACY_STARTER_SCRIPT_HASHES`, every committed version, CRLF-normalized), so an edited copy is never flagged; the assistant removes them only after the person says yes.
+- `upgrade` adds the `script` skill and its shortcuts and refreshes the AGENTS managed block; it never touches `sales/scripts/`, `sales/glossary.md`, `system.md` or plays.
+
 ### Sales Metrics (`clc-brain stats`, ADR 0007)
 - Data model, all optional frontmatter. Call guides: `motions:` (comma list of types of sale, or `all`; missing means all) and `success:` (plain-words success). Call logs: `motion`, `lead_source`, `deal_id` (stored as slugs) and `goal_met` (boolean, checked against the guide's `success:`), next to `play`, `branch`, `gate_advanced` (full example in "Partitioned Historical Call Storage" above). Win-loss notes (`sales/win-loss/post-mortem-template.md`): `result`, `date`, `motion`, `lead_source`, `deal_id`, `rep`, and `company`/`prospect_company`, with the file name and the older table as fallbacks. Default types of sale (`DEFAULT_MOTIONS`): `cold-outbound`, `inbound`, `referral`, `expansion`; custom slugs are allowed.
 - `readSalesRecords` (src/core/sales-records.js) reads `sales/` only, skips symlinks and sample records, and lists unreadable files in `skipped`. `buildSalesReport` (src/core/sales-metrics.js) is pure: it returns `windows` (current month so far and last complete month), `comparison`, `journeys`, `unclassified` and `excluded`. `loadSalesReport` joins the two.
@@ -393,6 +417,7 @@ Executed via Node.js native test runner (`node --test tests/**/*.test.js`):
 14. **`tests/agents-intents.test.js`** and **`tests/plain-language.test.js`**: the managed AGENTS.md block (intents in English and Spanish, plain-language rules, slash commands come from one skill source), plain user-facing procedures, and the README claims about languages, the sales page and `stats`.
 15. **`tests/init-language.test.js`** and **`tests/locale-parity.test.js`**: `--language`, the locale overlay and parity of translated starter files.
 16. **`tests/stats-cli.test.js`**, **`tests/sales-report-text.test.js`** and **`tests/upgrade-cli.test.js`**: the `stats` and `upgrade` commands end to end.
+17. **Scripts and glossary** (ADR [0008](./docs/Journal/0008-sales-scripts-and-glossary.md)): `tests/core/sales-scripts.test.js`, `sales-glossary.test.js`, `script-view.test.js`, `sales-library.test.js`, `sales-view-scripts.test.js`, `sales-doctor.test.js`, plus `tests/cli-view-script.test.js`, `script-skill.test.js`, `sales-templates.test.js`, `legacy-assets.test.js`, `upgrade-script.test.js` and `docs-scripts.test.js`.
 
 CLI tests scaffold into a temporary directory under `os.tmpdir()`; no test writes into the repository. Requires Node.js >= 22.
 

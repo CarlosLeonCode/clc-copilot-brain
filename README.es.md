@@ -113,6 +113,8 @@ Tu cerebro trae un sistema de ventas listo para usar que puedes adaptar a la for
 - 🧭 **Tipos de venta**: prospección en frío, solicitudes entrantes, referidos y clientes actuales. Puedes agregar los tuyos.
 - 📝 **Notas de llamadas**: después de cada llamada, di *"Registra esta llamada"*. Tu asistente anota el tipo de venta, de dónde vino el contacto y si la llamada cumplió su objetivo, y te pregunta antes de guardar.
 - 📅 **Una revisión mensual**: pregunta *"¿Cómo me fue este mes?"*. Tu asistente lee los números reales, propone cambios a tus guías y no cambia nada hasta que lo apruebas.
+- 🎬 **Guiones para cualquier industria**: di *"Hazme un guion para restaurantes"*. Tu asistente te pregunta por tus clientes y tus palabras, te muestra una vista previa y lo guarda solo cuando dices que sí. Se abre como una página visual que puedes leer durante una llamada.
+- 📖 **Un glosario**: pregunta *"¿Qué significa MEDDPICC?"* y recibe una respuesta clara. El asistente puede añadir los términos que usa tu equipo, y aparecen en tu página de ventas.
 
 ### 👁️ Mira tu proceso de ventas
 
@@ -379,6 +381,7 @@ Los cerebros anteriores usaban nombres con dos puntos (`/brain:onboarding`); aho
 | `/battlecard` | Cómo te comparas con un competidor. |
 | `/call` | Analiza las notas de una llamada y las guarda. |
 | `/flow` | Ve o cambia tu proceso de ventas y tus guías de llamada, o trae un flujo que ya tienes. |
+| `/script` | Escribe o mejora un guion para cualquier industria, míralo como página y cuida el glosario. |
 | `/retro` | Revisión mensual de llamadas y negocios ganados o perdidos. |
 | `/brain-add-area` | Agrega una nueva área o documento. |
 | `/brain-doctor` | Revisión de estado desde el chat. |
@@ -435,7 +438,9 @@ Los cerebros anteriores usaban nombres con dos puntos (`/brain:onboarding`); aho
 | `sales/stages/` | Los pasos de tu proceso de ventas y lo que debe cumplirse antes de avanzar. |
 | `sales/calls/` | Notas de llamadas, una carpeta por mes. |
 | `sales/win-loss/` | Análisis de negocios ganados y perdidos. |
-| `sales/` (otras carpetas) | Perfiles de cliente, objeciones, comparativas con competidores, guiones, calificación, casos de éxito. |
+| `sales/scripts/` | Tus guiones, un archivo cada uno, con una página visual generada al lado. |
+| `sales/glossary.md` | Tus términos y lo que significan (se crea con el primer término). |
+| `sales/` (otras carpetas) | Perfiles de cliente, objeciones, comparativas con competidores, calificación, casos de éxito. |
 | `sales/sales-system.html` | La página visual de tu proceso de ventas (se crea sola; ábrela en cualquier navegador). |
 | `marketing/` | Marca, mensajes, calendario de contenidos, distribución. |
 | `product/` | Hoja de ruta, especificaciones, notas de versión. |

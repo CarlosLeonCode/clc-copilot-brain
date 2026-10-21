@@ -10,6 +10,7 @@ import { PLAY_TITLE_PREFIX, hasDecisionTree, validatePlay } from './plays.js';
 import { parseFlowchart } from './flowchart.js';
 import { readSalesRecords } from './sales-records.js';
 import { DEFAULT_MOTIONS, toSlug } from './sales-normalize.js';
+import { checkSalesLibrary } from './sales-library.js';
 
 const FIRST_MERMAID = /```mermaid\r?\n([\s\S]*?)```/;
 
@@ -231,6 +232,7 @@ export function runDoctor(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR } = {
   if (kernel && Array.isArray(kernel.activeAreas) && kernel.activeAreas.includes('sales')) {
     checkSalesSystem(rootDir, report);
     checkSalesMetrics(rootDir, report);
+    for (const message of checkSalesLibrary(rootDir)) report.issue({ level: 'warning', message });
   }
 
   const errors = issues.filter((i) => i.level === 'error').length;

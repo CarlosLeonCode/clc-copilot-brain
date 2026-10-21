@@ -113,6 +113,8 @@ Your brain comes with a ready-to-use sales system that you can shape to the way 
 - 🧭 **Types of sale**: cold outreach, inbound requests, referrals and existing customers. You can add your own.
 - 📝 **Call notes**: after each call, say *"Log this call"*. Your assistant records the type of sale, where the lead came from and whether the call reached its goal, and asks before saving.
 - 📅 **A monthly review**: ask *"How did this month go?"*. Your assistant reads the real numbers, proposes changes to your guides, and changes nothing until you approve.
+- 🎬 **Scripts for any industry**: say *"Write me a script for restaurants"*. Your assistant asks about your customers and your words, shows you a preview, and saves it only after you say yes. It opens as a visual page you can read during a call.
+- 📖 **A glossary**: ask *"What does MEDDPICC mean?"* and get a plain answer. The assistant can add the terms your team uses, and they show up on your sales page.
 
 ### 👁️ See your sales process
 
@@ -420,6 +422,7 @@ Older brains used names with a colon (`/brain:onboarding`); they are now `/brain
 | `/battlecard` | How you compare against a competitor. |
 | `/call` | Analyze call notes and save them. |
 | `/flow` | See or change your sales process and call guides, or bring in a flow you already have. |
+| `/script` | Write or improve a script for any industry, preview it as a page, and keep the glossary. |
 | `/retro` | Monthly review of calls and won/lost deals. |
 | `/brain-add-area` | Add a new area or document. |
 | `/brain-doctor` | Health check from inside the chat. |
@@ -476,7 +479,9 @@ Older brains used names with a colon (`/brain:onboarding`); they are now `/brain
 | `sales/stages/` | The steps of your sales process and what must be true before moving on. |
 | `sales/calls/` | Call notes, one folder per month. |
 | `sales/win-loss/` | Reviews of deals won and lost. |
-| `sales/` (other folders) | Customer profiles, objections, competitor comparisons, scripts, qualification, case studies. |
+| `sales/scripts/` | Your scripts, one file each, with a visual page generated beside it. |
+| `sales/glossary.md` | Your terms and what they mean (created with the first term). |
+| `sales/` (other folders) | Customer profiles, objections, competitor comparisons, qualification, case studies. |
 | `sales/sales-system.html` | The visual page of your sales process (created for you; open it in any browser). |
 | `marketing/` | Brand, messaging, content calendar, distribution. |
 | `product/` | Roadmap, specs, release notes. |

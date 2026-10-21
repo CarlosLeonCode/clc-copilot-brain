@@ -1,10 +1,12 @@
-// Sales scripts and glossary on disk: load them and write the generated script pages.
+// Sales scripts and glossary on disk: load them, write the generated script pages and audit them for doctor.
 // The only module in the scripts feature that touches the filesystem; writes stay inside the brain.
 import fs from 'node:fs';
 import path from 'node:path';
 import { isInside } from './fs-utils.js';
 import { SKILL_NAME_PATTERN } from './harness-adapters.js';
-import { parseFrontmatter } from './plays.js';
+import { parseFrontmatter, readPlayMeta } from './plays.js';
+import { SECTION_HEADINGS, section } from './sales-stages.js';
+import { isLegacyStarterScript, LEGACY_STARTER_SCRIPT_HASHES } from './legacy-assets.js';
 import { parseScript } from './sales-scripts.js';
 import { parseGlossary } from './sales-glossary.js';
 import { renderScriptPage } from './script-view.js';
@@ -87,4 +89,83 @@ export function writeScriptPages(library, { rootDir, outDir = null, lang = DEFAU
     result.written.push(entry.slug);
   }
   return result;
+}
+
+const FIX = 'Ask your assistant to fix it.';
+const SCRIPT_LINK = /\.\.\/scripts\/([a-z0-9-]+)\.html(?:#([^)\s"']+))?/g;
+const mdFiles = (dir) => (fs.existsSync(dir) ? fs.readdirSync(dir, { withFileTypes: true }).filter((e) => e.isFile() && e.name.endsWith('.md')).map((e) => e.name).sort() : []);
+const anchorsOf = (parsed) => new Set(parsed.conversations.flatMap((c) => [c.anchor, ...c.steps.map((st) => st.anchor)]));
+
+function playProblems(entry, plays) {
+  const problems = [];
+  for (const conv of entry.parsed.conversations) {
+    if (!conv.play) continue;
+    const play = plays.get(conv.play);
+    if (!play) problems.push(`"${conv.title}" uses the call guide "${conv.play}", which is not in sales/plays/`);
+    else for (const step of conv.steps) {
+      if (step.branch && !play.branches.some((b) => b.id.toLowerCase() === step.branch.toLowerCase())) {
+        problems.push(`"${step.title}" uses branch ${step.branch}, which is not in the situations of "${conv.play}"`);
+      }
+    }
+  }
+  return problems;
+}
+
+function guionProblems(playFile, text, scripts) {
+  const problems = [];
+  for (const [, slug, anchor] of section(text, SECTION_HEADINGS.branches).matchAll(SCRIPT_LINK)) {
+    const target = scripts.get(slug);
+    if (!target) problems.push(`../scripts/${slug}.html, but sales/scripts/${slug}.md does not exist`);
+    else if (anchor && !anchorsOf(target.parsed).has(anchor)) problems.push(`../scripts/${slug}.html#${anchor}, but that script has no section "#${anchor}"`);
+  }
+  return problems.map((p) => `Play sales/plays/${playFile} links to ${p}. ${FIX}`);
+}
+
+function pageProblem(entry) {
+  const html = readText(entry.htmlPath);
+  const where = `sales/scripts/${entry.file}`;
+  if (html === null) return `Script ${where} has no page yet. Run "clc-brain view" or ask your assistant to refresh the page.`;
+  if (!html.includes(GENERATOR_MARKER)) return null;
+  if (fs.statSync(entry.htmlPath).mtimeMs < fs.statSync(path.join(path.dirname(entry.htmlPath), entry.file)).mtimeMs) {
+    return `The page of sales/scripts/${entry.file} is older than the script. Run "clc-brain view" or ask your assistant to refresh the page.`;
+  }
+  return null;
+}
+
+/** Doctor warnings for scripts, glossary and generated pages. Plain grouped messages; silent when there is nothing to report. */
+export function checkSalesLibrary(rootDir) {
+  const warnings = [];
+  const salesDir = path.join(rootDir, 'sales');
+  const library = loadLibrary(rootDir);
+  const scripts = new Map(library.scripts.map((e) => [e.slug, e]));
+  const playsDir = path.join(salesDir, 'plays');
+  const playTexts = mdFiles(playsDir).filter((f) => f !== 'README.md').map((f) => [f, readText(path.join(playsDir, f)) ?? '']);
+  const plays = new Map(playTexts.map(([f, text]) => { const meta = readPlayMeta(f, text); return [meta.id, meta]; }));
+  const system = readText(path.join(salesDir, 'system.md'));
+
+  for (const entry of library.scripts) {
+    const where = `sales/scripts/${entry.file}`;
+    const diags = entry.parsed.diagnostics.map((d) => `line ${d.line}: ${d.message}`);
+    if (diags.length > 0) warnings.push(`Script ${where} has problems: ${diags.join('; ')}. ${FIX}`);
+    const links = playProblems(entry, plays);
+    if (links.length > 0) warnings.push(`Script ${where} does not match your call guides: ${links.join('; ')}. ${FIX}`);
+    if (system !== null && !system.includes(`${entry.slug}.md`) && !system.includes(`${entry.slug}.html`)) {
+      warnings.push(`Script ${where} is not linked from sales/system.md. Ask your assistant to add it to the map.`);
+    }
+    const page = hasErrors(entry) ? null : pageProblem(entry);
+    if (page) warnings.push(page);
+  }
+  for (const [file, text] of playTexts) warnings.push(...guionProblems(file, text, scripts));
+
+  if (library.glossary) {
+    if (library.glossary.diagnostics.length > 0) {
+      warnings.push(`sales/glossary.md has problems: ${library.glossary.diagnostics.map((d) => `line ${d.line}: ${d.message}`).join('; ')}. ${FIX}`);
+    }
+    if (system !== null && !/\]\((?:\.\/)?glossary\.md/.test(system)) warnings.push('The glossary (sales/glossary.md) is not linked from sales/system.md. Ask your assistant to add it to the map.');
+  }
+
+  const legacy = mdFiles(path.join(salesDir, 'scripts')).filter((name) => name in LEGACY_STARTER_SCRIPT_HASHES
+    && isLegacyStarterScript(name, readText(path.join(salesDir, 'scripts', name)) ?? ''));
+  if (legacy.length > 0) warnings.push(`These are old example scripts that no longer ship: ${legacy.map((n) => `sales/scripts/${n}`).join(', ')}. Ask your assistant to remove them (it only does so after you say yes).`);
+  return warnings;
 }

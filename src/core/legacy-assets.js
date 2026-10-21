@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 // SHA-256 hashes (LF line endings) of every file this package ever shipped as a Claude Code command
 // (.claude/commands/*.md) or a flat agent skill (.agents/skills/*.md). Upgrades delete an old file only
 // when its hash is listed here, so a file a person changed is never removed.
@@ -76,3 +78,22 @@ export const LEGACY_FLAT_SKILL_HASHES = Object.freeze({
 export const LEGACY_COMMAND_RENAMES = Object.freeze(Object.fromEntries(
   Object.keys(LEGACY_COMMAND_HASHES).map((file) => [file, file.replace(/\.md$/, "").replaceAll(":", "-")])
 ));
+
+// Old English starter scripts removed from the templates (sales/scripts/). Doctor only warns about a copy
+// whose hash is listed; the assistant removes it after the person says yes. Edited copies never match.
+// One entry per committed version in git history (a single commit shipped each file).
+export const LEGACY_STARTER_SCRIPT_HASHES = Object.freeze({
+  "cold-outreach-email.md": [
+    "6d105bfc046d62d809b90a08230a6a6e0a6873cdbc20be4d030bbee44e1a5c25"
+  ],
+  "discovery-call-framework.md": [
+    "258ae9a01b2ae5007db71e7d2592d5256afed7ea71844a84be109f688ffb43cb"
+  ]
+});
+
+/** True when `text` is byte-for-byte (ignoring CRLF) a starter script this package used to ship under `fileName`. */
+export function isLegacyStarterScript(fileName, text) {
+  const hashes = LEGACY_STARTER_SCRIPT_HASHES[fileName];
+  if (!hashes) return false;
+  return hashes.includes(createHash('sha256').update(String(text).replace(/\r\n/g, '\n'), 'utf8').digest('hex'));
+}
