@@ -40,6 +40,12 @@ When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-
 - Treat estimated numbers (talk share, questions, longest stretch talking) as estimates and say so.
 - Write a coaching note into any file only after the person says yes.
 
+### A3. Deals: what to do next
+- Read the `deals` list from `clc-brain stats --json` (never recompute it). Each deal is "ready to move forward", "close it" or "not enough information yet". Verdicts cover all months, whatever month was asked for, so say that in plain words ("based on all calls, not only this month").
+- Never decide, change or invent a verdict. If a verdict looks wrong, say what the numbers show and suggest logging the missing call or evidence instead.
+- For "not enough information yet", suggest one question per missing item for the next conversation with that buyer. For "close it", suggest closing the deal and say why in plain words.
+- Write anything (a note, a closed deal, a win/loss entry) only after the person says yes.
+
 ### B. Win Rates & Performance by Sales Rep
 - Break down pipeline volume, win rate, average deal cycle length, and average deal size by rep (`Carlos`, `Juanita`, `Pepito`, etc.).
 - Analyze qualification adherence: Did high-performing reps disqualify bad fits faster in Discovery?

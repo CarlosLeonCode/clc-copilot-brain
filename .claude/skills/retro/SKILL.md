@@ -25,6 +25,7 @@ If no arguments were given, use the last complete month, or ask the user which m
 2. **Aggregate & Analyze Monthly Performance**:
    - Get the numbers by running `clc-brain stats --month <YYYY-MM> --json` for the last complete month (or the month the user names). Never count by hand; if the command cannot run, say plainly that the numbers are approximate.
    - Include the call scores from the same `clc-brain stats` output in plain words (small-sample rules apply). For a dimension averaging below 3 over at least 5 scored calls, suggest one coaching note; write it only after a yes.
+   - Include the deal verdicts from the `deals` list of `clc-brain stats --json` in plain words. They cover all months, whichever month is reviewed, so say so. Never decide or change a verdict; for deals that need more information suggest one question per missing item, for deals to close suggest closing them. Write only after a yes.
    - Report by type of sale and per person as well, and propose classifying calls that are still "Not classified yet" (a short plain list; write only after a yes).
    - Scan `sales/calls/YYYY-MM/` (for the requested month or latest available partition) and `sales/win-loss/`.
    - Synthesize:

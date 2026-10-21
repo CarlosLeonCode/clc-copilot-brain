@@ -52,3 +52,25 @@ test('retro copies read scores from stats, respect sample rules and coach only b
     assert.match(text, /only after (the person says )?yes/i, rel);
   }
 });
+
+test('retro copies review deal verdicts from stats, say they cover all months and never decide them', () => {
+  for (const rel of [...retros, ...retroCommands]) {
+    const text = read(rel);
+    assert.match(text, /deals/, rel);
+    assert.match(text, /all months/i, rel);
+    assert.match(text, /never (decide|change)/i, rel);
+  }
+  for (const rel of retros) {
+    assert.match(read(rel), /stats --json/, rel);
+    assert.match(read(rel), /one question per missing/i, rel);
+  }
+});
+
+test('analyzer copies set disqualify only when the deal is clearly over and capture deal size evidence', () => {
+  for (const rel of analyzers) {
+    const text = read(rel);
+    assert.match(text, /disqualify: true/, rel);
+    assert.match(text, /qual_deal_size/, rel);
+    assert.match(text, /never write a deal verdict|never compute averages, trends or deal verdicts/i, rel);
+  }
+});

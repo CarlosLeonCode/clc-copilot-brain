@@ -213,6 +213,8 @@ Score every call on six fixed dimensions. Write each one as its own frontmatter 
   - Agreeing the next step: 1 = nothing agreed; 3 = a vague follow-up; 5 = a dated next step with the people and agenda named.
 - **Estimated counts**: write `rep_talk_share` (0 to 100), `questions_asked`, `follow_up_questions` and `longest_monologue_seconds` as whole numbers only when the notes allow a reasonable estimate. Always say they are estimates; leave a key out when you cannot estimate it.
 - **Qualification**: read the list of criteria from the frontmatter `criteria` line of `sales/qualification/qualification-matrix.md` (the full MEDDPICC list when that line is missing) and write one `qual_<criterion>` key per criterion, using the ids exactly as listed. Write `evidenced` only when you have a verbatim quote for it (add it to the Qualification Evidence table); otherwise write `missing`. Never write "partial".
+- **Disqualified deals**: add `disqualify: true` to the frontmatter only when the call clearly ended the deal (the buyer said no, withdrew, or is not a fit) and you have a verbatim quote to show the person; otherwise leave the key out. Confirm with the person before saving it.
+- **Deal size**: when the buyer states a budget, contract value or team size, write `qual_deal_size: evidenced` with the quote in the Qualification Evidence table; otherwise `missing`.
 - **Never compute averages, trends or deal verdicts.** The numbers come from `clc-brain stats`.
 - **With the person**: talk in plain words about how the call went on each dimension and what the buyer said. Never show key names, ids, or the words MEDDPICC, gate or play.
 
