@@ -10,6 +10,7 @@ import { dealKey, normalizeOutcome, toSlug } from './sales-normalize.js';
 import { stageNames } from './sales-stages.js';
 import { buildSalesReport } from './sales-metrics.js';
 import { getBrainLanguage } from './brain-language.js';
+import { resolveCriteria } from './scorecard.js';
 
 const WIN_LOSS_SKIP = new Set(['README.md', 'post-mortem-template.md']);
 const WIN_LOSS_NAME = /^(\d{4}-\d{2}-\d{2})_(.+)_(won|lost)\.md$/i;
@@ -66,6 +67,7 @@ function parseCall(relPath, _fileName, text) {
       leadSource: log.leadSource,
       goalMet: log.goalMet,
       gateAdvanced: log.gateAdvanced,
+      scorecard: log.scorecard,
       outcome: normalizeOutcome(log.outcome)
     }
   };
@@ -118,7 +120,7 @@ function collect(files, parse, demo, state) {
 
 /**
  * Read every sales record of a brain. Never throws on odd content.
- * @returns {{ calls: object[], wins: object[], plays: object[], stageNames: Map<string,string>,
+ * @returns {{ calls: object[], wins: object[], plays: object[], criteria: object, stageNames: Map<string,string>,
  *   skipped: {relPath: string, reason: string}[], demoExcluded: number }}
  */
 export function readSalesRecords(rootDir, { templatesAreasDir } = {}) {
@@ -162,7 +164,13 @@ export function readSalesRecords(rootDir, { templatesAreasDir } = {}) {
   } catch {
     // no system.md: no stage names
   }
-  return { calls, wins, plays, stageNames: stageNames(systemMd), skipped: state.skipped, demoExcluded: state.demoExcluded };
+  let matrix = null;
+  try {
+    matrix = parseFrontmatter(fs.readFileSync(path.join(salesDir, 'qualification', 'qualification-matrix.md'), 'utf8'));
+  } catch {
+    // no matrix: the built-in criteria apply
+  }
+  return { calls, wins, plays, criteria: resolveCriteria(matrix), stageNames: stageNames(systemMd), skipped: state.skipped, demoExcluded: state.demoExcluded };
 }
 
 /** Read a brain's records and build the metrics report in the brain language. Pass `now` for deterministic windows. */

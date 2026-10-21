@@ -5,6 +5,7 @@ import { BrainError } from './errors.js';
 import { isInside } from './fs-utils.js';
 import { parseFrontmatter } from './plays.js';
 import { parseBool, toSlug } from './sales-normalize.js';
+import { readScorecard } from './scorecard.js';
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const REQUIRED = Object.freeze(['rep', 'prospect', 'date', 'summary', 'stage', 'outcome']);
@@ -158,5 +159,6 @@ export function readCallLog(text) {
   if (fm.deal_id) record.dealId = toSlug(fm.deal_id) || undefined;
   if (parseBool(fm.goal_met) !== undefined) record.goalMet = parseBool(fm.goal_met);
   if (fm.gate_advanced !== undefined) record.gateAdvanced = fm.gate_advanced === 'true';
+  record.scorecard = readScorecard(fm);
   return record;
 }

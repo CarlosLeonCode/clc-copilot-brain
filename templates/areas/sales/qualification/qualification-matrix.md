@@ -1,3 +1,14 @@
+---
+criteria: metrics, economic_buyer, decision_criteria, decision_process, paper_process, identified_pain, champion, competition
+label_metrics: "Measurable impact"
+label_economic_buyer: "Budget owner"
+label_decision_criteria: "How they will choose"
+label_decision_process: "Steps to a decision"
+label_paper_process: "Contract and approvals"
+label_identified_pain: "Problem that hurts"
+label_champion: "Internal supporter"
+label_competition: "Other options"
+---
 # Sales Qualification Matrix & Disqualification Framework (`sales/qualification/`)
 
 > **Core Revenue Principle:** Qualification is not a one-time gate; it is an ongoing deal hygiene discipline. Our goal is to **win big deals quickly or disqualify bad deals instantly**. Time spent pursuing unqualified opportunities is pipeline pollution.
@@ -6,7 +17,7 @@
 
 ## 1. The MEDDPICC Qualification Matrix
 
-Every enterprise opportunity in the pipeline must be evaluated against the six core pillars:
+Every enterprise opportunity in the pipeline must be evaluated against the eight core pillars:
 
 | Pillar | Focus | Probing Discovery Questions | Verification Evidence (Green Flags) | Risk Indicators (Red Flags) |
 | :--- | :--- | :--- | :--- | :--- |
@@ -16,6 +27,8 @@ Every enterprise opportunity in the pipeline must be evaluated against the six c
 | **D — Decision Process** | The sequential roadmap from evaluation to contract signature | • *"Walk me through the exact steps from technical validation to contract execution."*<br>• *"What are the specific legal, InfoSec, and procurement reviews required?"*<br>• *"What is the typical lead time for vendor onboarding at your company?"* | • Mutual Action Plan (MAP) signed with exact calendar milestones.<br>• Legal redline point of contact identified.<br>• Procurement process steps and review cadences mapped out. | • Prospect says "once we decide, signing only takes 2 days" (enterprise fantasy).<br>• Unidentified security committees or board approval layers.<br>• No target go-live date tied to a business milestone. |
 | **I — Identified Pain** | Compelling operational bottleneck costing revenue or velocity | • *"What happens to your Q4 product deliverables if this problem isn't solved?"*<br>• *"Has this documentation fragmentation caused recent production outages or security incidents?"*<br>• *"Why solve this now instead of pushing it to next fiscal year?"* | • Pain is acknowledged by executive leadership.<br>• Severe cost of inaction (COI) established.<br>• Tied directly to company-level strategic initiatives (e.g. AI transformation). | • Pain is an annoyance rather than a priority.<br>• "Nice to have" productivity improvement without acute symptoms.<br>• No consequences if project is deferred 12 months. |
 | **C — Champion** | Internal advocate with political capital and personal interest | • *"What does solving this mean for your personal charter and team visibility?"*<br>• *"Will you introduce us to the Economic Buyer this week to review the findings?"*<br>• *"Are you comfortable partnering on an internal business case presentation?"* | • Champion provides internal organizational roadmap and backstage intelligence.<br>• Actively arranges access to the Economic Buyer.<br>• Sells internally when vendor is not in the room. | • Contact is friendly ("Coach") but lacks political capital or authority.<br>• Unwilling to introduce team to executive leadership.<br>• Passively forwards brochures without internal advocacy. |
+| **P — Paper Process** | Legal, security and procurement steps to get a contract signed | • *"Which legal, security and procurement reviews does a contract go through here?"*<br>• *"Who signs, and how long did the last vendor take to onboard?"*<br>• *"Can we share our standard paperwork early so reviews run in parallel?"* | • Named contact for legal and procurement.<br>• Review steps and dates written into the mutual plan.<br>• Standard paperwork shared and under review. | • Nobody can describe how contracts get approved.<br>• Security or legal review is first mentioned late.<br>• Signature date is promised without any review steps. |
+| **C — Competition** | Other vendors, internal builds and the do-nothing option | • *"Which other options are you looking at, including building it yourselves?"*<br>• *"What would make you stay with what you have today?"*<br>• *"What would the winning option need to prove to you?"* | • Alternatives are known and our advantages are tied to their criteria.<br>• The prospect explains why the status quo falls short. | • The prospect will not say who else is involved.<br>• An internal build or "do nothing" is quietly the favorite. |
 
 ---
 
