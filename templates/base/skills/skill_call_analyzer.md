@@ -95,6 +95,18 @@ play: "{{PLAY_ID}}"
 branch: "{{BRANCH_ID}}"
 goal_met: true | false
 gate_advanced: true | false
+scorecard_status: scored | too-thin
+score_talk_ratio: 1-5 | not-enough-evidence
+score_discovery: 1-5 | not-enough-evidence
+score_listening: 1-5 | not-enough-evidence
+score_objection_handling: 1-5 | not-enough-evidence
+score_value_framing: 1-5 | not-enough-evidence
+score_next_step: 1-5 | not-enough-evidence
+rep_talk_share: 0-100
+questions_asked: 0
+follow_up_questions: 0
+longest_monologue_seconds: 0
+qual_<criterion>: evidenced | missing
 deal_size: "{{ESTIMATED_ARR}}"
 detected_objections:
   - id: "{{OBJECTION_ID}}"
@@ -152,6 +164,18 @@ next_meeting: "YYYY-MM-DDTHH:MM:SSZ"
 
 ---
 
+## Scorecard
+| Dimension | Score | Quote |
+| :--- | :--- | :--- |
+| {{DIMENSION_NAME}} | {{1-5}} | "{{EXACT_QUOTE}}" |
+
+## Qualification Evidence
+| Criterion | Evidence | Quote |
+| :--- | :--- | :--- |
+| {{CRITERION_NAME}} | evidenced | "{{EXACT_QUOTE}}" |
+
+---
+
 ## Mutual Action Plan & Next Steps
 | Action Item | Owner | Target Date | Status |
 | :--- | :--- | :--- | :--- |
@@ -171,6 +195,26 @@ next_meeting: "YYYY-MM-DDTHH:MM:SSZ"
 - In that sentence never show play IDs, branch codes (like B3), field names, file paths, or frontmatter. Never say "HITL" or "checkpoint" to the person. Show the full log only if they ask for it.
 - If the person corrects something, fix it and confirm again in one sentence.
 - After saving, say in plain words what happened (e.g. "Saved with your September calls."), without the file path.
+
+---
+
+## 3c. CALL SCORECARD & QUALIFICATION EVIDENCE (INTERNAL RULES)
+
+Score every call on six fixed dimensions. Write each one as its own frontmatter key (`score_talk_ratio`, `score_discovery`, `score_listening`, `score_objection_handling`, `score_value_framing`, `score_next_step`) plus `scorecard_status`, and put the quotes in the body tables above. Do not rename or add dimensions.
+
+- **Score only with a quote**: a score from 1 to 5 needs a verbatim quote from the notes in the Scorecard table. No quote, no score: write `not-enough-evidence`. Never invent quotes or paraphrase them.
+- **Too thin**: when the notes are too short to judge anything, write `scorecard_status: too-thin` and leave the dimensions out. Otherwise write `scorecard_status: scored`.
+- **Rubric** (1 = weak, 3 = fine, 5 = strong):
+  - Balance of talking and listening: 1 = the rep talked almost the whole call; 3 = roughly even with some long stretches; 5 = the buyer did most of the talking.
+  - Finding out what matters: 1 = went straight to pitching; 3 = asked about the problem but not its cost or urgency; 5 = uncovered the problem, its impact and why it matters now.
+  - Listening: 1 = ignored or talked over what the buyer said; 3 = acknowledged it but did not build on it; 5 = repeated back and followed up on what the buyer said.
+  - Handling concerns: 1 = dodged or argued; 3 = answered but did not check it landed; 5 = acknowledged, answered and confirmed the concern was settled.
+  - Showing the value: 1 = listed features; 3 = tied features to some needs; 5 = tied the offer to the buyer's own numbers and goals.
+  - Agreeing the next step: 1 = nothing agreed; 3 = a vague follow-up; 5 = a dated next step with the people and agenda named.
+- **Estimated counts**: write `rep_talk_share` (0 to 100), `questions_asked`, `follow_up_questions` and `longest_monologue_seconds` as whole numbers only when the notes allow a reasonable estimate. Always say they are estimates; leave a key out when you cannot estimate it.
+- **Qualification**: read the list of criteria from the frontmatter `criteria` line of `sales/qualification/qualification-matrix.md` (the full MEDDPICC list when that line is missing) and write one `qual_<criterion>` key per criterion, using the ids exactly as listed. Write `evidenced` only when you have a verbatim quote for it (add it to the Qualification Evidence table); otherwise write `missing`. Never write "partial".
+- **Never compute averages, trends or deal verdicts.** The numbers come from `clc-brain stats`.
+- **With the person**: talk in plain words about how the call went on each dimension and what the buyer said. Never show key names, ids, or the words MEDDPICC, gate or play.
 
 ---
 

@@ -12,6 +12,7 @@ When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-
    - Default to the last complete month (for example, in October use September) unless the person names another month. Run `clc-brain stats --month <YYYY-MM> --json` in the brain folder and use its totals, by type of sale, by call guide (with where calls stalled), per person, the comparison with the previous month, and the list of calls that are still "Not classified yet".
    - Never count by hand. If the command cannot run, say plainly that the numbers are approximate before giving them.
    - Respect small samples: with fewer than 5 calls give counts only; with fewer than 10 say it is too early to tell.
+   - The same output carries the call scores (a score per dimension, how many calls were scored, how many were too thin to score, estimated call numbers) and how often each qualification question was answered. Report only what the command computed, apply the same small-sample rules, and mention the score comparison with the previous month only when the output includes it (it needs 10 or more scored calls in both months). Calls not scored yet are counted, never guessed.
 1. **Scan Historical Memory** (for the details behind the numbers):
    - Collect and parse all call logs in `sales/calls/YYYY-MM/*.md`.
    - Read YAML frontmatter metadata: `deal_stage`, `rep`, `detected_objections`, `competitors_mentioned`, `outcome`, `deal_size`, `play`, `branch`, `motion`, `lead_source`, `deal_id`, `goal_met`, `gate_advanced`.
@@ -33,6 +34,11 @@ When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-
 - Classify by severity (`low`, `medium`, `high`, `blocker`).
 - Identify emerging objections not yet cataloged in `sales/objections/`.
 - Flag recurring objections causing deals to stall or drop out.
+
+### A2. Call scores and coaching notes
+- Use the call scores from `clc-brain stats` (never recompute them). For a dimension whose average is below 3 with at least 5 scored calls, suggest one plain-language coaching note for it (a concrete habit to try next month). With fewer than 5 scored calls, or an average of 3 or more, give no note.
+- Treat estimated numbers (talk share, questions, longest stretch talking) as estimates and say so.
+- Write a coaching note into any file only after the person says yes.
 
 ### B. Win Rates & Performance by Sales Rep
 - Break down pipeline volume, win rate, average deal cycle length, and average deal size by rep (`Carlos`, `Juanita`, `Pepito`, etc.).
@@ -93,6 +99,8 @@ Reply in the person's language and in plain words. Show only parts A and B. In t
 3. {{PLAIN_POINT_3}} (for example: "Deals tend to stall while waiting for the security review.")
 
 By type of sale and per person, in one line each (for example: "Cold outreach reached its goal in 3 of 4 calls; Ana had the best month. 2 calls are still Not classified yet.").
+
+When there are enough scored calls, add one line on call scores (for example: "Listening averaged 2.4 out of 5 over 6 calls; asking for the next step scored best.").
 
 ## Changes I suggest
 1. In the cold call, most people drop when we ask about budget. Want me to change that question to "{{NEW_QUESTION}}"?
