@@ -5,6 +5,7 @@ import { AREA_ID_PATTERN, copyAreaTemplates, findPreset } from './areas.js';
 import { isDemoTemplateAsset } from './demo.js';
 import { BrainError } from './errors.js';
 import { DEFAULT_LANGUAGE, LANGUAGE_HELP, parseLanguage } from './brain-language.js';
+import { DEFAULT_METHODOLOGY, METHODOLOGY_HELP, parseBuiltInMethodology } from './methodology.js';
 import { copyDirRecursive, ensureDir } from './fs-utils.js';
 import { generateHarnessAdapters } from './harness-adapters.js';
 import { IDE_ADAPTERS, SSOT_FILE, expectedAssets, templateDirs } from './manifest.js';
@@ -115,12 +116,14 @@ export function restoreRootSkills(targetDir, { templatesBaseDir = TEMPLATES_BASE
 /**
  * Initialize a brain in targetDir.
  * @param {string} targetDir
- * @param {{ companyName?: string, industry?: string, tagline?: string, areas: string[], demo?: boolean, language?: string }} opts
+ * @param {{ companyName?: string, industry?: string, tagline?: string, areas: string[], demo?: boolean, language?: string, methodology?: string }} opts
  * @returns {{ targetDir: string, areas: string[], adapters: ReturnType<typeof setupIdeAdapters>, shortcuts: ReturnType<typeof generateHarnessAdapters> }}
  */
-export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, industry = INIT_DEFAULTS.industry, tagline = INIT_DEFAULTS.tagline, areas, demo = false, language = DEFAULT_LANGUAGE }) {
+export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, industry = INIT_DEFAULTS.industry, tagline = INIT_DEFAULTS.tagline, areas, demo = false, language = DEFAULT_LANGUAGE, methodology = DEFAULT_METHODOLOGY }) {
   const lang = parseLanguage(language);
   if (!lang) throw new BrainError('INVALID_LANGUAGE', LANGUAGE_HELP);
+  const method = parseBuiltInMethodology(methodology);
+  if (!method) throw new BrainError('INVALID_METHODOLOGY', METHODOLOGY_HELP);
   const invalid = areas.filter((id) => !AREA_ID_PATTERN.test(id));
   if (invalid.length > 0) {
     throw new BrainError('INVALID_AREA_ID', `Invalid area id(s): ${invalid.join(', ')}. Use lowercase letters, numbers, hyphens, and underscores.`);
@@ -137,6 +140,7 @@ export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, 
     .replaceAll('{{INDUSTRY}}', industry)
     .replaceAll('{{TAGLINE}}', tagline)
     .replaceAll('{{LANGUAGE}}', lang)
+    .replaceAll('{{METHODOLOGY}}', method)
     .replaceAll('{{ACTIVE_AREAS_JSON}}', JSON.stringify(areas, null, 2))
     .replaceAll('{{ACTIVE_AREAS_LIST}}', areasList)
     .replaceAll('{{CREATED_AT}}', nowIso)
@@ -160,6 +164,7 @@ export function initBrain(targetDir, { companyName = INIT_DEFAULTS.companyName, 
     }
     copyAreaTemplates(areaId, path.join(targetDir, areaId), {
       lang,
+      methodology: method,
       replacer,
       filter: demo ? null : (srcPath) => !isDemoTemplateAsset(srcPath)
     });

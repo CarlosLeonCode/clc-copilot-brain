@@ -2,6 +2,7 @@
   "$schema": "./schemas/org-kernel.schema.json",
   "version": "1.0.0",
   "language": "{{LANGUAGE}}",
+  "methodology": "{{METHODOLOGY}}",
   "setup": { "completed": false },
   "organization": {
     "name": "{{COMPANY_NAME}}",

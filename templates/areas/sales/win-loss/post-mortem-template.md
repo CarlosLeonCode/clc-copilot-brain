@@ -60,11 +60,10 @@ result:
 
 ### Dimension 4: Process & Qualification Learnings
 *How effectively was the deal qualified and managed through pipeline stages?*
-- **MEDDPICC Rigor**:
-  - *Metrics*: [Were metrics quantified early and confirmed by the buyer?]
-  - *Economic Buyer*: [Did we meet directly with the Economic Buyer, and when?]
-  - *Decision Criteria / Process*: [Did we influence their RFP / criteria, or respond reactively?]
-  - *Champion Strength*: [Was our champion willing to test their political capital for us?]
+- **Qualification Rigor** (criteria from `sales/qualification/qualification-matrix.md`):
+  - *Evidenced early*: [Which criteria did the buyer confirm, and when?]
+  - *Missing or late*: [Which criteria were never confirmed, and how did that affect the outcome?]
+  - *Decision maker access*: [Did we meet the person who decides, and when?]
 - **Stage Progression Velocity**: [Were there unnecessary dwell times or stalls between stages?]
 - **Handoff Quality**: [How smooth was the transition to Customer Success or technical onboarding?]
 

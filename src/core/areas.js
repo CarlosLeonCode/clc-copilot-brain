@@ -4,7 +4,8 @@ import path from 'node:path';
 import { BrainError } from './errors.js';
 import { DEFAULT_LANGUAGE, parseLanguage } from './brain-language.js';
 import { copyDirRecursive, ensureDir, isInside } from './fs-utils.js';
-import { PLAYBOOKS_DIR, TEMPLATES_AREAS_DIR, TEMPLATES_LOCALES_DIR } from './package-paths.js';
+import { DEFAULT_METHODOLOGY, parseMethodology } from './methodology.js';
+import { PLAYBOOKS_DIR, TEMPLATES_AREAS_DIR, TEMPLATES_LOCALES_DIR, TEMPLATES_METHODOLOGIES_DIR } from './package-paths.js';
 
 export const AREA_ID_PATTERN = /^[a-z0-9_-]+$/;
 
@@ -31,15 +32,38 @@ export function localeAreaDir(areaId, lang, templatesLocalesDir = TEMPLATES_LOCA
 }
 
 /**
- * Copy an area's templates into destDir, then its translation for `lang` on top (same file names).
- * `replacer` and `filter` apply to both copies.
+ * Folders of a methodology set for an area, in overlay order: the set
+ * (templates/methodologies/<method>/areas/<area>/), then its translation to `lang`
+ * (templates/methodologies/<method>/locales/<lang>/areas/<area>/). Only folders that exist; [] for meddpicc
+ * (the base area is the meddpicc set), an invalid id, or a method without a set.
  */
-export function copyAreaTemplates(areaId, destDir, { lang = DEFAULT_LANGUAGE, replacer = null, filter = null } = {}) {
+export function methodologyAreaDirs(areaId, methodology, lang, templatesMethodologiesDir = TEMPLATES_METHODOLOGIES_DIR) {
+  const method = parseMethodology(methodology);
+  if (!method || method === DEFAULT_METHODOLOGY || !AREA_ID_PATTERN.test(areaId)) return [];
+  const dirs = [path.join(templatesMethodologiesDir, method, 'areas', areaId)];
+  const language = parseLanguage(lang);
+  if (language && language !== DEFAULT_LANGUAGE) dirs.push(path.join(templatesMethodologiesDir, method, 'locales', language, 'areas', areaId));
+  return dirs.filter((dir) => fs.existsSync(dir));
+}
+
+/**
+ * Every folder that overlays templates/areas/<area>/, least specific first: the base translation, the methodology
+ * set, then the methodology translation. A later folder wins for the same file name.
+ */
+export function areaOverlayDirs(areaId, { lang = DEFAULT_LANGUAGE, methodology = DEFAULT_METHODOLOGY, templatesLocalesDir = TEMPLATES_LOCALES_DIR, templatesMethodologiesDir = TEMPLATES_METHODOLOGIES_DIR } = {}) {
+  const locale = localeAreaDir(areaId, lang, templatesLocalesDir);
+  return [...(locale ? [locale] : []), ...methodologyAreaDirs(areaId, methodology, lang, templatesMethodologiesDir)];
+}
+
+/**
+ * Copy an area's templates into destDir, then its overlays on top (same file names): the translation for `lang`,
+ * the `methodology` set and its translation. `replacer` and `filter` apply to every copy.
+ */
+export function copyAreaTemplates(areaId, destDir, { lang = DEFAULT_LANGUAGE, methodology = DEFAULT_METHODOLOGY, replacer = null, filter = null } = {}) {
   const src = path.join(TEMPLATES_AREAS_DIR, areaId);
   if (!fs.existsSync(src)) return false;
   copyDirRecursive(src, destDir, { replacer, filter });
-  const overlay = localeAreaDir(areaId, lang);
-  if (overlay) copyDirRecursive(overlay, destDir, { replacer, filter });
+  for (const overlay of areaOverlayDirs(areaId, { lang, methodology })) copyDirRecursive(overlay, destDir, { replacer, filter });
   return true;
 }
 
@@ -112,7 +136,11 @@ export function addPresetArea(rootDir, areaId) {
     .replaceAll('{{COMPANY_NAME}}', kernel.organization?.name || 'Organization')
     .replaceAll('{{INDUSTRY}}', kernel.organization?.industry || 'Industry')
     .replaceAll('{{TAGLINE}}', kernel.organization?.tagline || '');
-  copyAreaTemplates(areaId, path.join(rootDir, areaId), { lang: parseLanguage(kernel.language) ?? DEFAULT_LANGUAGE, replacer });
+  copyAreaTemplates(areaId, path.join(rootDir, areaId), {
+    lang: parseLanguage(kernel.language) ?? DEFAULT_LANGUAGE,
+    methodology: parseMethodology(kernel.methodology) ?? DEFAULT_METHODOLOGY,
+    replacer
+  });
 
   const srcPlaybook = path.join(PLAYBOOKS_DIR, preset.playbook);
   if (fs.existsSync(srcPlaybook)) {

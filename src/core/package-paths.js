@@ -8,6 +8,9 @@ export const TEMPLATES_BASE_DIR = path.join(PKG_ROOT, 'templates', 'base');
 export const TEMPLATES_AREAS_DIR = path.join(PKG_ROOT, 'templates', 'areas');
 // Translated starter content: templates/locales/<lang>/areas/<area>/ overlays templates/areas/<area>/.
 export const TEMPLATES_LOCALES_DIR = path.join(PKG_ROOT, 'templates', 'locales');
+// Sales methodology sets: templates/methodologies/<method>/areas/<area>/ (and its locales/<lang>/areas/<area>/)
+// overlay the base area, which is the meddpicc set.
+export const TEMPLATES_METHODOLOGIES_DIR = path.join(PKG_ROOT, 'templates', 'methodologies');
 export const SCHEMAS_DIR = path.join(PKG_ROOT, 'schemas');
 export const PLAYBOOKS_DIR = path.join(PKG_ROOT, 'playbooks');
 

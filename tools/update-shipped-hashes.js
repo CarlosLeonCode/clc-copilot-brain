@@ -12,7 +12,8 @@
  *   .agents/skills/<name>/SKILL.md   templates/base/.agents/skills/<name>/SKILL.md, templates/base/.agents/skills/<name>.md,
  *                                    .agents/skills/<name>/SKILL.md, .agents/skills/<name>.md (flat skills become folders)
  *   skills/<file>.md                 templates/base/skills/<file>.md, skills/<file>.md
- *   sales/qualification/qualification-matrix.md   templates/areas/... and templates/locales/<lang>/areas/...
+ *   sales/qualification/qualification-matrix.md   templates/areas/..., templates/locales/<lang>/areas/..., and
+ *                                    templates/methodologies/<method>/[locales/<lang>/]areas/...
  * Self-contained: uses only Node.js built-ins and git.
  */
 const { execFileSync } = require('child_process');
@@ -48,7 +49,14 @@ function targets() {
     ];
   }
   for (const file of listMd('templates/base/skills')) map[`skills/${file}`] = [`templates/base/skills/${file}`, `skills/${file}`];
-  map[MATRIX] = [`templates/areas/${MATRIX}`, ...listDirs('templates/locales').map((lang) => `templates/locales/${lang}/areas/${MATRIX}`)];
+  map[MATRIX] = [
+    `templates/areas/${MATRIX}`,
+    ...listDirs('templates/locales').map((lang) => `templates/locales/${lang}/areas/${MATRIX}`),
+    ...listDirs('templates/methodologies').flatMap((method) => [
+      `templates/methodologies/${method}/areas/${MATRIX}`,
+      ...listDirs(`templates/methodologies/${method}/locales`).map((lang) => `templates/methodologies/${method}/locales/${lang}/areas/${MATRIX}`)
+    ])
+  ];
   return map;
 }
 

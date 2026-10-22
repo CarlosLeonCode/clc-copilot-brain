@@ -4,24 +4,26 @@
 //                     and the brain still holds a version this package shipped (shipped-hashes.js); an edited copy is
 //                     kept (reason `edited-locally`) unless `forceSkills` is set
 //   add-if-missing  = new base skills, plus sales/system.md and sales/plays/*.md when `sales` is active
+//                     (from the brain's methodology set and language when they have that file, else the base set)
 // Slash-command shortcuts and old .claude/commands files are handled after apply by generateHarnessAdapters.
-//                     (in the brain language when templates/locales has that file, else in English)
-//   frontmatter-keys = sales/qualification/qualification-matrix.md: adds the template's `criteria` and label lines only when `criteria`
-//                     is missing and the matrix is still the template's (a shipped version, or one that still uses its
-//                     MEDDPICC wording); a matrix rewritten for another method is kept (reason `edited-locally`)
+//   frontmatter-keys = sales/qualification/qualification-matrix.md: adds the `criteria` and label lines of the brain's
+//                     methodology template only when `criteria` is missing and the matrix is still that method's (a
+//                     shipped version, or one that uses the method's name and no other built-in method's name); any other
+//                     matrix is kept (reason `edited-locally`), and a method without a starter set is never touched
 //   managed-block   = AGENTS.md: only the text between the copilot-brain managed markers is refreshed
 import fs from 'node:fs';
 import path from 'node:path';
-import { localeAreaDir, readKernel } from './areas.js';
+import { areaOverlayDirs, methodologyAreaDirs, readKernel } from './areas.js';
 import { parseFrontmatter } from './plays.js';
 import { FALLBACK_CRITERIA, parseCriteria } from './scorecard.js';
 import { getBrainLanguage } from './brain-language.js';
+import { DEFAULT_METHODOLOGY, getMethodology } from './methodology.js';
 import { BrainError } from './errors.js';
 import { ensureDir, isInside, listMarkdownFiles } from './fs-utils.js';
 import { listSkillNames } from './harness-adapters.js';
 import { isShippedVersion } from './legacy-assets.js';
 import { SHIPPED_HASHES } from './shipped-hashes.js';
-import { TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR, TEMPLATES_LOCALES_DIR } from './package-paths.js';
+import { TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR, TEMPLATES_LOCALES_DIR, TEMPLATES_METHODOLOGIES_DIR } from './package-paths.js';
 
 const PLACEHOLDER = /\{\{(COMPANY_NAME|INDUSTRY|TAGLINE|ACTIVE_AREAS_[A-Z]+|CREATED_AT|UPDATED_AT)\}\}/;
 export const MANAGED_START = '<!-- copilot-brain:managed:start -->';
@@ -43,7 +45,7 @@ function lstatOrNull(p) {
 }
 
 /** Managed template files as { rel (posix), src, policy } where policy applies to an existing file. */
-function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOverlayDir) {
+function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOverlayDirs) {
   const files = [];
   const agentSkills = path.join(templatesBaseDir, '.agents', 'skills');
   for (const name of listSkillNames(agentSkills)) {
@@ -53,10 +55,12 @@ function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOve
   for (const name of listMarkdownFiles(rootSkills)) files.push({ rel: `skills/${name}`, src: path.join(rootSkills, name), owned: true });
   if (activeAreas.includes('sales')) {
     const sales = path.join(templatesAreasDir, 'sales');
-    // The translated file when the brain language has one, else the English template.
+    // The most specific overlay that has the file (methodology translation, methodology set, base translation), else the base.
     const source = (...rel) => {
-      const translated = salesOverlayDir && path.join(salesOverlayDir, ...rel);
-      return translated && fs.existsSync(translated) ? translated : path.join(sales, ...rel);
+      for (const dir of [...salesOverlayDirs].reverse()) {
+        if (fs.existsSync(path.join(dir, ...rel))) return path.join(dir, ...rel);
+      }
+      return path.join(sales, ...rel);
     };
     if (fs.existsSync(path.join(sales, 'system.md'))) files.push({ rel: 'sales/system.md', src: source('system.md'), owned: false });
     for (const name of listMarkdownFiles(path.join(sales, 'plays'))) {
@@ -73,13 +77,15 @@ function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOve
  */
 export function planUpgrade(rootDir, {
   templatesBaseDir = TEMPLATES_BASE_DIR, templatesAreasDir = TEMPLATES_AREAS_DIR, templatesLocalesDir = TEMPLATES_LOCALES_DIR,
-  shippedHashes = SHIPPED_HASHES, forceSkills = false
+  templatesMethodologiesDir = TEMPLATES_METHODOLOGIES_DIR, shippedHashes = SHIPPED_HASHES, forceSkills = false
 } = {}) {
   assertBrain(rootDir);
   const activeAreas = readKernel(rootDir).activeAreas || [];
-  const salesOverlayDir = localeAreaDir('sales', getBrainLanguage(rootDir), templatesLocalesDir);
+  const lang = getBrainLanguage(rootDir);
+  const methodology = getMethodology(rootDir);
+  const salesOverlayDirs = areaOverlayDirs('sales', { lang, methodology, templatesLocalesDir, templatesMethodologiesDir });
   const actions = [];
-  for (const file of managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOverlayDir)) {
+  for (const file of managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOverlayDirs)) {
     const next = fs.readFileSync(file.src, 'utf8');
     const dest = path.join(rootDir, ...file.rel.split('/'));
     const stat = lstatOrNull(dest);
@@ -101,7 +107,8 @@ export function planUpgrade(rootDir, {
       else actions.push({ path: file.rel, policy, kind: 'replace', current, next });
     }
   }
-  const matrix = planMatrixCriteria(rootDir, templatesAreasDir, activeAreas, shippedHashes);
+  const matrixTemplate = matrixTemplateFor(methodology, lang, templatesAreasDir, templatesMethodologiesDir);
+  const matrix = matrixTemplate && planMatrixCriteria(rootDir, matrixTemplate, activeAreas, shippedHashes);
   if (matrix) actions.push(matrix);
   const agents = planAgentsBlock(rootDir, templatesBaseDir);
   if (agents) actions.push(agents);
@@ -115,23 +122,37 @@ const FRONTMATTER_BLOCK = /^(\uFEFF?)---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 const PRE_DEAL_SIZE_CRITERIA = Object.freeze(FALLBACK_CRITERIA.filter((id) => id !== 'deal_size'));
 const CRITERIA_LINE = /^(criteria:[ \t]*)(["']?)(.*?)\2([ \t]*\r?)$/m;
 
-// The template's method name: a matrix that still uses it is the template's, so its criteria fit.
-const TEMPLATE_METHOD = /MEDDPICC/i;
+// Each built-in method's name: a matrix that uses it (and no other built-in name) is that method's, so its criteria fit.
+const METHOD_NAMES = Object.freeze({ meddpicc: /MEDDPICC/i, sandler: /Sandler/i });
+
+/**
+ * The matrix template whose frontmatter fits the brain's methodology, as { src, method, name, others }, or null when
+ * the method has no starter set (a team's own method is never given another method's criteria).
+ * meddpicc: the base template; another built-in method: its set in the brain language, else in English.
+ */
+function matrixTemplateFor(methodology, lang, templatesAreasDir, templatesMethodologiesDir) {
+  if (!Object.hasOwn(METHOD_NAMES, methodology)) return null;
+  const others = Object.entries(METHOD_NAMES).filter(([id]) => id !== methodology).map(([, re]) => re);
+  const dirs = methodology === DEFAULT_METHODOLOGY
+    ? [path.join(templatesAreasDir, 'sales')]
+    : methodologyAreaDirs('sales', methodology, lang, templatesMethodologiesDir).reverse();
+  const src = dirs.map((dir) => path.join(dir, 'qualification', 'qualification-matrix.md')).find((file) => fs.existsSync(file));
+  return src ? { src, method: methodology, name: METHOD_NAMES[methodology], others } : null;
+}
 
 /**
  * The user's matrix is theirs: only the missing `criteria` list (and labels they do not have) is added to its
  * frontmatter, so existing brains keep working with the qualification scorecard. That happens only while the
- * matrix is still the template's (a shipped version, or one that still uses its MEDDPICC wording); a matrix
- * rewritten for another method (Sandler, BANT...) is kept, and the assistant can add criteria that match it.
- * A declared list is never rewritten; one that still holds every previous default only gets `deal_size`
+ * matrix is still the brain methodology's (a shipped version, or one that uses the method's name) and names no other
+ * built-in method; any other matrix is kept, and the assistant can add criteria that match it.
+ * A declared list is never rewritten; a meddpicc one that still holds every previous default only gets `deal_size`
  * appended (see planDealSize).
  */
-function planMatrixCriteria(rootDir, templatesAreasDir, activeAreas, shippedHashes) {
-  const src = path.join(templatesAreasDir, ...MATRIX_REL.split('/'));
+function planMatrixCriteria(rootDir, template, activeAreas, shippedHashes) {
   const dest = path.join(rootDir, ...MATRIX_REL.split('/'));
   const stat = lstatOrNull(dest);
-  if (!activeAreas.includes('sales') || !stat?.isFile() || !fs.existsSync(src)) return null;
-  const tpl = FRONTMATTER_BLOCK.exec(fs.readFileSync(src, 'utf8'));
+  if (!activeAreas.includes('sales') || !stat?.isFile()) return null;
+  const tpl = FRONTMATTER_BLOCK.exec(fs.readFileSync(template.src, 'utf8'));
   if (!tpl) return null;
   const current = fs.readFileSync(dest, 'utf8');
   const fm = parseFrontmatter(current);
@@ -139,11 +160,14 @@ function planMatrixCriteria(rootDir, templatesAreasDir, activeAreas, shippedHash
   const own = FRONTMATTER_BLOCK.exec(current);
   const missing = (key) => !fm || !Object.hasOwn(fm, key);
   const keyOf = (line) => line.slice(0, Math.max(line.indexOf(':'), 0)).trim();
+  const fits = (isShippedVersion(MATRIX_REL, current, shippedHashes) || template.name.test(current))
+    && !template.others.some((re) => re.test(current));
   let next;
   if (fm && Object.hasOwn(fm, 'criteria')) {
+    if (template.method !== DEFAULT_METHODOLOGY) return null;
     next = planDealSize(fm, own, current, tpl[2].split(/\r?\n/).filter((l) => missing(keyOf(l))));
     if (!next) return null;
-  } else if (!isShippedVersion(MATRIX_REL, current, shippedHashes) && !TEMPLATE_METHOD.test(current)) {
+  } else if (!fits) {
     return { ...base, kind: 'skip', reason: 'edited-locally', current, next: current };
   } else {
     const lines = tpl[2].split(/\r?\n/).filter((l) => missing(keyOf(l)));

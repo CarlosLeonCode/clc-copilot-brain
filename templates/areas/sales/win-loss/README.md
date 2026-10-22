@@ -28,7 +28,7 @@ Every post-mortem analyzes the deal through four mandatory dimensions:
 1. **Core Decision Driver**: The primary catalyst, business crisis, or technical advantage that decided the outcome.
 2. **Pricing Impact**: Perceived Total Cost of Ownership (TCO), discounting dynamics, packaging structure, and budget authorization friction.
 3. **Competitor Impact**: Which competitors, legacy platforms, or internal build alternatives were considered, and where our positioning held or cracked.
-4. **Process & Qualification Learnings**: Adherence to MEDDPICC, champion strength, sales cycle speed, and handoff quality.
+4. **Process & Qualification Learnings**: Adherence to the qualification matrix (`sales/qualification/`), access to the person who decides, sales cycle speed, and handoff quality.
 
 ---
 

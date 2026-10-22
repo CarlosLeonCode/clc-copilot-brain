@@ -62,9 +62,11 @@ export const SHIPPED_HASHES = Object.freeze({
     "bf108202a9c265716a5c3ab8c178d060451b6ccbf1bc2d34bef38e9b326c4b8d"
   ],
   "sales/qualification/qualification-matrix.md": [
+    "008dbe4d9bae9a051a7654221abb94bf3a1c48568cb1a4c024171edf8cb9ae8a",
     "087b9d254db9b8fabe84711ca7c4282c175e6d114cec652d11007f56e314d442",
     "7bc3d3a4d91b3bbaeadc13fa2af3d7859ff0e7ef51c023ef134e31ab3330211c",
-    "af0bc23d8e0eb4d8d557cf7ad0cf02666a71419241819f726c96062843e81f77"
+    "af0bc23d8e0eb4d8d557cf7ad0cf02666a71419241819f726c96062843e81f77",
+    "d982c60018f7b3654a7f089e7fa577e72be6cf0cac7895fdb041f75f0fd271e7"
   ],
   "skills/skill_area_scaffolder.md": [
     "71fb06253eaf21e47494f3fc070d9ac4cc2032af2335d82b3530e75c094e8292",

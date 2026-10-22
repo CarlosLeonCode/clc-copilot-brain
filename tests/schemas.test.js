@@ -30,7 +30,8 @@ test('Schemas Suite: Copilot Brain Data Validation', async (t) => {
         .replaceAll('{{ACTIVE_AREAS_JSON}}', JSON.stringify(['sales', 'marketing', 'product', 'operations']))
         .replaceAll('{{CREATED_AT}}', nowIso)
         .replaceAll('{{UPDATED_AT}}', nowIso)
-        .replaceAll('{{LANGUAGE}}', 'es');
+        .replaceAll('{{LANGUAGE}}', 'es')
+        .replaceAll('{{METHODOLOGY}}', 'sandler');
 
       const parsed = JSON.parse(interpolated);
       const errors = validateAgainstSchema('org-kernel', parsed).errors;
