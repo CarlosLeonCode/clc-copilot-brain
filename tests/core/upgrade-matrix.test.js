@@ -73,3 +73,52 @@ test('the shipped template upgrades an old matrix to the full default list', () 
   assert.deepEqual(resolveCriteria(parseFrontmatter(read(root))).ids, FALLBACK_CRITERIA);
   assert.equal(resolveCriteria(parseFrontmatter(read(root))).source, 'matrix');
 }));
+
+const OLD_CRITERIA = 'metrics, economic_buyer, decision_criteria, decision_process, paper_process, identified_pain, champion, competition';
+const FULL_TEMPLATE = `---\ncriteria: ${OLD_CRITERIA}, deal_size\nadvance_requires: champion, economic_buyer, identified_pain, deal_size\nlabel_metrics: "Measurable impact"\nlabel_deal_size: "Deal size known"\n---\n# Template matrix\n`;
+function setupFull(tmp, matrix) {
+  const { root, opts } = setup(tmp, matrix);
+  fs.writeFileSync(path.join(opts.templatesAreasDir, MATRIX), FULL_TEMPLATE);
+  return { root, opts };
+}
+
+test('old default criteria without deal_size: deal_size, its label and advance_requires are appended', () => withTmp((tmp) => {
+  const old = `---\ncriteria: ${OLD_CRITERIA}\nlabel_metrics: "My metrics"\n---\n# Body\n`;
+  const { root, opts } = setupFull(tmp, old);
+  const a = action(planUpgrade(root, opts));
+  assert.deepEqual([a.policy, a.kind], ['frontmatter-keys', 'replace']);
+  assert.equal(read(root), old, 'the dry run writes nothing');
+  applyUpgrade(root, planUpgrade(root, opts));
+  assert.equal(read(root), `---\ncriteria: ${OLD_CRITERIA}, deal_size\nlabel_metrics: "My metrics"\nadvance_requires: champion, economic_buyer, identified_pain, deal_size\nlabel_deal_size: "Deal size known"\n---\n# Body\n`);
+  assert.equal(fs.readFileSync(path.join(root, `${MATRIX}.bak`), 'utf8'), old);
+  const resolved = resolveCriteria(parseFrontmatter(read(root)));
+  assert.deepEqual(resolved.ids, FALLBACK_CRITERIA);
+  assert.deepEqual(resolved.advanceRequires, ['champion', 'economic_buyer', 'identified_pain', 'deal_size']);
+  assert.equal(action(planUpgrade(root, opts)), undefined, 'idempotent');
+}));
+
+test('extra user criteria, quoted list and own advance_requires are kept; only deal_size is appended', () => withTmp((tmp) => {
+  const old = `---\ncriteria: "${OLD_CRITERIA}, timing"\nadvance_requires: champion\nlabel_deal_size: "Ticket size"\n---\n# Body\n`;
+  const { root, opts } = setupFull(tmp, old);
+  applyUpgrade(root, planUpgrade(root, opts));
+  assert.equal(read(root), `---\ncriteria: "${OLD_CRITERIA}, timing, deal_size"\nadvance_requires: champion\nlabel_deal_size: "Ticket size"\n---\n# Body\n`);
+}));
+
+test('a changed criteria list (a default removed) or one that has deal_size is left alone', () => withTmp((tmp) => {
+  const trimmed = '---\ncriteria: metrics, champion, competition\n---\n# Mine\n';
+  const a = setupFull(path.join(tmp, 'a'), trimmed);
+  assert.equal(action(planUpgrade(a.root, a.opts)), undefined);
+  const done = `---\ncriteria: ${OLD_CRITERIA}, deal_size\n---\n# Mine\n`;
+  const b = setupFull(path.join(tmp, 'b'), done);
+  assert.equal(action(planUpgrade(b.root, b.opts)), undefined, 'advance_requires alone is not added');
+}));
+
+test('old default criteria with an existing backup: skipped, nothing written', () => withTmp((tmp) => {
+  const old = `---\ncriteria: ${OLD_CRITERIA}\n---\n# Body\n`;
+  const { root, opts } = setupFull(tmp, old);
+  fs.writeFileSync(path.join(root, `${MATRIX}.bak`), 'earlier');
+  const a = action(planUpgrade(root, opts));
+  assert.deepEqual([a.kind, a.reason], ['skip', 'backup-exists']);
+  applyUpgrade(root, planUpgrade(root, opts));
+  assert.equal(read(root), old);
+}));

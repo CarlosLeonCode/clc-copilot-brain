@@ -10,6 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { localeAreaDir, readKernel } from './areas.js';
 import { parseFrontmatter } from './plays.js';
+import { FALLBACK_CRITERIA, parseCriteria } from './scorecard.js';
 import { getBrainLanguage } from './brain-language.js';
 import { BrainError } from './errors.js';
 import { ensureDir, isInside, listMarkdownFiles } from './fs-utils.js';
@@ -98,9 +99,14 @@ export function planUpgrade(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, te
 const MATRIX_REL = 'sales/qualification/qualification-matrix.md';
 const FRONTMATTER_BLOCK = /^(\uFEFF?)---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 
+// The default list before `deal_size` was added; a matrix that still declares all of these gets it appended.
+const PRE_DEAL_SIZE_CRITERIA = Object.freeze(FALLBACK_CRITERIA.filter((id) => id !== 'deal_size'));
+const CRITERIA_LINE = /^(criteria:[ \t]*)(["']?)(.*?)\2([ \t]*\r?)$/m;
+
 /**
  * The user's matrix is theirs: only the missing `criteria` list (and labels they do not have) is added to its
- * frontmatter, so existing brains keep working with the qualification scorecard. Never overwrites a declared list.
+ * frontmatter, so existing brains keep working with the qualification scorecard. A declared list is never
+ * rewritten; one that still holds every previous default only gets `deal_size` appended (see planDealSize).
  */
 function planMatrixCriteria(rootDir, templatesAreasDir, activeAreas) {
   const src = path.join(templatesAreasDir, ...MATRIX_REL.split('/'));
@@ -111,15 +117,37 @@ function planMatrixCriteria(rootDir, templatesAreasDir, activeAreas) {
   if (!tpl) return null;
   const current = fs.readFileSync(dest, 'utf8');
   const fm = parseFrontmatter(current);
-  if (fm && Object.hasOwn(fm, 'criteria')) return null;
-  const lines = tpl[2].split(/\r?\n/).filter((l) => !fm || !Object.hasOwn(fm, l.slice(0, Math.max(l.indexOf(':'), 0)).trim()));
   const base = { path: MATRIX_REL, policy: 'frontmatter-keys' };
   const own = FRONTMATTER_BLOCK.exec(current);
-  const next = own
-    ? `${own[1]}---\n${own[2]}\n${lines.join('\n')}\n---\n${current.slice(own[0].length)}`
-    : `${tpl[0].replace(/\r?\n?$/, '\n')}${current}`;
+  const missing = (key) => !fm || !Object.hasOwn(fm, key);
+  const keyOf = (line) => line.slice(0, Math.max(line.indexOf(':'), 0)).trim();
+  let next;
+  if (fm && Object.hasOwn(fm, 'criteria')) {
+    next = planDealSize(fm, own, current, tpl[2].split(/\r?\n/).filter((l) => missing(keyOf(l))));
+    if (!next) return null;
+  } else {
+    const lines = tpl[2].split(/\r?\n/).filter((l) => missing(keyOf(l)));
+    next = own
+      ? `${own[1]}---\n${own[2]}\n${lines.join('\n')}\n---\n${current.slice(own[0].length)}`
+      : `${tpl[0].replace(/\r?\n?$/, '\n')}${current}`;
+  }
   if (lstatOrNull(`${dest}.bak`)) return { ...base, kind: 'skip', reason: 'backup-exists', current, next };
   return { ...base, kind: 'replace', current, next };
+}
+
+/**
+ * Append `deal_size` to a declared list that still holds every previous default (extra user criteria are fine),
+ * plus the template's `advance_requires` and `label_deal_size` when the user has none. Null when nothing to do.
+ */
+function planDealSize(fm, own, current, missingLines) {
+  const ids = parseCriteria(fm.criteria) ?? [];
+  if (ids.includes('deal_size') || !PRE_DEAL_SIZE_CRITERIA.every((id) => ids.includes(id))) return null;
+  const match = own && CRITERIA_LINE.exec(own[2]);
+  if (!match) return null;
+  const appended = `${match[1]}${match[2]}${match[3].replace(/[ \t,]*$/, '')}, deal_size${match[2]}${match[4]}`;
+  const head = own[2].slice(0, match.index) + appended + own[2].slice(match.index + match[0].length);
+  const extra = missingLines.filter((l) => /^(advance_requires|label_deal_size):/.test(l));
+  return `${own[1]}---\n${[head, ...extra].join('\n')}\n---\n${current.slice(own[0].length)}`;
 }
 
 /** Marker positions as { start, end } (end is exclusive), null when absent, or 'invalid' when unpaired or reversed. */
