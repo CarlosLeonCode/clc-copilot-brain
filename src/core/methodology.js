@@ -32,3 +32,33 @@ export function getMethodology(rootDir) {
     return DEFAULT_METHODOLOGY;
   }
 }
+
+// Words that only a Sandler set uses (English and Spanish), read to guess the method of a brain without the field.
+const SANDLER_TERMS = /\bsandler\b|up-?front contract|pain funnel|acuerdo previo|embudo del dolor/i;
+const readText = (file) => {
+  try {
+    return fs.readFileSync(file, 'utf8');
+  } catch {
+    return '';
+  }
+};
+
+/** "sandler" when the qualification matrix or the sales map uses Sandler terms, else "meddpicc". Ignores the kernel. */
+export function inferMethodology(rootDir) {
+  const files = [['sales', 'qualification', 'qualification-matrix.md'], ['sales', 'system.md']];
+  return files.some((parts) => SANDLER_TERMS.test(readText(path.join(rootDir, ...parts)))) ? 'sandler' : DEFAULT_METHODOLOGY;
+}
+
+/** True when org-kernel.json sets a valid `methodology`. */
+export function hasMethodologyField(rootDir) {
+  try {
+    return parseMethodology(JSON.parse(fs.readFileSync(path.join(rootDir, 'org-kernel.json'), 'utf8'))?.methodology) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/** The kernel's methodology when set, else the one inferred from the brain's own sales files. */
+export function effectiveMethodology(rootDir) {
+  return hasMethodologyField(rootDir) ? getMethodology(rootDir) : inferMethodology(rootDir);
+}

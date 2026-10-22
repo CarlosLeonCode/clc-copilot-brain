@@ -92,6 +92,19 @@ export const LEGACY_STARTER_SCRIPT_HASHES = Object.freeze({
   ]
 });
 
+// Sample files from the starter templates that a real brain should not keep (paths relative to the brain root).
+// Doctor and migrate only report an unmodified copy (hash listed); the assistant removes it after the person says yes.
+export const LEGACY_SAMPLE_FILE_HASHES = Object.freeze({
+  "sales/icps/enterprise-cto.md": [
+    "1ba8cfbc4cf36fa19d4bc2cbc7dea475a82799d6e403e5ed59c28162e41fa74d"
+  ]
+});
+
+/** True when `text` is byte-for-byte (ignoring CRLF) a sample file this package shipped at the brain path `rel`. */
+export function isLegacySampleFile(rel, text) {
+  return Boolean(LEGACY_SAMPLE_FILE_HASHES[rel]?.includes(contentHash(text)));
+}
+
 /** True when `text` is byte-for-byte (ignoring CRLF) a starter script this package used to ship under `fileName`. */
 export function isLegacyStarterScript(fileName, text) {
   const hashes = LEGACY_STARTER_SCRIPT_HASHES[fileName];

@@ -9,6 +9,7 @@ const DEMO_FILE_NAMES = Object.freeze([
   'competitor-alpha.json',
   'competitor-alpha.md',
   'fintech-scale-case-study.md',
+  'enterprise-cto.md',
   'incident-management.json',
   'incident-management.md'
 ]);

@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { DEFAULT_METHODOLOGY, BUILT_IN_METHODOLOGIES, getMethodology, parseMethodology } from '../../src/core/methodology.js';
+import { DEFAULT_METHODOLOGY, BUILT_IN_METHODOLOGIES, effectiveMethodology, getMethodology, inferMethodology, parseMethodology } from '../../src/core/methodology.js';
 import { FALLBACK_CRITERIA, DEFAULT_ADVANCE_REQUIRES, qualificationDefaults, resolveCriteria } from '../../src/core/scorecard.js';
 import { readSalesRecords } from '../../src/core/sales-records.js';
 import { validateAgainstSchema } from '../../src/core/schema-validator.js';
@@ -79,4 +79,18 @@ test('a sandler brain without matrix criteria reads the sandler fallback; meddpi
   });
   assert.deepEqual(readSalesRecords(path.join(dir, 'sandler')).criteria.ids, ['upfront_contract', 'pain', 'budget', 'decision']);
   assert.deepEqual(readSalesRecords(path.join(dir, 'old')).criteria.ids, [...FALLBACK_CRITERIA]);
+}));
+
+test('inferMethodology reads Sandler terms in the matrix or the system map; effectiveMethodology prefers the field', () => withTmp((dir) => {
+  writeFiles(dir, { 'a/org-kernel.json': JSON.stringify(kernel()) });
+  assert.equal(inferMethodology(path.join(dir, 'a')), 'meddpicc', 'nothing to read');
+  writeFiles(dir, { 'b/org-kernel.json': JSON.stringify(kernel()), 'b/sales/system.md': '# Mapa\n\nUsamos el método Sandler.\n' });
+  assert.equal(inferMethodology(path.join(dir, 'b')), 'sandler');
+  assert.equal(effectiveMethodology(path.join(dir, 'b')), 'sandler', 'missing field: inferred');
+  writeFiles(dir, { 'c/sales/qualification/qualification-matrix.md': '# Q\n\n- Up-Front Contract agreed\n' });
+  assert.equal(inferMethodology(path.join(dir, 'c')), 'sandler');
+  writeFiles(dir, { 'd/sales/qualification/qualification-matrix.md': '# Q\n\n- Metrics, Economic buyer\n' });
+  assert.equal(inferMethodology(path.join(dir, 'd')), 'meddpicc');
+  writeFiles(dir, { 'e/org-kernel.json': JSON.stringify(kernel({ methodology: 'meddpicc' })), 'e/sales/system.md': 'Sandler\n' });
+  assert.equal(effectiveMethodology(path.join(dir, 'e')), 'meddpicc', 'an explicit field wins');
 }));

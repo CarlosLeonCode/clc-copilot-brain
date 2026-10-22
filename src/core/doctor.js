@@ -13,6 +13,8 @@ import { DEFAULT_MOTIONS, toSlug } from './sales-normalize.js';
 import { checkSalesLibrary } from './sales-library.js';
 import { scorecardProblems } from './scorecard.js';
 import { DEFAULT_LANGUAGE, t } from './i18n.js';
+import { findSampleContent } from './sample-content.js';
+import { getSetupState } from './setup-state.js';
 
 const FIRST_MERMAID = /```mermaid\r?\n([\s\S]*?)```/;
 
@@ -211,6 +213,25 @@ function checkSkillShortcuts(rootDir, report) {
   if (problems === 0) report.pass(report.t('doctor.shortcutsOk'));
 }
 
+const METHOD_NAMES = Object.freeze({ meddpicc: 'MEDDPICC', sandler: 'Sandler' });
+
+/**
+ * Leftover sample content: the sample customer profile once the brain is set up (before setup it is expected demo
+ * content), and the sample names in the brain's own skills.
+ */
+function checkSampleContent(rootDir, report) {
+  const found = findSampleContent(rootDir);
+  const icp = found.sampleIcp;
+  if (icp?.report && getSetupState(rootDir) !== 'pending') {
+    const method = METHOD_NAMES[found.methodology] ?? found.methodology;
+    const key = found.methodology === 'meddpicc' ? 'doctor.sampleIcp' : 'doctor.sampleIcpMethod';
+    report.issue({ level: 'warning', message: report.t(key, { list: icp.path, method }) });
+  }
+  if (found.namedSkills.length > 0) {
+    report.issue({ level: 'warning', message: report.t('doctor.sampleNames', { list: found.namedSkills.join(', ') }) });
+  }
+}
+
 /**
  * Audit a brain. Messages are in `lang` (English by default).
  * @returns {{ passed: string[], issues: Array<{ level: 'error'|'warning', message: string, repairable?: boolean }>,
@@ -247,6 +268,7 @@ export function runDoctor(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, lang
   }
 
   checkSchemaAssets(rootDir, report);
+  checkSampleContent(rootDir, report);
 
   if (kernel && Array.isArray(kernel.activeAreas) && kernel.activeAreas.includes('sales')) {
     checkSalesSystem(rootDir, report);
