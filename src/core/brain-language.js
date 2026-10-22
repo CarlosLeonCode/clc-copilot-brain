@@ -19,6 +19,11 @@ export function detectLanguage(env = {}) {
   return /^es(?:[_.@-]|$)/.test(locale) ? 'es' : DEFAULT_LANGUAGE;
 }
 
+/** Language for messages about `dir`: the brain's language inside a brain, the computer's language outside one. */
+export function messageLanguage(dir, env = {}) {
+  return fs.existsSync(path.join(dir, 'org-kernel.json')) ? getBrainLanguage(dir) : detectLanguage(env);
+}
+
 /** Language stored in the brain's org-kernel.json; English when the file or field is missing or invalid. */
 export function getBrainLanguage(rootDir) {
   try {

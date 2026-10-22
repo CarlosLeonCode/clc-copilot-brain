@@ -1,6 +1,8 @@
 // Text for people in the brain's language. Pure: dictionaries plus Intl formatting, no I/O.
 // Values may be a string or { one, other } (picked by vars.count); `{name}` placeholders are filled from vars.
 
+import { MESSAGES } from './i18n-messages.js';
+
 export const SUPPORTED_LANGUAGES = Object.freeze(['en', 'es']);
 export const DEFAULT_LANGUAGE = 'en';
 
@@ -384,7 +386,7 @@ const es = {
   'script.legend.follow': 'Retomar más adelante'
 };
 
-export const DICTIONARIES = Object.freeze({ en, es });
+export const DICTIONARIES = Object.freeze({ en: { ...en, ...MESSAGES.en }, es: { ...es, ...MESSAGES.es } });
 
 const LOCALES = Object.freeze({ en: 'en-US', es: 'es' });
 const localeOf = (lang) => LOCALES[lang] ?? LOCALES[DEFAULT_LANGUAGE];

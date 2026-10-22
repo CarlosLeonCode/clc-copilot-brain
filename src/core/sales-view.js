@@ -264,11 +264,11 @@ export function loadDraft(file) {
   try {
     content = fs.readFileSync(file, 'utf8');
   } catch {
-    throw new BrainError('DRAFT_INVALID', `Cannot read the draft ${file}.`);
+    throw new BrainError('DRAFT_INVALID', `Cannot read the draft ${file}.`, { reason: 'unreadable', file });
   }
   const kind = detectDraftKind(content);
   if (!kind) {
-    throw new BrainError('DRAFT_INVALID', `The draft ${file} is neither a call guide (no "play:" line at the top), a script (no "script:" line at the top) nor a pipeline (no flowchart diagram).`);
+    throw new BrainError('DRAFT_INVALID', `The draft ${file} is neither a call guide (no "play:" line at the top), a script (no "script:" line at the top) nor a pipeline (no flowchart diagram).`, { reason: 'unknown-kind', file });
   }
   return { kind, path: file, content };
 }
