@@ -18,6 +18,12 @@
       "description": "Language the assistant and the sales page use for people: en (English) or es (Spanish). English when missing.",
       "enum": ["en", "es"]
     },
+    "methodology": {
+      "type": "string",
+      "description": "How the team sells, which sets the starter sales stages, qualification and terms: meddpicc (enterprise deals with many stakeholders) or sandler (small and mid-size businesses, short cycles). Any other lowercase slug names a team's own method. meddpicc when missing.",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "examples": ["meddpicc", "sandler"]
+    },
     "setup": {
       "type": "object",
       "description": "Whether the guided setup (\"Let's set up my brain\") has been done. Missing in brains made before this field existed.",

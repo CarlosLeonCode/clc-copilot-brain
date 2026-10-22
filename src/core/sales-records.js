@@ -11,6 +11,7 @@ import { stageNames } from './sales-stages.js';
 import { buildSalesReport } from './sales-metrics.js';
 import { getBrainLanguage } from './brain-language.js';
 import { resolveCriteria } from './scorecard.js';
+import { getMethodology } from './methodology.js';
 
 const WIN_LOSS_SKIP = new Set(['README.md', 'post-mortem-template.md']);
 const WIN_LOSS_NAME = /^(\d{4}-\d{2}-\d{2})_(.+)_(won|lost)\.md$/i;
@@ -171,7 +172,7 @@ export function readSalesRecords(rootDir, { templatesAreasDir } = {}) {
   } catch {
     // no matrix: the built-in criteria apply
   }
-  return { calls, wins, plays, criteria: resolveCriteria(matrix), stageNames: stageNames(systemMd), skipped: state.skipped, demoExcluded: state.demoExcluded };
+  return { calls, wins, plays, criteria: resolveCriteria(matrix, getMethodology(rootDir)), stageNames: stageNames(systemMd), skipped: state.skipped, demoExcluded: state.demoExcluded };
 }
 
 /** Read a brain's records and build the metrics report in the brain language. Pass `now` for deterministic windows. */
