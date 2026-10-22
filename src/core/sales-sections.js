@@ -5,6 +5,7 @@ import { DEFAULT_LANGUAGE, t } from './i18n.js';
 import { SKILL_NAME_PATTERN } from './harness-adapters.js';
 import { linkInline } from './script-view.js';
 import { hasErrors, scriptEntry } from './sales-library.js';
+import { SEPARATOR_ROW, splitRow } from './sales-glossary.js';
 
 const text = (lang, key, vars) => escapeHtml(t(lang, key, vars));
 const page = (value) => linkInline(value, { page: true });
@@ -66,4 +67,36 @@ export function mergeDraftScripts(entries, drafts) {
     return { path: d.path, kind: 'script', id: slug, ok: errors.length === 0, errors, error: first ? `line ${first.line}: ${first.message}` : undefined };
   });
   return { entries: merged, status };
+}
+
+const PACKS_HEADING = /^#{2,4}\s+(industry packs|paquetes por industria)\s*#*\s*$/i;
+
+/**
+ * The industry packs table of system.md: the first table under a `## Industry packs` / `### Paquetes por industria`
+ * heading anywhere in the file (also below the `---` cut), up to the next heading. Null when there is none.
+ * @returns {{title: string, headers: string[], rows: string[][]} | null}
+ */
+export function parseIndustryPacks(systemMd) {
+  const lines = String(systemMd ?? '').replace(/\r\n?/g, '\n').split('\n');
+  const start = lines.findIndex((l) => PACKS_HEADING.test(l.trim()));
+  if (start === -1) return null;
+  const table = [];
+  for (const raw of lines.slice(start + 1)) {
+    const line = raw.trim();
+    if (/^#{1,6}\s/.test(line)) break;
+    if (line.startsWith('|')) table.push(line);
+    else if (table.length > 0) break;
+  }
+  if (table.length < 2 || !SEPARATOR_ROW.test(table[1])) return null;
+  const rows = table.slice(2).filter((l) => !SEPARATOR_ROW.test(l)).map(splitRow);
+  if (rows.length === 0) return null;
+  return { title: PACKS_HEADING.exec(lines[start].trim())[1], headers: splitRow(table[0]), rows };
+}
+
+/** The industry packs section (headers from the file, cells through the link allowlist), or '' when there is none. */
+export function renderIndustryPacksSection(packs, lang = DEFAULT_LANGUAGE) {
+  if (!packs) return '';
+  const head = `<thead><tr>${packs.headers.map((h) => `<th>${page(h)}</th>`).join('')}</tr></thead>`;
+  const rows = packs.rows.map((cells) => `<tr>${cells.map((c) => `<td>${page(c)}</td>`).join('')}</tr>`).join('');
+  return `<h2 id="industry-packs">${text(lang, 'view.packs.title')}</h2>\n<section class="card"><table>${head}<tbody>${rows}</tbody></table></section>`;
 }

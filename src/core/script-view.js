@@ -8,6 +8,7 @@ const SLUG = '[a-z0-9]+(?:-[a-z0-9]+)*';
 const SCRIPT_LINK = new RegExp(`^(?:\\./|\\.\\./)scripts/(${SLUG})\\.html(#${SLUG})?$`);
 const SIBLING_LINK = new RegExp(`^\\.\\./scripts/(${SLUG})\\.html(#${SLUG})?$`);
 const GLOSSARY_LINK = new RegExp(`^\\./(?:glossary|glosario(?:-${SLUG})?)\\.md$`);
+const ICP_LINK = new RegExp(`^\\./icps/${SLUG}\\.md$`);
 const MD_LINK = /\[([^\]]+)\]\(((?:[^\s()]|\([^\s()]*\))*)\)/g;
 
 // Keeps typed urls readable but never literal, so the page holds no external reference.
@@ -17,6 +18,7 @@ const plain = (value) => neuter(escapeHtml(value));
 function hrefFor(target, page) {
   if (page) {
     if (GLOSSARY_LINK.test(target)) return '#glossary';
+    if (ICP_LINK.test(target)) return target;
     const m = SCRIPT_LINK.exec(target);
     return m ? `./scripts/${m[1]}.html${m[2] ?? ''}` : null;
   }
@@ -25,7 +27,7 @@ function hrefFor(target, page) {
 
 /**
  * Escape first, then **bold** and allowlisted links. With `page: true` (the sales page) `./scripts/x.html#a`,
- * `../scripts/x.html#a` and the glossary (`./glossary.md`, `./glosario-x.md`) link; in a script page only `../scripts/x.html#a` links.
+ * `../scripts/x.html#a` and `./icps/x.md` and the glossary (`./glossary.md`, `./glosario-x.md`) link; in a script page only `../scripts/x.html#a` links.
  * Any other link keeps its label as plain text.
  */
 export function linkInline(text, { page = false } = {}) {

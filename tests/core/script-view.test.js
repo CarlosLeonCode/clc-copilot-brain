@@ -121,3 +121,9 @@ test('draft shows the localized validate-before-judging badge in en and es; acti
   assert.ok(!renderScriptPage(active, { lang: 'es' }).includes('class="draft"'));
   assert.match(renderScriptPage(active, { lang: 'en', draft: true }), /not saved yet/);
 });
+
+test('linkInline links ./icps/<slug>.md only on the sales page', () => {
+  assert.equal(linkInline('[ICP](./icps/pyme-retail.md)', { page: true }), '<a href="./icps/pyme-retail.md">ICP</a>');
+  assert.equal(linkInline('[ICP](./icps/pyme-retail.md)'), 'ICP');
+  for (const bad of ['./icps/../x.md', './icps/A.md', '../icps/x.md', './icps/x.html']) assert.equal(linkInline(`[ICP](${bad})`, { page: true }), 'ICP', bad);
+});

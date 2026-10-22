@@ -2,9 +2,10 @@
 // Format: `## group` sections holding one 3-column table (term | meaning | example), read by column position.
 import { foldText } from './sales-normalize.js';
 
-const SEPARATOR_ROW = /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/;
+export const SEPARATOR_ROW = /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/;
 
-function splitRow(line) {
+/** Cells of one markdown table row (outer pipes dropped, `\\|` kept as a literal pipe, cells trimmed). */
+export function splitRow(line) {
   let row = line.trim();
   if (row.startsWith('|')) row = row.slice(1);
   if (row.endsWith('|') && !row.endsWith('\\|')) row = row.slice(0, -1);

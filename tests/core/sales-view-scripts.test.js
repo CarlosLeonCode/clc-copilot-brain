@@ -141,3 +141,30 @@ test('hand-made script pages are listed and linked in the Scripts section, escap
   assert.doesNotMatch(html, /href="\.\/scripts\/Mal/);
   assert.equal(fs.readFileSync(path.join(dir, 'sales/scripts/guiones-retail.html'), 'utf8'), handMade);
 }));
+
+const PACKS = '\n---\n\n### Paquetes por industria\n\n| Industria | Perfil | Guiones visuales | Versión corta |\n| :--- | :--- | :--- | :--- |\n'
+  + '| Retail | [icps/pyme-retail.md](./icps/pyme-retail.md) | [scripts/guiones-retail.html](./scripts/guiones-retail.html): todo en una página. | Filas "Retail" <b>x</b> [mal](https://evil.io) [fuera](../secret.md) |\n\nTexto después.\n';
+
+test('the industry packs table of system.md (even below the cut) is its own section, with only safe links', () => withTmp((dir) => {
+  brain(dir, {}, 'es');
+  fs.appendFileSync(path.join(dir, 'sales/system.md'), PACKS);
+  const { html } = buildSalesView(dir);
+  assert.match(html, /<a href="#industry-packs">Paquetes por industria<\/a>/);
+  assert.match(html, /<h2 id="industry-packs">Paquetes por industria<\/h2>/);
+  assert.match(html, /<th>Industria<\/th><th>Perfil<\/th><th>Guiones visuales<\/th><th>Versión corta<\/th>/);
+  assert.match(html, /<td>Retail<\/td><td><a href="\.\/icps\/pyme-retail\.md">icps\/pyme-retail\.md<\/a><\/td><td><a href="\.\/scripts\/guiones-retail\.html">scripts\/guiones-retail\.html<\/a>: todo en una página\.<\/td>/);
+  assert.match(html, /&lt;b&gt;x&lt;\/b&gt; mal fuera<\/td>/);
+  assert.doesNotMatch(html, /evil\.io|secret\.md/);
+}));
+
+test('an English "Industry packs" heading works too, and no table means no section', async () => {
+  const { parseIndustryPacks } = await import('../../src/core/sales-sections.js');
+  const parsed = parseIndustryPacks('# Map\n\n## Industry packs\n\n| Industry | Profile |\n|---|---|\n| Retail | [p](./icps/retail.md) |\n');
+  assert.deepEqual(parsed, { title: 'Industry packs', headers: ['Industry', 'Profile'], rows: [['Retail', '[p](./icps/retail.md)']] });
+  assert.equal(parseIndustryPacks('# Map\n\n## Industry packs\n\nNone yet.\n\n## Other\n\n| a | b |\n|---|---|\n| 1 | 2 |\n'), null);
+  assert.equal(parseIndustryPacks(''), null);
+  await withTmp((dir) => {
+    brain(dir);
+    assert.doesNotMatch(buildSalesView(dir).html, /industry-packs/);
+  });
+});
