@@ -70,6 +70,58 @@
         },
         "headquarters": {
           "type": "string"
+        },
+        "positioning": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One or two sentences on why buyers choose us over the alternatives."
+        },
+        "targetSegments": {
+          "type": "array",
+          "description": "Who we sell to: a plain name per segment, or an object with a name and any notes.",
+          "items": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              {
+                "type": "object",
+                "required": ["name"],
+                "properties": { "name": { "type": "string", "minLength": 1 } },
+                "additionalProperties": true
+              }
+            ]
+          }
+        },
+        "offer": {
+          "type": "object",
+          "description": "What we sell and what it costs. Prices are never invented: only what is written here.",
+          "properties": {
+            "businessModel": { "type": "string", "minLength": 1 },
+            "excludedCosts": { "type": "string" },
+            "plans": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "priceUsdMonthly"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "priceUsdMonthly": { "type": "number", "minimum": 0 },
+                  "limits": {
+                    "description": "What the plan includes, as named values or a plain sentence. Other plan fields (for example messagesPerMonth) are also kept.",
+                    "oneOf": [{ "type": "object" }, { "type": "string" }]
+                  }
+                },
+                "additionalProperties": true
+              }
+            },
+            "pricesVerifiedAt": {
+              "description": "When the prices were last checked: a date (2026-10-21) or a date-time.",
+              "anyOf": [
+                { "type": "string", "format": "date" },
+                { "type": "string", "format": "date-time" }
+              ]
+            }
+          },
+          "additionalProperties": true
         }
       },
       "additionalProperties": true
@@ -101,6 +153,11 @@
           "type": "integer",
           "minimum": 7,
           "maximum": 365
+        },
+        "weeklyReview": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What the team reviews every week, in a plain sentence."
         }
       },
       "additionalProperties": true
