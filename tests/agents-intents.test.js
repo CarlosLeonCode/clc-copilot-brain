@@ -176,6 +176,16 @@ test('onboarding asks for the language first when it is not set and stores it', 
   }
 });
 
+test('onboarding asks how the team sells only when the methodology is not set, and stores it', () => {
+  for (const rel of ['skills/skill_brain_onboarding.md', 'templates/base/skills/skill_brain_onboarding.md', '.agents/skills/brain-onboarding/SKILL.md', 'templates/base/.agents/skills/brain-onboarding/SKILL.md']) {
+    const text = read(rel);
+    assert.match(text, /Step 0b[^\n]*(How your team sells|Methodology)/i, `${rel} needs a methodology step`);
+    assert.match(text, /`methodology`/, `${rel} must store the methodology in org-kernel.json`);
+    assert.match(text, /How does your team sell\?/, `${rel} asks in plain words`);
+    assert.match(text, /`"sandler"`/, `${rel} stores sandler for small and mid-size businesses`);
+  }
+});
+
 test('READMEs say the brain works in English and Spanish and document --language', () => {
   const en = read('README.md');
   const es = read('README.es.md');

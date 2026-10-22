@@ -27,11 +27,17 @@ ${pc.bold('INIT OPTIONS:')}
   --areas <list>      Comma-separated area ids (sales,marketing,product,operations,hr_people,finance_legal)
   --language <en|es>  Language for people: English or Spanish
                       (asked when run in a terminal; default: your computer's language)
+  --methodology <meddpicc|sandler>
+                      How your team sells: meddpicc (enterprise deals with many
+                      stakeholders) or sandler (small and mid-size businesses,
+                      short cycles). Sets the starter sales stages, qualification
+                      and terms (asked when run in a terminal; default: meddpicc)
   --demo              Include demo samples (mock battlecards, objections, calls)
   --clean             No demo samples (empty folders and blank templates, the default)
   -y, --yes           Accept defaults for anything not passed as a flag
                       (all areas, clean brain unless --demo,
-                      your computer's language unless --language)
+                      your computer's language unless --language,
+                      meddpicc unless --methodology)
 
 ${pc.bold('ADD-AREA OPTIONS:')}
   --preset <id>       Install an uninstalled preset area
@@ -60,15 +66,16 @@ ${pc.bold('GLOBAL OPTIONS:')}
 
 ${pc.bold('EXAMPLES:')}
   $ copilot-brain init
-  $ copilot-brain init ./acme-brain --yes --clean --name "Acme" --industry "SaaS" --areas "sales,product"
-  $ copilot-brain doctor ./acme-brain --fix
-  $ copilot-brain add-area ./acme-brain --preset operations
-  $ copilot-brain add-area ./acme-brain --custom legal_ops
-  $ copilot-brain list-areas ./acme-brain
-  $ copilot-brain mcp ./acme-brain
-  $ copilot-brain stats ./acme-brain --month 2026-09
-  $ copilot-brain upgrade ./acme-brain --dry-run
-  $ copilot-brain view ./acme-brain --open
-  $ copilot-brain view ./acme-brain --draft /tmp/cold-call-draft.md --open
+  $ copilot-brain init ./my-brain --yes --clean --name "My Company" --industry "SaaS" --areas "sales,product"
+  $ copilot-brain init ./my-brain --yes --methodology sandler --language es
+  $ copilot-brain doctor ./my-brain --fix
+  $ copilot-brain add-area ./my-brain --preset operations
+  $ copilot-brain add-area ./my-brain --custom legal_ops
+  $ copilot-brain list-areas ./my-brain
+  $ copilot-brain mcp ./my-brain
+  $ copilot-brain stats ./my-brain --month 2026-09
+  $ copilot-brain upgrade ./my-brain --dry-run
+  $ copilot-brain view ./my-brain --open
+  $ copilot-brain view ./my-brain --draft /tmp/cold-call-draft.md --open
 `;
 }

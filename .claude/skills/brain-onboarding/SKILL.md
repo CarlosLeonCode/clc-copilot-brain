@@ -1,6 +1,6 @@
 ---
 name: brain-onboarding
-description: "Set up this brain with a guided interview, one question at a time (language, company, areas, competitors, objections, owner), and save it only after approval. Use when the brain is new or someone asks to set it up."
+description: "Set up this brain with a guided interview, one question at a time (language, how the team sells, company, areas, competitors, objections, owner), and save it only after approval. Use when the brain is new or someone asks to set it up."
 metadata:
   opencode/slash: "true"
 ---
@@ -25,6 +25,7 @@ If no arguments were given, start the interview below and ask the user one quest
    - **STRICTLY ASK ONE QUESTION AT A TIME**. Never ask multiple questions at once.
    - Wait for the user's answer before proceeding to the next step.
    - **Step 0 — Language (only if not set)**: if `org-kernel.json` has no valid `language`, first ask one question: English or Spanish. Store it as `language` (`"en"` or `"es"`) and run the rest in that language.
+   - **Step 0b — How your team sells (only if not set)**: if `org-kernel.json` has no `methodology`, ask one plain question: "How does your team sell?" (big deals where many people have a say, or small and mid-size businesses with short cycles). Store `methodology` as `"sandler"` for small and mid-size businesses or `"meddpicc"` for big deals, as Step 0b of the skill says.
    - Follow the 8-step interview protocol:
      1. Company Name & Legal Name
      2. Industry / Market Vertical

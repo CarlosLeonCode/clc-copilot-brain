@@ -135,7 +135,7 @@ src/
 | Command | Options |
 | :--- | :--- |
 | *(none)* or `<dir>` | Start screen (`src/cli/start.js`): outside a brain, how to create one (computer language); inside a brain, its name, language, setup state and the one next step (brain language). Always exits 0. `help`, `-h`, `--help` print the full help. |
-| `init [dir]` | `--language <en\|es>`, `--name`, `--industry`, `--tagline`, `--areas <list>`, `--demo` / `--clean` (default), `-y`/`--yes` |
+| `init [dir]` | `--language <en\|es>`, `--methodology <meddpicc\|sandler>`, `--name`, `--industry`, `--tagline`, `--areas <list>`, `--demo` / `--clean` (default), `-y`/`--yes` |
 | `doctor [dir]` | `--fix` |
 | `add-area [dir]` | `--preset <id>` or `--custom <id>` (`^[a-z0-9_-]+$`) |
 | `list-areas [dir]` | |
@@ -369,6 +369,7 @@ The `sales/` domain implements an enterprise revenue enablement engine:
 ### Brain language (i18n)
 - `org-kernel.json` has an optional `language` (`"en"` | `"es"`, schema enum). Old brains without it stay valid and are treated as English; an invalid value also falls back to English (`getBrainLanguage` in `src/core/brain-language.js`).
 - `init --language <en|es>` writes it through the `{{LANGUAGE}}` placeholder of `templates/base/org-kernel.json`. Without the flag, an interactive run asks "Language for your brain / Idioma de tu cerebro" (default from `LC_ALL`, then `LANG`: `es*` gives Spanish, anything else English); `--yes` or no TTY uses that default. An invalid value exits 1 with a plain message.
+- `methodology` (optional, any lowercase slug; `meddpicc` when missing, read by `getMethodology` in `src/core/methodology.js`) picks the sales starter set and the qualification fallback (`qualificationDefaults` in `scorecard.js`). The base `templates/areas/sales/` is the meddpicc set; `templates/methodologies/<method>/areas/<area>/` and `templates/methodologies/<method>/locales/<lang>/areas/<area>/` overlay it, in the order base → base translation → method set → method translation (`areaOverlayDirs` in `areas.js`). `init --methodology <meddpicc|sandler>` writes it through `{{METHODOLOGY}}` (asked in a terminal when sales is installed; `--yes` gives meddpicc). `add-area` and `upgrade` follow the brain's methodology; `upgrade` only adds the matrix `criteria` of that method's set, and never touches the matrix of a method without a set.
 - `src/core/i18n.js` is pure: `t(lang, key, vars)` looks up `en`/`es` dictionaries (plural forms via `Intl.PluralRules`, `{name}` placeholders, English fallback for missing keys), `formatMonth` (`Intl.DateTimeFormat`, first letter capitalised: "Octubre de 2026") and `formatPercent`.
 - Every chrome string of the sales page (`sales-view.js`, `sales-dashboard.js`), metric labels (`sales-metrics.js`), default type-of-sale names (`motionName(slug, lang)`) and the `stats` text (`sales-report-text.js`) goes through `t`. `<html lang>` follows the brain language. Content from the brain's own files (the plain section of `system.md`, guide titles, goals, talk tracks, stage names) is shown as written.
 - `buildSalesReport(records, { lang })` returns `language`; `loadSalesReport` reads it from the brain. `stats --json` keeps English keys (machine data) and includes `language`.

@@ -13,6 +13,7 @@ export const SHIPPED_HASHES = Object.freeze({
     "5d992c83bf1652e63dc3c4028e506a895b6cb5d690423c29e2983f167b1b8cf2"
   ],
   ".agents/skills/brain-onboarding/SKILL.md": [
+    "4a3783ce058e12a0862e710e7167d37d6da8cc84f1f9a45e541bba6aef66e90d",
     "d4193701d80b36fac57de69de3553d5c691f2bc87b0c74c45c8488321e459c46"
   ],
   ".agents/skills/brain-sales/SKILL.md": [
@@ -81,6 +82,7 @@ export const SHIPPED_HASHES = Object.freeze({
     "5b578b9c8626bbc33792cad4e57214652052dc5af4b706f2d1506f5d4406ec24",
     "64a93c95371c68854b9d4bd2aa73f453eae1e3b63770da744356d3c6e3d151f1",
     "73b5c5e4ba07a4c888b0ea0ec07cc85c55c0a97dca74343697aa8fa0447dd871",
+    "8f904c0a36cd26ce8bbab75654d4a47770a042c4b54e33383d58fd8c021f9743",
     "e19fc1a0a42ef03cd841c9cfac91e36d5b0ce73f71048e4173075eafb237a5df"
   ],
   "skills/skill_call_analyzer.md": [

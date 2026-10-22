@@ -6,6 +6,7 @@ import pc from 'picocolors';
 import { PRESET_AREAS, PRESET_AREA_IDS } from '../../core/areas.js';
 import { LANGUAGE_HELP, detectLanguage, parseLanguage } from '../../core/brain-language.js';
 import { BrainError } from '../../core/errors.js';
+import { DEFAULT_METHODOLOGY, METHODOLOGY_HELP, parseBuiltInMethodology } from '../../core/methodology.js';
 import { hasText, t } from '../../core/i18n.js';
 import { writeSalesView } from '../../core/sales-view.js';
 import { INIT_DEFAULTS, initBrain } from '../../core/scaffold.js';
@@ -59,9 +60,29 @@ async function chooseLanguage(options, detected) {
   }), 'Setup cancelled.');
 }
 
+/**
+ * --methodology when passed (meddpicc or sandler); meddpicc with --yes, without a terminal, or without the sales area
+ * (it only shapes the sales starter set); else a plain question in the brain language.
+ */
+async function chooseMethodology(options, language, areas) {
+  if (options.methodology !== undefined) return parseBuiltInMethodology(options.methodology);
+  if (options.yes || !process.stdin.isTTY || !areas.includes('sales')) return DEFAULT_METHODOLOGY;
+  return ask(p.select({
+    message: t(language, 'init.methodology.question'),
+    options: [
+      { value: 'meddpicc', label: t(language, 'init.methodology.meddpicc') },
+      { value: 'sandler', label: t(language, 'init.methodology.sandler') }
+    ],
+    initialValue: DEFAULT_METHODOLOGY
+  }), 'Setup cancelled.');
+}
+
 export async function runInit(targetDir, options) {
   if (options.language !== undefined && !parseLanguage(options.language)) {
     throw new BrainError('INVALID_LANGUAGE', LANGUAGE_HELP);
+  }
+  if (options.methodology !== undefined && !parseBuiltInMethodology(options.methodology)) {
+    throw new BrainError('INVALID_METHODOLOGY', METHODOLOGY_HELP);
   }
   fs.mkdirSync(targetDir, { recursive: true });
   p.intro(pc.bgCyan(pc.black(' Open Source Second Brain Engine ')));
@@ -75,18 +96,19 @@ export async function runInit(targetDir, options) {
     }
   }
 
-  const companyName = await textOption(options.name, options, { message: 'What is the name of your organization / project?', placeholder: 'Acme Corporation', defaultValue: INIT_DEFAULTS.companyName, validate: required('Company name') });
-  const industry = await textOption(options.industry, options, { message: 'What industry or domain do you operate in?', placeholder: 'Enterprise Developer Tools & AI', defaultValue: INIT_DEFAULTS.industry, validate: required('Industry') });
+  const companyName = await textOption(options.name, options, { message: 'What is the name of your organization / project?', defaultValue: INIT_DEFAULTS.companyName, validate: required('Company name') });
+  const industry = await textOption(options.industry, options, { message: 'What industry or domain do you operate in?', defaultValue: INIT_DEFAULTS.industry, validate: required('Industry') });
   const tagline = await textOption(options.tagline, options, { message: 'What is your core tagline or mission?', placeholder: INIT_DEFAULTS.tagline, defaultValue: INIT_DEFAULTS.tagline });
   const language = await chooseLanguage(options, detectLanguage(process.env));
   const areas = await chooseAreas(options);
+  const methodology = await chooseMethodology(options, language, areas);
   const demo = await chooseDemo(options);
 
   const spin = p.spinner();
   spin.start(t(language, 'init.scaffolding'));
   let result;
   try {
-    result = initBrain(targetDir, { companyName, industry, tagline, areas, demo, language });
+    result = initBrain(targetDir, { companyName, industry, tagline, areas, demo, language, methodology });
   } catch (err) {
     spin.stop(pc.red(t(language, 'init.failed')));
     throw err;

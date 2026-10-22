@@ -439,7 +439,7 @@ Older brains used names with a colon (`/brain:onboarding`); they are now `/brain
 
 | Command | What it does |
 | :--- | :--- |
-| `clc-brain init [folder]` | Create a brain. Options: `--language en\|es`, `--name`, `--industry`, `--tagline`, `--areas`, `--demo` or `--clean` (default), `--yes`. |
+| `clc-brain init [folder]` | Create a brain. Options: `--language en\|es`, `--methodology meddpicc\|sandler`, `--name`, `--industry`, `--tagline`, `--areas`, `--demo` or `--clean` (default), `--yes`. |
 | `clc-brain doctor [folder]` | Check health; add `--fix` to repair. |
 | `clc-brain add-area [folder]` | Add an area: `--preset operations` or `--custom legal_ops`. |
 | `clc-brain list-areas [folder]` | See installed and available areas. |
@@ -459,6 +459,7 @@ Older brains used names with a colon (`/brain:onboarding`); they are now `/brain
 <br>
 
 - Each brain has one language, English or Spanish (`language` in `org-kernel.json`). `init --language es|en` sets it; without it, `init` uses your computer's language.
+- Each brain has one way of selling (`methodology` in `org-kernel.json`): `meddpicc` for enterprise deals with many stakeholders (the default, and what older brains use) or `sandler` for small and mid-size businesses with short cycles. `init --methodology sandler` gives you Sandler starter stages, call guides, qualification matrix and glossary (in the brain's language).
 - The assistant talks and writes new content in the brain's language, and answers in whatever language a person writes in.
 - Spanish brains get the sales map, the pipeline and the four call guides in Spanish, and a Spanish sales page and `stats` report.
 - The starter documents of the other areas (marketing, product, operations, people, finance & legal) are in English for now. The assistant can translate them when you ask.

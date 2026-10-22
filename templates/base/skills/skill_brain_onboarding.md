@@ -29,6 +29,12 @@ Conduct the interview in this exact sequence:
 - **Ask (only if not set yet)**: "Which language should your brain use: English or Spanish? / ¿Qué idioma debe usar tu cerebro: español o inglés?"
 - **Store**: set `language` in `org-kernel.json` (`"en"` or `"es"`) right away, then continue in that language.
 
+### Step 0b: How your team sells (only if not set)
+- **Check first**: read `org-kernel.json`. If `methodology` is already set, skip this step.
+- **Ask (only if not set yet)**, in plain words: "How does your team sell? Big deals where many people have a say, or small and mid-size businesses with short sales cycles?" / "¿Cómo vende tu equipo? ¿Negocios grandes donde opinan muchas personas, o pequeñas y medianas empresas con ciclos de venta cortos?"
+- **Store**: set `methodology` in `org-kernel.json` right away: `"sandler"` for small and mid-size businesses with short cycles, `"meddpicc"` for big deals with many people. Never name the method to the person unless they do.
+- **If it does not match the sales files**: when the sales stages, qualification matrix or glossary were made for the other way of selling, offer once to adapt them (`sales/stages/pipeline-stages.md`, `sales/system.md`, `sales/qualification/qualification-matrix.md`, the glossary), and change them only after a yes, following `.agents/skills/flow/SKILL.md` and `.agents/skills/script/SKILL.md`.
+
 ### Step 1: Organization Name
 - **Ask**: "Welcome to your Organizational Second Brain setup! Let's get your knowledge repository configured. First: What is the official name of your company or project?"
 - **Expected Data**: Official company/project name and optional legal entity name (e.g. Acme Corp / Acme Inc.).
@@ -77,7 +83,7 @@ Once Question 8 is answered:
 
 1. **Update `org-kernel.json`**:
    - Update `organization` fields: `name`, `industry`, `tagline`, `description`.
-   - Keep `language` as chosen in Step 0 (`"en"` or `"es"`).
+   - Keep `language` as chosen in Step 0 (`"en"` or `"es"`) and `methodology` as chosen in Step 0b.
    - Set `activeAreas` to the chosen operational areas.
    - Update `governance`: `owner`, `reviewCadenceDays`.
    - Update `metadata.updatedAt` to the current ISO-8601 timestamp.

@@ -398,7 +398,7 @@ Los cerebros anteriores usaban nombres con dos puntos (`/brain:onboarding`); aho
 
 | Comando | Qué hace |
 | :--- | :--- |
-| `clc-brain init [carpeta]` | Crea un cerebro. Opciones: `--language en\|es`, `--name`, `--industry`, `--tagline`, `--areas`, `--demo` o `--clean` (por defecto), `--yes`. |
+| `clc-brain init [carpeta]` | Crea un cerebro. Opciones: `--language en\|es`, `--methodology meddpicc\|sandler`, `--name`, `--industry`, `--tagline`, `--areas`, `--demo` o `--clean` (por defecto), `--yes`. |
 | `clc-brain doctor [carpeta]` | Revisa el estado; agrega `--fix` para reparar. |
 | `clc-brain add-area [carpeta]` | Agrega un área: `--preset operations` o `--custom legal_ops`. |
 | `clc-brain list-areas [carpeta]` | Muestra las áreas instaladas y disponibles. |
@@ -418,6 +418,7 @@ Los cerebros anteriores usaban nombres con dos puntos (`/brain:onboarding`); aho
 <br>
 
 - Cada cerebro tiene un idioma, español o inglés (`language` en `org-kernel.json`). `init --language es|en` lo define; sin esa opción, `init` usa el idioma de tu computadora.
+- Cada cerebro tiene una forma de vender (`methodology` en `org-kernel.json`): `meddpicc` para negocios grandes con muchas personas que deciden (la opción por defecto, y la de los cerebros anteriores) o `sandler` para pequeñas y medianas empresas con ciclos cortos. `init --methodology sandler` te da etapas, guías de llamada, matriz de calificación y glosario iniciales de Sandler (en el idioma del cerebro).
 - El asistente habla y escribe el contenido nuevo en el idioma del cerebro, y responde en el idioma en que le escriba cada persona.
 - Los cerebros en español reciben el mapa de ventas, el proceso de venta y las cuatro guías de llamada en español, y una página de ventas y un reporte de `stats` en español.
 - Los documentos iniciales de las demás áreas (marketing, producto, operaciones, personas, finanzas y legal) por ahora están en inglés. El asistente puede traducirlos cuando se lo pidas.
