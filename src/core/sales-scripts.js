@@ -3,7 +3,7 @@
 //
 //   frontmatter: script, title, industry?, version (int), status (draft|active)
 //   ## conversation   play: goal: note:   and "- " rules before the first ###
-//   ### step          branch: tag: say: detail: tip: tone: next:
+//   ### step          branch: tag: say: detail: tip: coach: tone: next:
 //   #### buyer answer (the label is the pill)   when: plus the same card keys
 import { parseFrontmatter } from './plays.js';
 import { foldText, toSlug } from './sales-normalize.js';
@@ -14,7 +14,7 @@ export const SCRIPT_STATUSES = Object.freeze(['draft', 'active']);
 
 const KEY_LINE = /^([a-z_]+):\s*(.*)$/;
 const HEADING = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
-const CARD_KEYS = ['say', 'tag', 'detail', 'tip', 'tone'];
+const CARD_KEYS = ['say', 'tag', 'detail', 'tip', 'coach', 'tone'];
 const KEYS = {
   conv: new Set(['play', 'goal', 'note']),
   step: new Set([...CARD_KEYS, 'branch', 'next']),
@@ -24,7 +24,7 @@ const KEYS = {
 const slugOf = (value) => toSlug(foldText(value));
 
 function emptyCard(line) {
-  return { card: { tag: '', say: '', details: [], tip: '', tone: '' }, line };
+  return { card: { tag: '', say: '', details: [], tip: '', coach: '', tone: '' }, line };
 }
 
 /** Parse a script file. `fileStem` (file name without .md) enables the script-name check; omit it for drafts. */
@@ -148,6 +148,7 @@ export function parseScript(markdown, { fileStem } = {}) {
       else if (key === 'tag') card.tag = value;
       else if (key === 'detail') card.details.push(value);
       else if (key === 'tip') card.tip = value;
+      else if (key === 'coach') card.coach = value;
       else if (SCRIPT_TONES.includes(value)) card.tone = value;
       else add('error', line, 'script.unknownTone', { tone: value, tones: SCRIPT_TONES.join(', ') });
     }

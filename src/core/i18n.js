@@ -197,7 +197,19 @@ const en = {
   'script.legend.yes': 'Good sign',
   'script.legend.no': 'Not a fit or a no',
   'script.legend.action': 'Key moment',
-  'script.legend.follow': 'Follow up later'
+  'script.legend.follow': 'Follow up later',
+  'script.coach': '💬 Call tip',
+  'script.live.mode': 'Live assistant',
+  'script.live.diagram': 'Full diagram',
+  'script.live.views': 'How to show the script',
+  'script.live.tabs': 'Conversations',
+  'script.live.hint': 'Say the words in bold. When the client answers, tap what they said to see what comes next.',
+  'script.live.ask': '👇 What did the client answer?',
+  'script.live.answered': '↳ Client answered:',
+  'script.live.continue': 'Continue',
+  'script.live.undo': 'Undo',
+  'script.live.restart': 'Restart',
+  'script.live.end': 'End of call'
 };
 
 const es = {
@@ -383,7 +395,19 @@ const es = {
   'script.legend.yes': 'Buena señal',
   'script.legend.no': 'No encaja o es un no',
   'script.legend.action': 'Momento clave',
-  'script.legend.follow': 'Retomar más adelante'
+  'script.legend.follow': 'Retomar más adelante',
+  'script.coach': '💬 Recomendación para la llamada',
+  'script.live.mode': 'Asistente en vivo',
+  'script.live.diagram': 'Diagrama completo',
+  'script.live.views': 'Cómo ver el guion',
+  'script.live.tabs': 'Conversaciones',
+  'script.live.hint': 'Di lo que está en negrita. Cuando el cliente responda, toca lo que dijo para ver qué sigue.',
+  'script.live.ask': '👇 ¿Qué te respondió el cliente?',
+  'script.live.answered': '↳ El cliente respondió:',
+  'script.live.continue': 'Continuar',
+  'script.live.undo': 'Deshacer',
+  'script.live.restart': 'Reiniciar',
+  'script.live.end': 'Fin de la llamada'
 };
 
 export const DICTIONARIES = Object.freeze({ en: { ...en, ...MESSAGES.en }, es: { ...es, ...MESSAGES.es } });

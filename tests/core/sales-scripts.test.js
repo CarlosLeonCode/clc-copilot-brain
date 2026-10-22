@@ -26,11 +26,11 @@ test('parses the neutral sample into conversations, steps and answers with no di
   assert.equal(open.branch, 'B1');
   assert.equal(open.next, 'Closing');
   assert.equal(open.nextAnchor, 'cold-call-step-2');
-  assert.deepEqual(open.cards, [{ tag: 'Opening', say: 'Hi [NAME], this is [REP] from Sample Co.', details: ['Pause and let them answer.'], tip: 'Slow down', tone: 'start' }]);
+  assert.deepEqual(open.cards, [{ tag: 'Opening', say: 'Hi [NAME], this is [REP] from Sample Co.', details: ['Pause and let them answer.'], tip: 'Slow down', coach: '', tone: 'start' }]);
   assert.equal(open.answers.length, 2);
   assert.deepEqual(open.answers[0], {
     label: 'Interested', when: 'They ask a question', next: 'end', nextAnchor: '',
-    cards: [{ tag: 'Good sign', say: 'Great, let me explain in one sentence.', details: [], tip: '', tone: 'yes' }]
+    cards: [{ tag: 'Good sign', say: 'Great, let me explain in one sentence.', details: [], tip: '', coach: '', tone: 'yes' }]
   });
   assert.equal(open.answers[1].nextAnchor, 'follow-up');
   assert.equal(c.steps[1].cards[0].tone, 'action');
@@ -125,4 +125,14 @@ test('next resolves to a step or conversation title case-insensitively or end; u
 
 test('parsing is deterministic across runs', () => {
   assert.deepEqual(parseScript(SAMPLE), parseScript(SAMPLE));
+});
+
+test('coach: is an optional card key on steps and answers, with no diagnostics', () => {
+  const fm = '---\nscript: x\ntitle: X\nversion: 1\nstatus: active\n---\n';
+  const s = parseScript(fm + '## C\n### S\nsay: q\ncoach: Breathe and wait\n#### A\nsay: r\ncoach: Do not rush\nnext: end\n#### Route only\nnext: end\n');
+  assert.deepEqual(s.diagnostics, []);
+  const step = s.conversations[0].steps[0];
+  assert.equal(step.cards[0].coach, 'Breathe and wait');
+  assert.equal(step.answers[0].cards[0].coach, 'Do not rush');
+  assert.deepEqual(step.answers[1].cards, []);
 });

@@ -33,6 +33,9 @@ test('view writes scripts/<slug>.html and the page with a Scripts section, exit 
   assert.ok(fs.existsSync(scripts(brain, 'sample-co.html')));
   assert.match(fs.readFileSync(path.join(brain, 'sales', 'sales-system.html'), 'utf8'), /Open the script/);
   assert.match(res.stdout, /sample-co\.html/);
+  const page = fs.readFileSync(scripts(brain, 'sample-co.html'), 'utf8');
+  assert.match(page, /Live assistant/);
+  assert.doesNotMatch(fs.readFileSync(path.join(brain, 'sales', 'sales-system.html'), 'utf8'), /<script/i);
 }));
 
 test('an invalid script is skipped with a warning and the other pages still render', () => withBrain((brain) => {
@@ -67,6 +70,8 @@ test('view --draft <script.md> previews the page and script pages in a temp fold
     assert.ok(path.relative(brain, preview).startsWith('..'));
     const page = fs.readFileSync(path.join(dir, 'scripts', 'sample-co.html'), 'utf8');
     assert.match(page, /Draft — not saved yet/);
+    assert.match(page, /<div id="assistant" class="assistant" hidden>/);
+    assert.equal((page.match(/<script>/g) ?? []).length, 1);
     assert.match(res.stdout, /scripts\/sample-co\.html/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
@@ -84,4 +89,14 @@ test('view --draft with a script that has no steps exits 1 with readable lines a
   assert.match(out, /bad\.md/);
   assert.match(out, /line \d+/i);
   assert.doesNotMatch(out, /Preview ready/);
+}));
+
+test('view renders a script whose answer has only next: (no say:), exit 0', () => withBrain((brain) => {
+  const body = SAMPLE.replace('#### Not now\nsay: No problem, when is better?\ntone: no\n', '#### Not now\n');
+  assert.notEqual(body, SAMPLE);
+  fs.writeFileSync(scripts(brain, 'sample-co.md'), body);
+  const res = run('view', brain);
+  assert.equal(res.status, 0, res.stdout + res.stderr);
+  assert.doesNotMatch(res.stderr + res.stdout, /Cannot read properties/);
+  assert.match(fs.readFileSync(scripts(brain, 'sample-co.html'), 'utf8'), /Not now/);
 }));

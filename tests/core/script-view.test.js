@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { linkInline, renderScriptPage, SCRIPT_CSS } from '../../src/core/script-view.js';
+import { buildAssistant, linkInline, renderScriptPage, SCRIPT_CSS } from '../../src/core/script-view.js';
 import { parseScript } from '../../src/core/sales-scripts.js';
 import { SAMPLE } from '../fixtures/sample-script.js';
 
@@ -87,9 +87,18 @@ tip: <img src=x onerror=alert(1)>
 say: ok
 `;
 
-test('output is offline: no script, link, img, http(s):// and no url( except url(#', () => {
+const scriptBody = (html) => /<script>([\s\S]*?)<\/script>/.exec(html)[1];
+
+test('output is offline: exactly one inline script with no src or network api, no link, img, http(s):// and no url( except url(#', () => {
   for (const html of [renderScriptPage(parseScript(SAMPLE), { lang: 'en' }), renderScriptPage(parseScript(HOSTILE), { lang: 'es' })]) {
-    assert.ok(!/<script/i.test(html), 'script');
+    assert.equal((html.match(/<script/gi) ?? []).length, 1, 'one script');
+    assert.equal((html.match(/<\/script/gi) ?? []).length, 1, 'one closing script');
+    assert.match(html, /<script>/, 'inline, no attributes');
+    assert.ok(!html.includes('<!--'), 'no html comment opener');
+    const js = scriptBody(html).replace(/var data = .*;\n/, '');
+    for (const banned of [/\bfetch\b/, /XMLHttpRequest/, /\beval\b/, /new Function/, /\bimport\s*\(/, /WebSocket/, /sendBeacon/, /\bsrc\b/, /\.write\(/]) {
+      assert.doesNotMatch(js, banned, String(banned));
+    }
     assert.ok(!/<link/i.test(html), 'link');
     assert.ok(!/<img/i.test(html), 'img');
     assert.ok(!/https?:\/\//i.test(html), 'http');
@@ -126,4 +135,131 @@ test('linkInline links ./icps/<slug>.md only on the sales page', () => {
   assert.equal(linkInline('[ICP](./icps/pyme-retail.md)', { page: true }), '<a href="./icps/pyme-retail.md">ICP</a>');
   assert.equal(linkInline('[ICP](./icps/pyme-retail.md)'), 'ICP');
   for (const bad of ['./icps/../x.md', './icps/A.md', '../icps/x.md', './icps/x.html']) assert.equal(linkInline(`[ICP](${bad})`, { page: true }), 'ICP', bad);
+});
+
+test('an answer without say: (only next:) is a valid routing option and renders in every layout', () => {
+  for (const n of [1, 2, 3, 4]) {
+    let body = '## C\n### S\nsay: question\n';
+    for (let i = 1; i <= n; i += 1) body += i === 1 ? '#### Just route\nnext: Other\n' : `#### A${i}\nsay: reply ${i}\n`;
+    body += '### Other\nsay: other\n';
+    const script = parseScript(FM() + body);
+    assert.deepEqual(script.diagnostics.filter((d) => d.level === 'error'), [], `n=${n}`);
+    const html = renderScriptPage(script, { lang: 'en' });
+    assert.ok(html.includes('Just route'), `n=${n}`);
+  }
+});
+
+test('no optional key can crash the renderer: answers with only when, tag, tip, detail, next or nothing', () => {
+  const variants = ['', 'when: w\n', 'tag: t\n', 'tip: t\n', 'detail: d\n', 'next: end\n', 'tone: yes\n'];
+  for (const v of variants) {
+    for (const extra of ['', '#### Second\nsay: s\n', '#### Second\nsay: s\n#### Third\nsay: t\n#### Fourth\n']) {
+      const html = renderScriptPage(parseScript(FM() + `## C\n### S\nsay: q\n#### First\n${v}${extra}`), { lang: 'es' });
+      assert.ok(html.includes('First'), JSON.stringify(v + extra));
+    }
+  }
+  const stepOnly = renderScriptPage(parseScript(FM() + '## C\n### S\ntip: only a tip\n'), { lang: 'en' });
+  assert.ok(stepOnly.includes('only a tip'));
+});
+
+test('coach: renders a localized call-tip box in the diagram (en and es)', () => {
+  const src = FM() + '## C\n### S\nsay: q\ncoach: Breathe <b>and</b> wait\n#### A\nsay: r\ncoach: Do not rush\n';
+  const en = renderScriptPage(parseScript(src), { lang: 'en' });
+  const es = renderScriptPage(parseScript(src), { lang: 'es' });
+  assert.match(en, /class="coach"><div class="coach-tag">💬 Call tip<\/div><p>Breathe &lt;b&gt;and&lt;\/b&gt; wait<\/p>/);
+  assert.ok(en.includes('Do not rush'));
+  assert.match(es, /💬 Recomendación para la llamada/);
+});
+
+const LIVE = FM() + `## First talk
+goal: Book a meeting
+### Open
+say: Hello [NAME]
+coach: Smile while you talk
+#### Yes
+when: They say yes
+say: Great, Tuesday?
+tone: yes
+next: Book
+#### Just route
+next: Book
+#### Later
+say: When is better?
+next: Second talk
+#### Bye
+say: Thanks anyway
+next: end
+### Book
+say: Tuesday at ten?
+### Wrap
+tag: Last
+say: Thanks
+## Second talk
+### Check in
+say: Checking in
+`;
+
+test('buildAssistant maps conversations to flows, steps to nodes and answers to options with resolved targets', () => {
+  const data = buildAssistant(parseScript(LIVE), 'en');
+  assert.equal(data.flows.length, 2);
+  const [first, second] = data.flows;
+  assert.equal(first.title, 'First talk');
+  assert.match(first.head, /Book a meeting/);
+  const open = first.steps[0];
+  assert.equal(open.ask, true);
+  assert.match(open.html, /Hello \[NAME\]/);
+  assert.match(open.html, /Smile while you talk/);
+  assert.deepEqual(open.options.map((o) => o.label), ['Yes', 'Just route', 'Later', 'Bye']);
+  assert.equal(open.options[0].when, 'They say yes');
+  assert.match(open.options[0].reply, /class="card yes"/);
+  assert.equal(open.options[1].reply, '', 'an answer without say: has no reply card');
+  assert.deepEqual(open.options.map((o) => o.to), [[0, 1], [0, 1], [1, 0], null]);
+  const book = first.steps[1];
+  assert.equal(book.ask, false, 'a step without answers continues');
+  assert.deepEqual(book.options.map((o) => [o.label, o.to]), [['Continue', [0, 2]]]);
+  assert.deepEqual(first.steps[2].options, [], 'the last step ends the call');
+  assert.deepEqual(second.steps[0].options, []);
+  assert.deepEqual(data.anchors['second-talk'], [1, 0]);
+  assert.equal(data.ui.ask, '👇 What did the client answer?');
+  assert.equal(buildAssistant(parseScript(LIVE), 'es').ui.end, 'Fin de la llamada');
+});
+
+test('an answer without next: follows the step next:, then the step below, then ends', () => {
+  const src = FM() + '## C\n### A\nsay: a\nnext: C2\n#### X\nsay: x\n### B\nsay: b\n#### Y\nsay: y\n### C2\nsay: c\n#### Z\nsay: z\n';
+  const steps = buildAssistant(parseScript(src), 'en').flows[0].steps;
+  assert.deepEqual(steps[0].options[0].to, [0, 2]);
+  assert.deepEqual(steps[1].options[0].to, [0, 2]);
+  assert.equal(steps[2].options[0].to, null);
+});
+
+test('the page holds the live assistant (hidden without js) and the full diagram, with localized controls', () => {
+  const html = renderScriptPage(parseScript(LIVE), { lang: 'es' });
+  assert.match(html, /<div id="assistant" class="assistant" hidden>/);
+  assert.match(html, /<div id="diagram" class="diagram">/);
+  assert.match(html, /<div id="modes" class="modes" role="group" aria-label="[^"]+" hidden>/);
+  assert.match(html, /<button type="button" class="mode" data-mode="live"[^>]*>Asistente en vivo<\/button>/);
+  assert.match(html, /<button type="button" class="mode" data-mode="diagram"[^>]*>Diagrama completo<\/button>/);
+  assert.match(html, /<button type="button" class="flow-tab" data-flow="1"[^>]*>2\. Second talk<\/button>/);
+  assert.match(html, /<button type="button" id="live-undo"[^>]*>[^<]*Deshacer<\/button>/);
+  assert.match(html, /<button type="button" id="live-restart"[^>]*>[^<]*Reiniciar<\/button>/);
+  assert.match(html, /<div id="live-stream" class="stream" aria-live="polite"><\/div>/);
+  assert.ok(!/<button(?![^>]*type="button")/.test(html), 'every button is type=button');
+});
+
+test('the embedded data is pre-escaped and can never close the script or open a comment', () => {
+  const evil = FM() + '## C\n### S\nsay: </script><script>alert(1)</script> <!-- x --> \u2028\n#### </SCRIPT>\nwhen: <!--\nsay: ok\n';
+  const html = renderScriptPage(parseScript(evil), { lang: 'en' });
+  assert.equal((html.match(/<\/script/gi) ?? []).length, 1);
+  assert.ok(!html.includes('<!--'));
+  const js = scriptBody(html);
+  const json = /var data = (\{[\s\S]*?\});\n/.exec(js)[1];
+  const data = JSON.parse(json);
+  assert.match(data.flows[0].steps[0].html, /&lt;\/script&gt;&lt;script&gt;alert\(1\)/);
+  assert.equal(data.flows[0].steps[0].options[0].label, '&lt;/SCRIPT&gt;');
+  assert.ok(!/[<>\u2028\u2029]/.test(json));
+});
+
+test('a single-conversation script still gets one tab and the assistant', () => {
+  const html = renderScriptPage(parseScript(FM() + '## C\n### S\nsay: hi\n'), { lang: 'en' });
+  assert.match(html, /data-flow="0"/);
+  assert.match(html, /id="live-stream"/);
 });
