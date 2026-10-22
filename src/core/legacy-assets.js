@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { SHIPPED_HASHES } from "./shipped-hashes.js";
 
 // SHA-256 hashes (LF line endings) of every file this package ever shipped as a Claude Code command
 // (.claude/commands/*.md) or a flat agent skill (.agents/skills/*.md). Upgrades delete an old file only
@@ -95,5 +96,18 @@ export const LEGACY_STARTER_SCRIPT_HASHES = Object.freeze({
 export function isLegacyStarterScript(fileName, text) {
   const hashes = LEGACY_STARTER_SCRIPT_HASHES[fileName];
   if (!hashes) return false;
-  return hashes.includes(createHash('sha256').update(String(text).replace(/\r\n/g, '\n'), 'utf8').digest('hex'));
+  return hashes.includes(contentHash(text));
+}
+
+/** SHA-256 of `text` with CRLF line endings normalized to LF (the form every hash list here uses). */
+export function contentHash(text) {
+  return createHash('sha256').update(String(text).replace(/\r\n/g, '\n'), 'utf8').digest('hex');
+}
+
+/**
+ * True when `text` is byte-for-byte (ignoring CRLF) a version this package shipped for the brain path `rel`
+ * (see shipped-hashes.js). Anything else was edited by a person and must not be replaced silently.
+ */
+export function isShippedVersion(rel, text, hashes = SHIPPED_HASHES) {
+  return Boolean(hashes[rel]?.includes(contentHash(text)));
 }
