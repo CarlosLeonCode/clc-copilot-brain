@@ -162,3 +162,25 @@ test('a fresh sales scaffold draws every diagram: no doctor warnings', () =>
     assert.equal(result.errors, 0);
     assert.equal(result.warnings, 0);
   }));
+
+test('doctor warns when shortcuts are out of date with their edited skill, and repair rebuilds them', () =>
+  withTmp((dir) => {
+    initBrain(dir, { areas: ['sales'] });
+    const skill = path.join(dir, '.agents', 'skills', 'flow', 'SKILL.md');
+    fs.writeFileSync(skill, `${fs.readFileSync(skill, 'utf8')}\nUse Sandler.\n`);
+    const handWritten = path.join(dir, '.windsurf', 'workflows', 'call.md');
+    fs.writeFileSync(handWritten, 'my own workflow\n');
+
+    const stale = runDoctor(dir).issues.filter((i) => /out of date/.test(i.message));
+    assert.equal(stale.length, 1, 'one plain warning');
+    assert.equal(stale[0].level, 'warning');
+    assert.equal(stale[0].repairable, true);
+    assert.match(stale[0].message, /\.claude\/skills\/flow\/SKILL\.md/);
+    assert.match(stale[0].message, /clc-brain doctor --fix/);
+    assert.doesNotMatch(stale[0].message, /call\.md/, 'files people wrote themselves are not called stale');
+
+    repairBrain(dir);
+    assert.match(fs.readFileSync(path.join(dir, '.claude', 'skills', 'flow', 'SKILL.md'), 'utf8'), /Use Sandler\./);
+    assert.equal(fs.readFileSync(handWritten, 'utf8'), 'my own workflow\n');
+    assert.deepEqual(runDoctor(dir).issues.filter((i) => /out of date/.test(i.message)), []);
+  }));

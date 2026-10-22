@@ -194,6 +194,18 @@ function checkSkillShortcuts(rootDir, report) {
       report.issue({ level: 'warning', message: `Missing slash-command shortcut: ${rel}`, repairable: true, action: 'generate_shortcuts', skill: skill.name });
     }
   }
+  // Generated shortcuts that exist but no longer match their skill (the dry run lists them as files to write).
+  const stale = generateHarnessAdapters(rootDir, { dryRun: true, removeLegacy: false }).written
+    .filter((rel) => fs.existsSync(path.join(rootDir, ...rel.split('/'))));
+  if (stale.length > 0) {
+    problems++;
+    report.issue({
+      level: 'warning',
+      message: `Some slash-command shortcuts are out of date with their skill: ${stale.join(', ')}. Run "clc-brain doctor --fix" to rebuild them.`,
+      repairable: true,
+      action: 'generate_shortcuts'
+    });
+  }
   if (fs.existsSync(path.join(rootDir, '.claude', 'commands'))) {
     report.issue({ level: 'warning', message: 'Old .claude/commands/ folder found: skills in .agents/skills/ replace it. Run "clc-brain upgrade" to remove the unchanged old files.' });
     problems++;
