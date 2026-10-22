@@ -13,27 +13,26 @@ When provided with a call transcript, recording summary, or raw conversation not
    - Infer every other field below from the notes, `sales/system.md`, and `sales/stages/pipeline-stages.md`. Never ask the person for a stage name, a play ID, a branch code, or a yes/no gate field.
 
    **Metadata to extract**:
-   - **Assigned Sales Rep**: Name of the internal AE/SDR (e.g., `Carlos`, `Juanita`, `Pepito`, `Alex`).
-   - **Prospect Company**: Clean company name (e.g., `Acme Corp`, `NexaPay`).
-   - **Primary Contact**: Name and title (e.g., `Sarah Lin, VP of Engineering`).
+   - **Assigned Sales Rep**: Name of the person on our team who ran the call, as the notes give it.
+   - **Prospect Company**: Clean company name, as the notes give it.
+   - **Primary Contact**: Name and role of the main person on the buyer's side, as the notes give them.
    - **Call Date**: ISO date format (`YYYY-MM-DD`). Defaults to current date if not specified.
-   - **Deal Stage**: Map to canonical pipeline stages defined in `sales/stages/pipeline-stages.md`:
-     - `Discovery` | `Validation` | `Proposal` | `Negotiation` | `Closed Won` | `Closed Lost`
-   - **Call Type**: `Initial Discovery` | `Technical Deep-Dive` | `Executive Business Review` | `Commercial Negotiation`
+   - **Deal Stage**: Use a stage name exactly as the stage table in `sales/system.md` lists it (its gates are in `sales/stages/pipeline-stages.md`), or `Closed Won` / `Closed Lost` once the deal has ended. Never use stage names from another sales method.
+   - **Call Type**: A short label for the kind of conversation, in the words of the call guide that was run (for example its title).
    - **Outcome**: `Advanced` | `Stalled` | `Disqualified` | `Closed Won` | `Closed Lost`
    - **Play**: Infer the conversation guide (play) that was run, matching a file in `sales/plays/` (e.g., `discovery-call`). Read `sales/system.md` to find it. If none fits, leave `play` out and mention in plain words that no guide matched.
    - **Branch**: Infer the branch ID in that play's decision tree (e.g., `B3`) where the call went off-script or broke. Use the last branch reached if the call ended cleanly.
    - **Type of sale (`motion`)**: Infer how this deal started or is sold (`cold-outbound`, `inbound`, `referral`, `expansion`, or a custom slug the brain already uses). Prefer the type already recorded for the same deal, then the type of the call guide that was run. Never invent one.
    - **Lead source (`lead_source`)**: Where this lead came from (e.g., `linkedin`, `webinar`, `partner`). Leave it out when the notes do not say.
-   - **Deal ID (`deal_id`)**: A short slug that ties calls of the same deal together (e.g., `acme-2026`). Reuse the one from earlier calls with the same company.
+   - **Deal ID (`deal_id`)**: A short slug that ties calls of the same deal together (e.g., `<company>-<year>`). Reuse the one from earlier calls with the same company.
    - **Goal Met (`goal_met`)**: `true` if the call reached the success defined by that call guide (its `success:` line in `sales/plays/`), `false` if not. If the guide defines no success or the notes do not show it, ask "What counts as a good result for this call?" once, or leave it out. Never derive `goal_met` from `gate_advanced`; they are different questions.
    - **Gate Advanced**: `true` only if the evidence for the stage exit gate in `sales/stages/pipeline-stages.md` was captured on this call, otherwise `false`.
-   - **Deal Value / ARR**: Estimated or contracted ARR (e.g., `$120,000 ARR`).
+   - **Deal Value**: The value the buyer stated or the team estimated, in the buyer's terms (for example a monthly or yearly amount). Never invent it.
 
 2. **File Path Convention**:
    The output must be targeted for:
    `sales/calls/YYYY-MM/YYYY-MM-DD_<rep>_<prospect-slug>.md`
-   *(e.g., `sales/calls/2026-09/2026-09-15_carlos_acme-corp.md`)*
+   *(lowercase rep first name and prospect slug, e.g., `sales/calls/2026-09/2026-09-15_<rep>_<prospect-slug>.md`)*
 
 ---
 
@@ -49,7 +48,7 @@ Distill the interaction into exactly three high-impact bullets:
 Detail the conversation across:
 - **Pain Points & Metrics**: Specific business, engineering, or financial pain quantified (e.g., "120 hours/month wasted on doc fragmentation").
 - **Current Stack & Workflow**: Existing tools, legacy platforms, or homegrown scripts in place.
-- **Economic Buyer & Stakeholder Dynamics**: Who holds the budget, internal influencers, skeptics, and procurement hurdles.
+- **Decision & Stakeholders**: Who decides and holds the budget, who influences or doubts, and the steps to a decision. Name them with the qualification words of `sales/qualification/qualification-matrix.md` and the terms of `sales/glossary.md` (when the brain has one), so the log speaks the team's sales method.
 
 ### C. Detected Objections (Grounding Mandate)
 Analyze prospect hesitations and cross-reference against repository assets in `sales/objections/`:
@@ -107,7 +106,7 @@ questions_asked: 0
 follow_up_questions: 0
 longest_monologue_seconds: 0
 qual_<criterion>: evidenced | missing
-deal_size: "{{ESTIMATED_ARR}}"
+deal_size: "{{DEAL_VALUE}}"
 detected_objections:
   - id: "{{OBJECTION_ID}}"
     severity: "low | medium | high | blocker"
@@ -176,7 +175,7 @@ next_meeting: "YYYY-MM-DDTHH:MM:SSZ"
 
 ---
 
-## Mutual Action Plan & Next Steps
+## Next Steps
 | Action Item | Owner | Target Date | Status |
 | :--- | :--- | :--- | :--- |
 | {{ACTION_ITEM_1}} | {{OWNER}} | {{TARGET_DATE}} | Pending |
@@ -190,8 +189,8 @@ next_meeting: "YYYY-MM-DDTHH:MM:SSZ"
 - Always write the exact frontmatter keys above to the file (`prospect_company`, `deal_stage`, `motion`, `lead_source`, `deal_id`, `play`, `branch`, `goal_met`, `gate_advanced`). They match the keys written by `brain_capture_call`, so `/retro` can aggregate them.
 - `{{PROSPECT_COMPANY}}` is the prospect's name, never your own organization's name.
 - Review checkpoint before saving: confirm in ONE plain sentence, in the person's language, that names the type of sale, the lead source and whether the guide's success was reached, then ask a single yes/no question: "Save it?" / "¿Lo guardo?". Wait for a yes before saving. Ask only what is still missing, one question at a time.
-  - Example (ES): "Llamada con Acme, venta por contacto en frío que llegó de LinkedIn: usaste la guía de llamada en frío, no lograste el objetivo (agendar una demo) porque se frenó con el presupuesto, y quedaron en hablar el jueves. ¿Lo guardo?"
-  - Example (EN): "Call with Acme, a cold outreach sale that came from LinkedIn: you used the cold call guide, the goal (book a demo) was not reached because it stalled on budget, and you agreed to talk on Thursday. Save it?"
+  - Example (ES): "Llamada con [empresa], venta por contacto en frío que llegó de LinkedIn: usaste la guía de llamada en frío, no lograste el objetivo (agendar una demo) porque se frenó con el presupuesto, y quedaron en hablar el jueves. ¿Lo guardo?"
+  - Example (EN): "Call with [company], a cold outreach sale that came from LinkedIn: you used the cold call guide, the goal (book a demo) was not reached because it stalled on budget, and you agreed to talk on Thursday. Save it?"
 - In that sentence never show play IDs, branch codes (like B3), field names, file paths, or frontmatter. Never say "HITL" or "checkpoint" to the person. Show the full log only if they ask for it.
 - If the person corrects something, fix it and confirm again in one sentence.
 - After saving, say in plain words what happened (e.g. "Saved with your September calls."), without the file path.
@@ -212,16 +211,16 @@ Score every call on six fixed dimensions. Write each one as its own frontmatter 
   - Showing the value: 1 = listed features; 3 = tied features to some needs; 5 = tied the offer to the buyer's own numbers and goals.
   - Agreeing the next step: 1 = nothing agreed; 3 = a vague follow-up; 5 = a dated next step with the people and agenda named.
 - **Estimated counts**: write `rep_talk_share` (0 to 100), `questions_asked`, `follow_up_questions` and `longest_monologue_seconds` as whole numbers only when the notes allow a reasonable estimate. Always say they are estimates; leave a key out when you cannot estimate it.
-- **Qualification**: read the list of criteria from the frontmatter `criteria` line of `sales/qualification/qualification-matrix.md` (the full MEDDPICC list when that line is missing) and write one `qual_<criterion>` key per criterion, using the ids exactly as listed. Write `evidenced` only when you have a verbatim quote for it (add it to the Qualification Evidence table); otherwise write `missing`. Never write "partial".
+- **Qualification**: read the list of criteria from the frontmatter `criteria` line of `sales/qualification/qualification-matrix.md` and write one `qual_<criterion>` key per criterion, using the ids exactly as listed. When that line is missing, use the criteria that `clc-brain stats --json` lists (they follow the brain's way of selling) and offer once to add the line to the matrix. Write `evidenced` only when you have a verbatim quote for it (add it to the Qualification Evidence table); otherwise write `missing`. Never write "partial".
 - **Disqualified deals**: add `disqualify: true` to the frontmatter only when the call clearly ended the deal (the buyer said no, withdrew, or is not a fit) and you have a verbatim quote to show the person; otherwise leave the key out. Confirm with the person before saving it.
-- **Deal size**: when the buyer states a budget, contract value or team size, write `qual_deal_size: evidenced` with the quote in the Qualification Evidence table; otherwise `missing`.
+- **Deal size**: only when `deal_size` is one of the criteria: when the buyer states a budget, contract value or team size, write `qual_deal_size: evidenced` with the quote in the Qualification Evidence table; otherwise `missing`.
 - **Never compute averages, trends or deal verdicts.** The numbers come from `clc-brain stats`.
-- **With the person**: talk in plain words about how the call went on each dimension and what the buyer said. Never show key names, ids, or the words MEDDPICC, gate or play.
+- **With the person**: talk in plain words about how the call went on each dimension and what the buyer said. Never show key names, ids, the name of the sales method, or the words gate or play.
 
 ---
 
 ## 4. EXAMPLE USAGE PROMPTS
 
-- `"/brain-sales Analyze this 30-minute discovery call between Carlos and Acme Corp's VP of Engineering."`
+- `"Log this call: here are my notes from today's first meeting with a new prospect."`
 - `"Run skill_call_analyzer on this recording transcript and save to sales/calls/2026-09/."`
-- `"Extract detected objections and coaching feedback from Juanita's demo call with OmniBank."`
+- `"Extract detected objections and coaching feedback from yesterday's presentation call."`

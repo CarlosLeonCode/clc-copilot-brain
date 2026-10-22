@@ -17,6 +17,7 @@ export const SHIPPED_HASHES = Object.freeze({
     "d4193701d80b36fac57de69de3553d5c691f2bc87b0c74c45c8488321e459c46"
   ],
   ".agents/skills/brain-sales/SKILL.md": [
+    "15c8f12b0f7ec41b0f7f51a636dd8e94103bc10a0a56edc60a2a08f2755c43d7",
     "7a0e5ebba6d202a14e296fed58a73f31d338e711c707fe903cbe7d32e4dfcd43",
     "ffb4396013e1c64873b02f6adfa87cf0758cdd1f3e32dd64740ad74957957eac"
   ],
@@ -30,12 +31,14 @@ export const SHIPPED_HASHES = Object.freeze({
     "aee45e36c1f21bfd09a11794c20b8a1d9d56d4d5c1a21dfb390fb51de89520a8"
   ],
   ".agents/skills/call/SKILL.md": [
+    "a28d3111044c1f8a19f2952c1a8a137785ba2bf3bd2b0372d1907851afed264d",
     "edd386f6df8e2930f34c133f0ff0d88607a22bce0251ea419038c97ef436db9d",
     "fab3138b100e2beca8bac80c582f6d09cd20706408285bc9fe7ecc1561e4eed2"
   ],
   ".agents/skills/flow/SKILL.md": [
     "10ed253181c109877094b9a37201123b0d2400cd1af1ab5e95e44d95d78d01af",
-    "a7a452778b7ff463f21c5baff43e673214e331c8e36bf582eb65df6e189ce690"
+    "a7a452778b7ff463f21c5baff43e673214e331c8e36bf582eb65df6e189ce690",
+    "dca174d0665bf77a25e0aca3c0b9c48e41b38bd0623858c664e2e8aad0ff1919"
   ],
   ".agents/skills/objection/SKILL.md": [
     "c0c1b57826e121a2299805cca8eabff3649959b08d3f7012d8907d4bbadf1836"
@@ -43,6 +46,7 @@ export const SHIPPED_HASHES = Object.freeze({
   ".agents/skills/retro/SKILL.md": [
     "06502bf9f124de4cc77e7d610f1bbb601470b48f7bc27d310477b09e2a3e4a94",
     "10147ee3bcfbd33697c083c49370f1fcbce8f02b6f883cd4a0b26f8d1997f6a4",
+    "174a7bc3fbbd0d51caf0c8346fa7e3962d5b27f94a338270ab4de318149a2f13",
     "900d3fd65c8714b81418543676212be1cf1e3bab6b880c482c2caec40de599a5"
   ],
   ".agents/skills/sales-assist/SKILL.md": [
@@ -51,6 +55,7 @@ export const SHIPPED_HASHES = Object.freeze({
     "3ce3e079ee000b68a030e9360517f09859517d8b9647e8136633ddc3bdf72f54",
     "7c03bc3cefcb55b5de246a6dcb414725a186d6d087c4001273e88d763961c295",
     "85f76201879d2633b16a823c61f65792e7cd419b33fba04dcb2e341ff7a81846",
+    "8ccb6db85a0c922cc542cdd0023a039076a69c12dc5c6c09d404ab25aeb73556",
     "a18838ea2c0da0cd2ebf50768f47b94e3d0538c72b9063c5888d21627e6630a2"
   ],
   ".agents/skills/script/SKILL.md": [
@@ -83,7 +88,8 @@ export const SHIPPED_HASHES = Object.freeze({
     "64a93c95371c68854b9d4bd2aa73f453eae1e3b63770da744356d3c6e3d151f1",
     "73b5c5e4ba07a4c888b0ea0ec07cc85c55c0a97dca74343697aa8fa0447dd871",
     "8f904c0a36cd26ce8bbab75654d4a47770a042c4b54e33383d58fd8c021f9743",
-    "e19fc1a0a42ef03cd841c9cfac91e36d5b0ce73f71048e4173075eafb237a5df"
+    "e19fc1a0a42ef03cd841c9cfac91e36d5b0ce73f71048e4173075eafb237a5df",
+    "e6de6845651dc8636fa7f901566f2c56320fd52e3ce2a646a3fa81c2bbec0425"
   ],
   "skills/skill_call_analyzer.md": [
     "037f78e7cfd2862a6e485d9581e6c8b6bfd78256c3d0b0eaf760d7de3ec3cf46",
@@ -92,6 +98,7 @@ export const SHIPPED_HASHES = Object.freeze({
     "998e230cae540f14794efd613f4016df30fa8d2e65ec0a03be9f434fdf552657",
     "c671c4e22c15f0c8e8c426e51f61bd9d39fe2946b2316dcc5753ea8e8d727b57",
     "d372b192b4b72c0dadae7f394e4b21f32dab1198b2f4989d1b04a98d3b7a9d40",
+    "d78add73bf6ded397e5017f38941edc91dcfeb79fee37c817b6fe3808d2d717a",
     "ddb135a55d03beab5383a23810bd9a38e3ba791ca6e30f5d6b0ea08c8fb815e4",
     "f0fd85d1df5df8ca2dcb0b37ef170431145c1fd5f9898c9f763a924586f45be7"
   ],
@@ -101,6 +108,7 @@ export const SHIPPED_HASHES = Object.freeze({
     "246fa306c46ed1aceccc22fcd9909a3062bd4dd9f9cb57f6981e9e118335ff66",
     "24a459e9e800132565dd81066c1f28111a19997ebe0165e4ceeb27d63c01a148",
     "3710fb34bda020a7a3ec6bf8d25ac7698f56689209f9109a40a588df7b3f9627",
+    "3ab1bd77e5fdafe3ee580dda6e777647456cc0e6bd155105031e379c069e7743",
     "3c8b465e1ffb0ef7c710a3d4ed4270395a7d12c551f1ff498e09ebe7e83c2cf9",
     "5402a91c188797df88b1c3df70d2e08bf121338a2ae12084ffde25aa0005fb4c",
     "5d6ff6462e789a90902fa0ffe585e399320c58c2a394fb7ac6b6136753761ef4",
@@ -111,6 +119,7 @@ export const SHIPPED_HASHES = Object.freeze({
     "466ffa6a78afa6b90072db4eb730c00fe30fa6bbbe746cf19b22a7aaba9f689a",
     "69bef13e9fa0f6682652fff4a89c850e31e12e5ceaceced5cb76e09676a346b1",
     "976d1a6f7f3221be688f2cfe5fca7650b5d61caadbb4cb1ebb34f02de9e938db",
+    "ad285c02e3481c130941e8f1a3b3833df0a65a520b2f9e9d74c14e1aa4b339a0",
     "c2b15144fef8bf950d45d2eea18c5c079533c27b4ef3b191509ae2d93c011b5e"
   ]
 });

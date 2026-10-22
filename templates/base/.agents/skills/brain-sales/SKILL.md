@@ -26,7 +26,8 @@ If no arguments were given, ask the user what they need (see step 3 below).
      - Search and inspect `sales/` immediately:
        - Battlecards in `sales/battlecards/` (validate against `schemas/sales-battlecard.schema.json`).
        - Objections in `sales/objections/` (validate against `schemas/sales-objection.schema.json`).
-       - ICP criteria in `sales/icps/`.
+       - ICP criteria in `sales/icps/`, and the qualification criteria in `sales/qualification/qualification-matrix.md`.
+       - The team's sales terms in `sales/glossary.md` (when it exists): answer "What does X mean?" from it and use its words.
        - Saved scripts in `sales/scripts/`. To write a new script, follow `.agents/skills/script/SKILL.md`.
      - Respond using the structured response format:
        - **Instant Talk Track** (verbatim script for calls/emails)
@@ -40,8 +41,8 @@ If no arguments were given, ask the user what they need (see step 3 below).
      > "What sales scenario or buyer challenge are you facing?
      > - **Objection**: e.g., *'Prospect says pricing is 2x our budget'*
      > - **Competitor**: e.g., *'How do we position against [Competitor]?'*
-     > - **Discovery**: e.g., *'Need 3 qualification questions for a CTO'*
-     > - **Outreach**: e.g., *'Cold email hook for an enterprise VP'*
+     > - **Discovery**: e.g., *'Need 3 qualification questions for the person who decides'*
+     > - **Outreach**: e.g., *'Cold email hook for a busy business owner'*
      > 
      > Share the prospect's concern or question to get an instant talk track."
 

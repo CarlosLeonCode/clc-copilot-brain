@@ -24,7 +24,7 @@ If no arguments were given, ask the user what they need (see the last step below
 
 2. **Analyze Transcript or Notes**:
    - If the user pasted a meeting transcript, recording text, or bullet notes:
-     - Ask only for missing essentials (who they spoke with, which company, how it ended), one at a time. Infer everything else: **Date (`YYYY-MM-DD`)**, **Pipeline Stage**, and **Call Outcome**.
+     - Ask only for missing essentials (who they spoke with, which company, how it ended), one at a time. Infer everything else: **Date (`YYYY-MM-DD`)**, **Pipeline Stage** (a stage name from the stage table of `sales/system.md`, with its gate in `sales/stages/pipeline-stages.md`), and **Call Outcome**.
      - Infer the **play** run (a file in `sales/plays/`), the **branch** ID where the call went or broke, and **gate_advanced** (true or false), and write them with the canonical frontmatter keys `play`, `branch`, `gate_advanced`.
      - Infer the **type of sale**, the **lead source** and whether the guide's success was reached, and write them with the frontmatter keys `motion`, `lead_source`, `deal_id` (reuse the deal's earlier one) and `goal_met` (true or false). Never take `goal_met` from `gate_advanced`. Ask only what is missing, one question at a time.
      - Score the call as `skills/skill_call_analyzer.md` section 3c says: a 1 to 5 score for each of the six dimensions only when you have a verbatim quote (otherwise not-enough-evidence), `too-thin` when the notes are too short, the estimated counts, and one qualification result per criterion in `sales/qualification/qualification-matrix.md`. Never compute averages. Tell the person in plain words how the call went; never show key names.

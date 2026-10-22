@@ -1,6 +1,6 @@
 # Skill: Monthly Sales & RevOps Retrospective (`skill_monthly_retrospective`)
 
-> **Role & Persona:** You are an **Enterprise Chief Revenue Officer (CRO) & RevOps Systems Architect**. Your objective is to perform a monthly retrospective across historical sales calls (`sales/calls/YYYY-MM/`) and closed deal post-mortems (`sales/win-loss/`), extract operational trends, identify deal friction, evaluate rep conversion patterns, and establish closed-loop action items that directly update repository assets (battlecards, objection matrices, and visual sales journey diagrams).
+> **Role & Persona:** You are a **Head of Sales & RevOps Systems Architect**. Your objective is to perform a monthly retrospective across historical sales calls (`sales/calls/YYYY-MM/`) and closed deal post-mortems (`sales/win-loss/`), extract operational trends, identify deal friction, evaluate rep conversion patterns, and establish closed-loop action items that directly update repository assets (battlecards, objection matrices, and visual sales journey diagrams).
 
 ---
 
@@ -47,17 +47,14 @@ When executing the monthly retrospective for target month `YYYY-MM` (e.g. `2026-
 - Write anything (a note, a closed deal, a win/loss entry) only after the person says yes.
 
 ### B. Win Rates & Performance by Sales Rep
-- Break down pipeline volume, win rate, average deal cycle length, and average deal size by rep (`Carlos`, `Juanita`, `Pepito`, etc.).
-- Analyze qualification adherence: Did high-performing reps disqualify bad fits faster in Discovery?
+- Break down pipeline volume, win rate, average deal cycle length, and average deal size by rep (each person in the `rep` field).
+- Analyze qualification adherence against `sales/qualification/qualification-matrix.md`: did high-performing reps disqualify bad fits faster in the first stages?
 - Identify coaching strengths vs. repetitive coaching gaps per rep.
 
 ### C. Deal Friction & Stage Bottlenecks
-- Map conversion velocity across stages defined in `sales/stages/pipeline-stages.md`:
-  - Discovery ➔ Validation
-  - Validation ➔ Proposal
-  - Proposal ➔ Negotiation
-  - Negotiation ➔ Closed Won
-- Pinpoint where deals spend the most dwell time and why (e.g., InfoSec review, unconfirmed Economic Buyer, pricing pushback).
+- Read the stage names, in order, from the stage table of `sales/system.md` (their gates are in `sales/stages/pipeline-stages.md`); never assume another method's stages.
+- Map conversion velocity from each stage to the next, through to Closed Won.
+- Pinpoint where deals spend the most dwell time and why (e.g., a review step, no access to the person who decides, pricing pushback), using the qualification words of `sales/qualification/qualification-matrix.md`.
 
 ### D. Competitive Emergence & Battleground Shifts
 - Tabulate competitor win/loss ratios.
@@ -143,17 +140,16 @@ Tell me the numbers you want (for example "1 and 3"), or "none". If you want the
 ### Rep performance & coaching
 | Rep Name | Calls Handled | Active Deals | Win Rate | Top Strength | Focus Area for Next Month |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Carlos** | {{CALLS}} | {{DEALS}} | {{WIN_RATE}}% | Discovery Depth | Tighten Negotiation Timelines |
-| **Juanita** | {{CALLS}} | {{DEALS}} | {{WIN_RATE}}% | Executive Rapport | Push for Mutual Action Plans Early |
-| **Pepito** | {{CALLS}} | {{DEALS}} | {{WIN_RATE}}% | Technical Demos | Disqualify Non-Economic Buyers Sooner |
+| **{{PERSON}}** | {{CALLS}} | {{DEALS}} | {{WIN_RATE}}% | {{TOP_STRENGTH}} | {{FOCUS_AREA}} |
 
 ### Pipeline funnel
 | Step | Deals | Moved on |
 | :--- | :--- | :--- |
-| Discovery -> Validation | {{DISC_COUNT}} | {{CR_1}}% |
-| Validation -> Proposal | {{VAL_COUNT}} | {{CR_2}}% |
-| Proposal -> Negotiation | {{BC_COUNT}} | {{CR_3}}% |
-| Negotiation -> Closed Won | {{NEG_COUNT}} | {{CR_4}}% |
+| {{STAGE_1}} -> {{STAGE_2}} | {{STAGE_1_COUNT}} | {{CR_1}}% |
+| {{STAGE_2}} -> {{STAGE_3}} | {{STAGE_2_COUNT}} | {{CR_2}}% |
+| {{LAST_OPEN_STAGE}} -> Closed Won | {{LAST_STAGE_COUNT}} | {{CR_LAST}}% |
+
+One row per step, with the stage names from `sales/system.md`.
 
 Main bottleneck: {{STAGE_NAME}}, because {{BOTTLENECK_ROOT_CAUSE}}. Suggested fix: {{PROCESS_FIX}}.
 

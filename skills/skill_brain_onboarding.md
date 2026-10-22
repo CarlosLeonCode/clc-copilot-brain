@@ -37,7 +37,7 @@ Conduct the interview in this exact sequence:
 
 ### Step 1: Organization Name
 - **Ask**: "Welcome to your Organizational Second Brain setup! Let's get your knowledge repository configured. First: What is the official name of your company or project?"
-- **Expected Data**: Official company/project name and optional legal entity name (e.g. Acme Corp / Acme Inc.).
+- **Expected Data**: Official company/project name and optional legal entity name (e.g. a short name and the legal name).
 
 ### Step 2: Industry & Domain
 - **Ask**: "What industry or domain does **[Company Name]** operate in? (e.g., Enterprise B2B SaaS, Developer Tools, FinTech, E-commerce, HealthTech)"

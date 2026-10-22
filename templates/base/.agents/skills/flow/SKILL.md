@@ -29,7 +29,7 @@ Keep all routing internal: never show file paths, play IDs, branch codes, Mermai
    - Ask, in the person's language:
      > "Do you want to see how your sales process works, improve a call guide, or turn a drawing or photo of your process into a guide?"
    - If they want to see how it works, explain the steps of their sales process in plain words (a short numbered list), based on `sales/system.md`, and offer to open their sales system page (`clc-brain view --open`).
-   - **Check Deal Stage or Exit Gates**: when asked, show the entry/exit criteria for the requested stage and the MEDDPICC checklist from `sales/qualification/qualification-matrix.md`.
+   - **Check Deal Stage or Exit Gates**: when asked, show the entry/exit criteria for the requested stage from `sales/stages/pipeline-stages.md` and the qualification checklist from `sales/qualification/qualification-matrix.md`, in the words of the team's sales method (stage names from `sales/system.md`, terms from `sales/glossary.md` when it exists). Never bring in another method's stages or criteria.
 
 3. **Import: accept anything the person has**:
    - A photo or screenshot of a whiteboard or notebook, a PDF, an HTML file (including diagrams exported from tools like Archify, Miro or Lucidchart: read their visible text, labels and arrows), Mermaid text, a document, or just a spoken or written description.

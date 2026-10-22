@@ -16,10 +16,9 @@ test('Sales Intelligence Suite: Revenue Enablement & Closed-Loop Assets', async 
       assert.ok(fs.existsSync(skillPath), `${skillPath} must exist`);
       const content = fs.readFileSync(skillPath, 'utf8');
 
-      // Rep assignments
-      assert.match(content, /Carlos/, 'Must include rep Carlos');
-      assert.match(content, /Juanita/, 'Must include rep Juanita');
-      assert.match(content, /Pepito/, 'Must include rep Pepito');
+      // Rep assignment, without sample names
+      assert.match(content, /Assigned Sales Rep/, 'Must capture the assigned rep');
+      assert.doesNotMatch(content, /Carlos|Juanita|Pepito/, 'No sample rep names');
 
       // Coaching feedback
       assert.match(content, /Coaching Feedback/i, 'Must have coaching feedback instructions');

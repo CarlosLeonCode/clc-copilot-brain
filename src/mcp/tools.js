@@ -36,7 +36,7 @@ export const TOOLS_DEFINITIONS = [
       properties: {
         rep: {
           type: 'string',
-          description: 'Sales representative name (e.g. Carlos, Juanita, Pepito).'
+          description: 'Name of the sales rep who ran the call.'
         },
         prospect: {
           type: 'string',
@@ -52,7 +52,7 @@ export const TOOLS_DEFINITIONS = [
         },
         stage: {
           type: 'string',
-          description: 'Pipeline stage (Discovery, Validation, Proposal, Negotiation, Closed Won, Closed Lost).'
+          description: 'Pipeline stage, named as in the stage table of sales/system.md (gates in sales/stages/pipeline-stages.md), or Closed Won / Closed Lost.'
         },
         outcome: {
           type: 'string',

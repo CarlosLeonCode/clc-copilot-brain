@@ -32,7 +32,7 @@ If no arguments were given, use the last complete month, or ask the user which m
      - **Call Volume & Outcomes by Sales Rep**
      - **Top Recurring Buyer Objections** (and whether current scripts resolved them)
      - **Competitor Win/Loss Trends**
-     - **Pipeline Stage Conversion Bottlenecks**
+     - **Pipeline Stage Conversion Bottlenecks** (stage names, in order, from `sales/system.md`; gates from `sales/stages/pipeline-stages.md`)
      - **Play performance & proposed play edits** (per play/branch counts and drop-off, an Unattributed bucket for logs without `play`; read legacy and canonical keys)
    - Propose concrete closed-loop updates to `sales/objections/`, `sales/battlecards/`, and `sales/scripts/`, pausing at a **Human-in-the-Loop (HITL) checkpoint** before writing changes.
    - Apply a proposed edit to a play only after explicit approval from whoever runs `/retro`; then append a Learnings Log entry in that play file, bump the play's `version`, and refresh the sales system page by running `clc-brain view` (tell the person in plain words that their sales page is up to date).
