@@ -22,6 +22,7 @@ When provided with a call transcript, recording summary, or raw conversation not
    - **Outcome**: `Advanced` | `Stalled` | `Disqualified` | `Closed Won` | `Closed Lost`
    - **Play**: Infer the conversation guide (play) that was run, matching a file in `sales/plays/` (e.g., `discovery-call`). Read `sales/system.md` to find it. If none fits, leave `play` out and mention in plain words that no guide matched.
    - **Branch**: Infer the branch ID in that play's decision tree (e.g., `B3`) where the call went off-script or broke. Use the last branch reached if the call ended cleanly.
+   - **Industry (`industry`)**: When the conversation was for one industry (the person says so, the call used that industry's script, or the branch row reached is an industry row such as `B1 · Retail`), write that industry as a short slug the brain already uses (e.g., `retail`) and keep `branch` as the plain ID (`B1`). If the call was not industry-specific, or you are not sure, leave `industry` out. Never invent one and never ask for it as a field.
    - **Type of sale (`motion`)**: Infer how this deal started or is sold (`cold-outbound`, `inbound`, `referral`, `expansion`, or a custom slug the brain already uses). Prefer the type already recorded for the same deal, then the type of the call guide that was run. Never invent one.
    - **Lead source (`lead_source`)**: Where this lead came from (e.g., `linkedin`, `webinar`, `partner`). Leave it out when the notes do not say.
    - **Deal ID (`deal_id`)**: A short slug that ties calls of the same deal together (e.g., `<company>-<year>`). Reuse the one from earlier calls with the same company.
@@ -92,6 +93,7 @@ lead_source: "{{LEAD_SOURCE_SLUG}}"
 deal_id: "{{DEAL_ID_SLUG}}"
 play: "{{PLAY_ID}}"
 branch: "{{BRANCH_ID}}"
+industry: "{{INDUSTRY_SLUG}}"
 goal_met: true | false
 gate_advanced: true | false
 scorecard_status: scored | too-thin
@@ -186,7 +188,7 @@ next_meeting: "YYYY-MM-DDTHH:MM:SSZ"
 
 ## 3b. PLAY ATTRIBUTION & REVIEW CHECKPOINT (INTERNAL RULES)
 
-- Always write the exact frontmatter keys above to the file (`prospect_company`, `deal_stage`, `motion`, `lead_source`, `deal_id`, `play`, `branch`, `goal_met`, `gate_advanced`). They match the keys written by `brain_capture_call`, so `/retro` can aggregate them.
+- Always write the exact frontmatter keys above to the file (`prospect_company`, `deal_stage`, `motion`, `lead_source`, `deal_id`, `play`, `branch`, `industry`, `goal_met`, `gate_advanced`). They match the keys written by `brain_capture_call`, so `/retro` can aggregate them.
 - `{{PROSPECT_COMPANY}}` is the prospect's name, never your own organization's name.
 - Review checkpoint before saving: confirm in ONE plain sentence, in the person's language, that names the type of sale, the lead source and whether the guide's success was reached, then ask a single yes/no question: "Save it?" / "¿Lo guardo?". Wait for a yes before saving. Ask only what is still missing, one question at a time.
   - Example (ES): "Llamada con [empresa], venta por contacto en frío que llegó de LinkedIn: usaste la guía de llamada en frío, no lograste el objetivo (agendar una demo) porque se frenó con el presupuesto, y quedaron en hablar el jueves. ¿Lo guardo?"
