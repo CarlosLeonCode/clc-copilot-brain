@@ -1,6 +1,7 @@
 // Sales glossary parsing and lookup. Pure: no I/O, never throws on odd input.
 // Format: `## group` sections holding one 3-column table (term | meaning | example), read by column position.
 import { foldText } from './sales-normalize.js';
+import { makeDiagnostic } from './diagnostics.js';
 
 export const SEPARATOR_ROW = /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/;
 
@@ -17,13 +18,13 @@ const isTableLine = (line) => line.trim().startsWith('|');
 
 /**
  * Parse a glossary markdown file.
- * @returns {{title: string, groups: {name: string, headers: string[], terms: {term: string, meaning: string, example: string}[]}[], diagnostics: {level: string, line: number, message: string}[]}}
+ * @returns {{title: string, groups: {name: string, headers: string[], terms: {term: string, meaning: string, example: string}[]}[], diagnostics: {level: string, line: number, code: string, vars: object, message: string}[]}}
  */
 export function parseGlossary(markdown) {
   const result = { title: '', groups: [], diagnostics: [] };
   if (typeof markdown !== 'string') return result;
   const lines = markdown.replace(/^﻿/, '').replace(/\r\n?/g, '\n').split('\n');
-  const warn = (line, message) => result.diagnostics.push({ level: 'warning', line, message });
+  const warn = (line, code, vars) => result.diagnostics.push(makeDiagnostic('warning', line, code, vars));
   let group = null;
 
   lines.forEach((raw, index) => {
@@ -40,18 +41,18 @@ export function parseGlossary(markdown) {
     }
     if (!isTableLine(raw) || SEPARATOR_ROW.test(raw.trim())) return;
     if (!group) {
-      warn(line, 'A table row appears before any "## group" heading and was skipped.');
+      warn(line, 'glossary.rowBeforeGroup');
       return;
     }
     const cells = splitRow(raw);
     const nextLine = lines[index + 1] ?? '';
     if (group.headers.length === 0 && SEPARATOR_ROW.test(nextLine.trim())) {
       if (cells.length === 3) group.headers = cells;
-      else warn(line, `The table header has ${cells.length} columns; expected 3 (term, meaning, example).`);
+      else warn(line, 'glossary.headerColumns', { columns: cells.length });
       return;
     }
     if (cells.length !== 3) {
-      warn(line, `The row has ${cells.length} columns; expected 3 (term, meaning, example). It was skipped.`);
+      warn(line, 'glossary.rowColumns', { columns: cells.length });
       return;
     }
     group.terms.push({ term: stripBold(cells[0]), meaning: cells[1], example: cells[2] });

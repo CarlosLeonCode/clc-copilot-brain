@@ -1,6 +1,7 @@
 // Sales play frontmatter parsing and validation. Pure: no I/O, no YAML dependency.
 import { toSlug } from './sales-normalize.js';
 import { SECTION_HEADINGS, section } from './sales-stages.js';
+import { t } from './i18n.js';
 
 export const PLAY_KEYS = Object.freeze(['play', 'stages', 'goal', 'gate_unlocked', 'version', 'status']);
 
@@ -44,28 +45,40 @@ export function parseFrontmatter(text, { topLevelOnly = false } = {}) {
 }
 
 /**
- * Validate a play file. `stages` is a comma list of stage numbers; legacy single `stage` is accepted.
- * @returns {string[]} human-readable problems, empty when valid
+ * Problems of a play file, each { code, vars, message } (English message; see diagnosticText for other languages).
+ * `stages` is a comma list of stage numbers; legacy single `stage` is accepted.
  */
-export function validatePlay(fileName, text) {
+export function playProblems(fileName, text) {
+  const problem = (code, vars = {}) => {
+    const all = { file: fileName, ...vars };
+    return { code, vars: all, message: t('en', `diag.${code}`, all) };
+  };
   const fm = parseFrontmatter(text);
-  if (!fm) return [`${fileName}: missing frontmatter block`];
+  if (!fm) return [problem('play.noFrontmatter')];
   const problems = [];
 
   for (const key of PLAY_KEYS) {
     if (key === 'stages') continue;
-    if (!fm[key]) problems.push(`${fileName}: missing frontmatter key "${key}"`);
+    if (!fm[key]) problems.push(problem('play.missingKey', { key }));
   }
 
   const stages = fm.stages ?? fm.stage;
-  if (!stages) problems.push(`${fileName}: missing frontmatter key "stages"`);
-  else if (!STAGES_LIST.test(stages)) problems.push(`${fileName}: "stages" must be a comma list of stage numbers (got "${stages}")`);
+  if (!stages) problems.push(problem('play.missingKey', { key: 'stages' }));
+  else if (!STAGES_LIST.test(stages)) problems.push(problem('play.badStages', { value: stages }));
 
   const stem = String(fileName).replace(/\.md$/, '');
-  if (fm.play && fm.play !== stem) problems.push(`${fileName}: "play" is "${fm.play}" but must match the file name "${stem}"`);
+  if (fm.play && fm.play !== stem) problems.push(problem('play.nameMismatch', { play: fm.play, stem }));
 
-  if (fm.version && !INTEGER.test(fm.version)) problems.push(`${fileName}: "version" must be an integer (got "${fm.version}")`);
+  if (fm.version && !INTEGER.test(fm.version)) problems.push(problem('play.badVersion', { value: fm.version }));
   return problems;
+}
+
+/**
+ * Validate a play file.
+ * @returns {string[]} human-readable problems (English), empty when valid
+ */
+export function validatePlay(fileName, text) {
+  return playProblems(fileName, text).map((p) => p.message);
 }
 
 /** True when a mermaid fence holds decision nodes (conversation trees belong in sales/plays/). */

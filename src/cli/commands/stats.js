@@ -1,7 +1,9 @@
 // `stats`: show how sales are going, as plain text for people or full JSON for the AI.
 import fs from 'node:fs';
 import path from 'node:path';
+import { messageLanguage } from '../../core/brain-language.js';
 import { BrainError } from '../../core/errors.js';
+import { t } from '../../core/i18n.js';
 import { loadSalesReport } from '../../core/sales-records.js';
 import { formatSalesReport } from '../../core/sales-report-text.js';
 
@@ -12,7 +14,7 @@ export async function runStats(targetDir, options) {
     throw new BrainError('VALIDATION', 'The month must look like YYYY-MM, for example: clc-brain stats --month 2026-09');
   }
   if (!fs.existsSync(path.join(targetDir, 'org-kernel.json'))) {
-    throw new BrainError('NOT_A_BRAIN', `${targetDir} is not a brain (no org-kernel.json). Run "clc-brain init" first.`);
+    throw new BrainError('NOT_A_BRAIN', t(messageLanguage(targetDir, process.env), 'cli.notBrain', { dir: targetDir }));
   }
   if (!fs.existsSync(path.join(targetDir, 'sales'))) {
     throw new BrainError('NO_SALES_AREA', 'This brain has no sales area yet. Add it with "clc-brain add-area --preset sales".');

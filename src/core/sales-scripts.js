@@ -1,5 +1,5 @@
 // Sales script parsing: a markdown file with a fixed heading grammar becomes structured data.
-// Pure: no I/O, never throws. Problems are returned as diagnostics {level, line, message}.
+// Pure: no I/O, never throws. Problems are returned as diagnostics {level, line, code, vars, message} (see diagnostics.js).
 //
 //   frontmatter: script, title, industry?, version (int), status (draft|active)
 //   ## conversation   play: goal: note:   and "- " rules before the first ###
@@ -7,6 +7,7 @@
 //   #### buyer answer (the label is the pill)   when: plus the same card keys
 import { parseFrontmatter } from './plays.js';
 import { foldText, toSlug } from './sales-normalize.js';
+import { makeDiagnostic } from './diagnostics.js';
 
 export const SCRIPT_TONES = Object.freeze(['start', 'plain', 'action', 'yes', 'no', 'follow']);
 export const SCRIPT_STATUSES = Object.freeze(['draft', 'active']);
@@ -31,7 +32,7 @@ export function parseScript(markdown, { fileStem } = {}) {
   const text = typeof markdown === 'string' ? markdown.replace(/^﻿/, '').replace(/\r\n?/g, '\n') : '';
   const lines = text.split('\n');
   const diagnostics = [];
-  const add = (level, line, message) => diagnostics.push({ level, line, message });
+  const add = (level, line, code, vars) => diagnostics.push(makeDiagnostic(level, line, code, vars));
 
   const fm = parseFrontmatter(text);
   let bodyStart = 0;
@@ -42,18 +43,18 @@ export function parseScript(markdown, { fileStem } = {}) {
   const keyLine = (key) => Math.max(1, lines.slice(0, bodyStart).findIndex((l) => l.startsWith(`${key}:`)) + 1);
 
   const script = { id: '', title: '', industry: '', version: null, status: '', intro: '', conversations: [], diagnostics };
-  if (!fm) add('error', 1, 'The file has no frontmatter block (--- ... ---) with script, title, version and status.');
+  if (!fm) add('error', 1, 'script.noFrontmatter');
   else {
     script.id = fm.script || fileStem || '';
     script.title = fm.title || '';
     script.industry = fm.industry || '';
     script.status = fm.status || '';
-    if (!fm.script) add('error', 1, 'Frontmatter is missing "script".');
-    else if (fileStem && fm.script !== fileStem) add('warning', keyLine('script'), `"script" is "${fm.script}" but should match the file name "${fileStem}".`);
-    if (!fm.title) add('error', 1, 'Frontmatter is missing "title".');
-    if (!SCRIPT_STATUSES.includes(fm.status)) add('error', keyLine('status'), `"status" must be draft or active (got "${fm.status ?? ''}").`);
+    if (!fm.script) add('error', 1, 'script.noScript');
+    else if (fileStem && fm.script !== fileStem) add('warning', keyLine('script'), 'script.nameMismatch', { script: fm.script, file: fileStem });
+    if (!fm.title) add('error', 1, 'script.noTitle');
+    if (!SCRIPT_STATUSES.includes(fm.status)) add('error', keyLine('status'), 'script.badStatus', { value: fm.status ?? '' });
     if (/^\d+$/.test(fm.version ?? '')) script.version = Number(fm.version);
-    else add('error', keyLine('version'), `"version" must be an integer (got "${fm.version ?? ''}").`);
+    else add('error', keyLine('version'), 'script.badVersion', { value: fm.version ?? '' });
   }
 
   const intro = [];
@@ -108,7 +109,7 @@ export function parseScript(markdown, { fileStem } = {}) {
     }
     if (h && h[1].length === 4) {
       if (!step) {
-        add('warning', line, `Answer "${h[2]}" is outside a step and was skipped.`);
+        add('warning', line, 'script.answerOutside', { label: h[2] });
         skipping = true;
         continue;
       }
@@ -128,7 +129,7 @@ export function parseScript(markdown, { fileStem } = {}) {
     const kv = KEY_LINE.exec(trimmed);
     const scope = answer ? 'answer' : step ? 'step' : 'conv';
     if (!kv || !KEYS[scope].has(kv[1])) {
-      add('warning', line, `Unknown line "${trimmed}" was ignored.`);
+      add('warning', line, 'script.unknownLine', { text: trimmed });
       continue;
     }
     const [, key, value] = kv;
@@ -148,7 +149,7 @@ export function parseScript(markdown, { fileStem } = {}) {
       else if (key === 'detail') card.details.push(value);
       else if (key === 'tip') card.tip = value;
       else if (SCRIPT_TONES.includes(value)) card.tone = value;
-      else add('error', line, `Unknown tone "${value}"; use ${SCRIPT_TONES.join(', ')}.`);
+      else add('error', line, 'script.unknownTone', { tone: value, tones: SCRIPT_TONES.join(', ') });
     }
   }
   script.intro = intro.join('\n').trim();
@@ -159,12 +160,12 @@ export function parseScript(markdown, { fileStem } = {}) {
 }
 
 function finalize(script, { cardLines, nextRefs, stepLines, add }) {
-  if (script.conversations.length === 0) add('error', 1, 'The script has no conversations (## headings).');
+  if (script.conversations.length === 0) add('error', 1, 'script.noConversations');
   const used = new Set();
   const unique = (base, line) => {
     let anchor = base;
     for (let n = 2; used.has(anchor); n += 1) anchor = `${base}-${n}`;
-    if (anchor !== base) add('warning', line, `Duplicate anchor "${base}"; renamed to "${anchor}".`);
+    if (anchor !== base) add('warning', line, 'script.duplicateAnchor', { base, anchor });
     used.add(anchor);
     return anchor;
   };
@@ -177,7 +178,7 @@ function finalize(script, { cardLines, nextRefs, stepLines, add }) {
   script.conversations.forEach((conv, ci) => {
     conv.anchor = unique(slugOf(conv.title) || `conversation-${ci + 1}`, stepLines.get(conv));
     remember(conv.title, conv.anchor);
-    if (conv.steps.length === 0) add('error', stepLines.get(conv), `Conversation "${conv.title}" has no steps (### headings).`);
+    if (conv.steps.length === 0) add('error', stepLines.get(conv), 'script.noSteps', { title: conv.title });
     conv.steps.forEach((step, si) => {
       const base = conv.play && step.branch ? `${slugOf(conv.play)}-${slugOf(step.branch)}` : `${conv.anchor}-step-${si + 1}`;
       step.anchor = unique(base, stepLines.get(step));
@@ -188,7 +189,7 @@ function finalize(script, { cardLines, nextRefs, stepLines, add }) {
   const owners = script.conversations.flatMap((c) => c.steps.flatMap((s) => [s, ...s.answers]));
   for (const owner of owners) {
     for (const card of owner.cards) {
-      if (!card.say) add('error', cardLines.get(card), 'A card has no "say:" line.');
+      if (!card.say) add('error', cardLines.get(card), 'script.noSay');
       if (!card.tone) card.tone = 'plain';
     }
   }
@@ -196,6 +197,6 @@ function finalize(script, { cardLines, nextRefs, stepLines, add }) {
     const key = foldText(owner.next).trim();
     if (key === 'end') continue;
     if (targets.has(key)) owner.nextAnchor = targets.get(key);
-    else add('warning', line, `"next: ${owner.next}" does not match any step, conversation or "end".`);
+    else add('warning', line, 'script.badNext', { next: owner.next });
   }
 }

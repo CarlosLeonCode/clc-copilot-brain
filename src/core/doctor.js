@@ -6,7 +6,8 @@ import { adapterPaths, generateHarnessAdapters, listSourceSkills } from './harne
 import { restoreAgentSkills, restoreRootSkills, setupIdeAdapters } from './scaffold.js';
 import { validateAgainstSchema } from './schema-validator.js';
 import { TEMPLATES_BASE_DIR } from './package-paths.js';
-import { PLAY_TITLE_PREFIX, hasDecisionTree, validatePlay } from './plays.js';
+import { PLAY_TITLE_PREFIX, hasDecisionTree, playProblems } from './plays.js';
+import { diagnosticText } from './diagnostics.js';
 import { parseFlowchart } from './flowchart.js';
 import { readSalesRecords } from './sales-records.js';
 import { DEFAULT_MOTIONS, toSlug } from './sales-normalize.js';
@@ -123,7 +124,7 @@ function checkSalesSystem(rootDir, report) {
   if (plays.length === 0) warn(report.t('doctor.noPlays'));
   for (const file of plays) {
     const text = fs.readFileSync(path.join(playsDir, file), 'utf8');
-    for (const problem of validatePlay(file, text)) warn(report.t('doctor.playProblem', { problem }));
+    for (const problem of playProblems(file, text)) warn(report.t('doctor.playProblem', { problem: report.text(problem) }));
     const state = diagramState(text);
     if (state !== 'ok') warn(report.t(state === 'missing' ? 'doctor.guideNoDiagram' : 'doctor.guideBrokenDiagram', { name: guideName(file, text) }));
   }
@@ -240,7 +241,7 @@ function checkSampleContent(rootDir, report) {
 export function runDoctor(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, lang = DEFAULT_LANGUAGE } = {}) {
   const passed = [];
   const issues = [];
-  const report = { pass: (m) => passed.push(m), issue: (i) => issues.push(i), t: (key, vars) => t(lang, key, vars) };
+  const report = { pass: (m) => passed.push(m), issue: (i) => issues.push(i), t: (key, vars) => t(lang, key, vars), text: (d) => diagnosticText(lang, d) };
   const expected = expectedAssets(templatesBaseDir);
 
   const kernel = checkKernel(rootDir, report);

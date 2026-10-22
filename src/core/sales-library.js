@@ -11,6 +11,7 @@ import { parseScript } from './sales-scripts.js';
 import { parseGlossary } from './sales-glossary.js';
 import { renderScriptPage } from './script-view.js';
 import { DEFAULT_LANGUAGE, t } from './i18n.js';
+import { diagnosticText } from './diagnostics.js';
 
 export const GENERATOR_MARKER = '<meta name="generator" content="clc-brain">';
 
@@ -194,7 +195,7 @@ function pageProblem(entry, say) {
 export function checkSalesLibrary(rootDir, { lang = DEFAULT_LANGUAGE } = {}) {
   const say = (key, vars) => t(lang, key, vars);
   const fix = say('library.fix');
-  const lines = (diagnostics) => diagnostics.map((d) => say('library.line', { line: d.line, message: d.message })).join('; ');
+  const lines = (diagnostics) => diagnostics.map((d) => say('library.line', { line: d.line, message: diagnosticText(lang, d) })).join('; ');
   const warnings = [];
   const salesDir = path.join(rootDir, 'sales');
   const library = loadLibrary(rootDir);

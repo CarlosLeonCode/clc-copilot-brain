@@ -6,6 +6,7 @@ import path from 'node:path';
 import { messageLanguage } from '../../core/brain-language.js';
 import { BrainError } from '../../core/errors.js';
 import { t } from '../../core/i18n.js';
+import { diagnosticText } from '../../core/diagnostics.js';
 import { loadDraft, writeSalesPreview, writeSalesView } from '../../core/sales-view.js';
 
 function openerFor(file, platform = process.platform) {
@@ -31,7 +32,7 @@ function reportPages(pages, targetDir, say) {
   for (const { slug, reason } of pages.skipped) console.log(pc.yellow(say('cli.view.noScriptPage', { slug, reason })));
 }
 
-async function runPreview(targetDir, options, say) {
+async function runPreview(targetDir, options, say, lang) {
   if (!Array.isArray(options.draft)) throw new BrainError('DRAFT_INVALID', say('cli.view.draftMissing'));
   const drafts = options.draft.map((file) => loadDraft(path.resolve(process.cwd(), file)));
   const { outputPath, drafts: statuses, draftPages } = writeSalesPreview(targetDir, { drafts });
@@ -40,7 +41,7 @@ async function runPreview(targetDir, options, say) {
     fs.rmSync(path.dirname(outputPath), { recursive: true, force: true });
     for (const d of badScripts) {
       console.log(pc.yellow(say('cli.view.draftNeedsFix', { file: path.basename(d.path) })));
-      for (const e of d.errors) console.log(`  ${say('library.line', { line: e.line, message: e.message })}`);
+      for (const e of d.errors) console.log(`  ${say('library.line', { line: e.line, message: diagnosticText(lang, e) })}`);
     }
     return 1;
   }
@@ -69,7 +70,7 @@ export async function runView(targetDir, options) {
   const lang = messageLanguage(targetDir, process.env);
   const say = (key, vars) => t(lang, key, vars);
   try {
-    if (options.draft) return await runPreview(targetDir, options, say);
+    if (options.draft) return await runPreview(targetDir, options, say, lang);
     const { outputPath, pages } = writeSalesView(targetDir);
     console.log(pc.green(say('cli.view.ready', { file: outputPath })));
     reportPages(pages, targetDir, say);

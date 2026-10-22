@@ -3,7 +3,8 @@
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { messageLanguage } from '../../core/brain-language.js';
-import { t } from '../../core/i18n.js';
+import { hasText, t } from '../../core/i18n.js';
+import { BrainError } from '../../core/errors.js';
 import { diffLines } from '../../core/text-diff.js';
 import { generateHarnessAdapters, harnessReportHasChanges } from '../../core/harness-adapters.js';
 import { applyUpgrade, planUpgrade } from '../../core/upgrade.js';
@@ -11,10 +12,13 @@ import { applyUpgrade, planUpgrade } from '../../core/upgrade.js';
 const MAX_DIFF_LINES = 40;
 const MATRIX_REL = 'sales/qualification/qualification-matrix.md';
 
-/** One plain line for a skipped file: edited files are "kept", other skips keep their reason code. */
+/** Why a file is left as it is, in plain words (the reason code when there is no text for it). */
+const reasonText = (reason, say) => (hasText('en', `cli.upgrade.reason.${reason}`) ? say(`cli.upgrade.reason.${reason}`) : reason);
+
+/** One plain line for a skipped file: edited files are "kept", other skips say why. */
 function skipLine(s, say) {
   if (s.reason === 'edited-locally') return `  ${pc.yellow('~')} ${s.path} ${pc.dim(say('cli.upgrade.kept'))}`;
-  return `  ${pc.yellow('~')} ${s.path} ${pc.dim(`(${s.reason})`)}`;
+  return `  ${pc.yellow('~')} ${s.path} ${pc.dim(`(${reasonText(s.reason, say)})`)}`;
 }
 
 function renderKeptHints(skips, say) {
@@ -66,7 +70,7 @@ function renderResult(result, say) {
   for (const path of result.added) console.log(`  ${pc.green('+')} ${say('cli.upgrade.added', { path })}`);
   for (const r of result.replaced) console.log(`  ${pc.green('✔')} ${say('cli.upgrade.replaced', { path: r.path })} ${pc.dim(say('cli.upgrade.backup', { path: r.backup }))}`);
   // Files kept because they were edited are already listed in the plan above.
-  for (const s of result.skipped.filter((x) => x.reason !== 'edited-locally')) console.log(`  ${pc.yellow('~')} ${say('cli.upgrade.skipped', { path: s.path })} ${pc.dim(`(${s.reason})`)}`);
+  for (const s of result.skipped.filter((x) => x.reason !== 'edited-locally')) console.log(`  ${pc.yellow('~')} ${say('cli.upgrade.skipped', { path: s.path })} ${pc.dim(`(${reasonText(s.reason, say)})`)}`);
 }
 
 /**
@@ -77,7 +81,13 @@ export async function runUpgrade(targetDir, options) {
   const lang = messageLanguage(targetDir, process.env);
   const say = (key, vars) => t(lang, key, vars);
   p.intro(pc.bgCyan(pc.black(say('cli.upgrade.title'))));
-  const plan = planUpgrade(targetDir, { forceSkills: options['force-skills'] === true });
+  let plan;
+  try {
+    plan = planUpgrade(targetDir, { forceSkills: options['force-skills'] === true });
+  } catch (err) {
+    if (err instanceof BrainError && err.code === 'NOT_A_BRAIN') throw new BrainError(err.code, say('cli.notBrain', { dir: targetDir }), err.details);
+    throw err;
+  }
   const preview = generateHarnessAdapters(targetDir, { dryRun: true });
   if (!plan.actions.some((a) => a.kind !== 'skip') && !harnessReportHasChanges(preview)) {
     const skips = plan.actions;

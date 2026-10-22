@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
-import { PRESET_AREAS, PRESET_AREA_IDS } from '../../core/areas.js';
+import { PRESET_AREAS, PRESET_AREA_IDS, presetAreaText } from '../../core/areas.js';
 import { LANGUAGE_HELP, detectLanguage, parseLanguage } from '../../core/brain-language.js';
 import { BrainError } from '../../core/errors.js';
 import { DEFAULT_METHODOLOGY, METHODOLOGY_HELP, parseBuiltInMethodology } from '../../core/methodology.js';
@@ -21,12 +21,15 @@ async function textOption(value, options, prompt) {
   return ask(p.text(prompt), 'Setup cancelled.');
 }
 
-async function chooseAreas(options) {
+async function chooseAreas(options, language) {
   if (options.areas) return options.areas.split(',').map((s) => s.trim());
   if (options.yes) return [...PRESET_AREA_IDS];
   return ask(p.multiselect({
     message: 'Select the operational areas to install in your Second Brain:',
-    options: PRESET_AREAS.map((a) => ({ value: a.id, label: `${a.name} - ${a.description}`, hint: a.defaultSelected ? 'recommended' : undefined })),
+    options: PRESET_AREAS.map((a) => {
+      const text = presetAreaText(language, a.id);
+      return { value: a.id, label: `${text.name} - ${text.description}`, hint: a.defaultSelected ? t(language, 'area.recommended') : undefined };
+    }),
     initialValues: ['sales', 'marketing'],
     required: true
   }), 'Setup cancelled.');
@@ -100,7 +103,7 @@ export async function runInit(targetDir, options) {
   const industry = await textOption(options.industry, options, { message: 'What industry or domain do you operate in?', defaultValue: INIT_DEFAULTS.industry, validate: required('Industry') });
   const tagline = await textOption(options.tagline, options, { message: 'What is your core tagline or mission?', placeholder: INIT_DEFAULTS.tagline, defaultValue: INIT_DEFAULTS.tagline });
   const language = await chooseLanguage(options, detectLanguage(process.env));
-  const areas = await chooseAreas(options);
+  const areas = await chooseAreas(options, language);
   const methodology = await chooseMethodology(options, language, areas);
   const demo = await chooseDemo(options);
 

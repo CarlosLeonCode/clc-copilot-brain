@@ -1,7 +1,7 @@
 // `add-area`: install a preset area or scaffold a custom one (flags or interactive prompts), in the brain's language.
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
-import { addCustomArea, addPresetArea, areaIdError, defaultAreaTitle, readKernel, uninstalledPresets } from '../../core/areas.js';
+import { addCustomArea, addPresetArea, areaIdError, defaultAreaTitle, presetAreaText, readKernel, uninstalledPresets } from '../../core/areas.js';
 import { messageLanguage } from '../../core/brain-language.js';
 import { t } from '../../core/i18n.js';
 import { ask } from '../prompt.js';
@@ -18,7 +18,7 @@ async function chooseKind(options, available, say) {
   }));
 }
 
-async function addPreset(targetDir, options, available, say) {
+async function addPreset(targetDir, options, available, say, lang) {
   if (available.length === 0) {
     p.note(say('cli.addArea.allInstalled'), say('cli.addArea.notice'));
     p.outro(pc.green(say('cli.addArea.noMore')));
@@ -26,15 +26,16 @@ async function addPreset(targetDir, options, available, say) {
   }
   const areaId = options.preset || await ask(p.select({
     message: say('cli.addArea.selectPreset'),
-    options: available.map((a) => ({ value: a.id, label: `${a.name} - ${a.description}` }))
+    options: available.map((a) => { const text = presetAreaText(lang, a.id); return { value: a.id, label: `${text.name} - ${text.description}` }; })
   }));
 
   const spin = p.spinner();
   spin.start(say('cli.addArea.installing', { area: areaId }));
   try {
     const { area } = addPresetArea(targetDir, areaId);
-    spin.stop(pc.green(say('cli.addArea.installed', { name: area.name })));
-    p.outro(pc.bold(pc.green(say('cli.addArea.installedAt', { name: area.name, id: area.id }))));
+    const name = presetAreaText(lang, area.id)?.name ?? area.name;
+    spin.stop(pc.green(say('cli.addArea.installed', { name })));
+    p.outro(pc.bold(pc.green(say('cli.addArea.installedAt', { name, id: area.id }))));
   } catch (err) {
     spin.stop(pc.red(say('cli.addArea.failed')));
     throw err;
@@ -73,5 +74,5 @@ export async function runAddArea(targetDir, options) {
   const available = uninstalledPresets(targetDir);
   p.intro(pc.bgCyan(pc.black(say('cli.addArea.title'))));
   const kind = await chooseKind(options, available, say);
-  return kind === 'preset' ? addPreset(targetDir, options, available, say) : addCustom(targetDir, options, say);
+  return kind === 'preset' ? addPreset(targetDir, options, available, say, lang) : addCustom(targetDir, options, say);
 }

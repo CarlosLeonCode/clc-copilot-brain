@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { BrainError } from './errors.js';
 import { DEFAULT_LANGUAGE, parseLanguage } from './brain-language.js';
+import { t } from './i18n.js';
 import { copyDirRecursive, ensureDir, isInside } from './fs-utils.js';
 import { DEFAULT_METHODOLOGY, parseMethodology } from './methodology.js';
 import { PLAYBOOKS_DIR, TEMPLATES_AREAS_DIR, TEMPLATES_LOCALES_DIR, TEMPLATES_METHODOLOGIES_DIR } from './package-paths.js';
@@ -65,6 +66,12 @@ export function copyAreaTemplates(areaId, destDir, { lang = DEFAULT_LANGUAGE, me
   copyDirRecursive(src, destDir, { replacer, filter });
   for (const overlay of areaOverlayDirs(areaId, { lang, methodology })) copyDirRecursive(overlay, destDir, { replacer, filter });
   return true;
+}
+
+/** Name and description of a preset area in `lang` (English names stay the area's data); null for a custom area. */
+export function presetAreaText(lang, areaId) {
+  if (!findPreset(areaId)) return null;
+  return { name: t(lang, `area.${areaId}.name`), description: t(lang, `area.${areaId}.description`) };
 }
 
 export function findPreset(areaId) {
