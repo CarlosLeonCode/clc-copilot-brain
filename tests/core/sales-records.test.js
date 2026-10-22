@@ -111,3 +111,16 @@ test('call records carry disqualify: true only when the flag is true, else false
   const by = Object.fromEntries(readSalesRecords(dir).calls.map((c) => [c.relPath.split('/').pop(), c.disqualify]));
   assert.deepEqual(by, { 'a.md': true, 'b.md': false, 'c.md': false });
 }));
+
+test('Spanish win-loss names and results: _ganado / _perdido files and result ganado / perdido', () => withTmp((dir) => {
+  writeFiles(dir, {
+    'sales/win-loss/2026-09-05_hotel-faro_ganado.md': '# sin tabla\n',
+    'sales/win-loss/2026-09-06_tienda-sol_perdido.md': '# sin tabla\n',
+    'sales/win-loss/notas.md': '---\nresult: perdido\ndate: 2026-09-07\ncompany: Agencia Mar\n---\n'
+  });
+  const by = Object.fromEntries(readSalesRecords(dir).wins.map((w) => [w.relPath.split('/').pop(), w]));
+  assert.equal(by['2026-09-05_hotel-faro_ganado.md'].result, 'won');
+  assert.equal(by['2026-09-05_hotel-faro_ganado.md'].company, 'hotel faro');
+  assert.equal(by['2026-09-06_tienda-sol_perdido.md'].result, 'lost');
+  assert.equal(by['notas.md'].result, 'lost');
+}));

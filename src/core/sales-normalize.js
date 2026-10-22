@@ -13,13 +13,13 @@ export const DEFAULT_MOTIONS = Object.freeze({
 // Trailing legal suffixes dropped when comparing company names.
 const LEGAL_SUFFIXES = new Set(['inc', 'llc', 'ltd', 'corp', 'co', 'sa', 'sas', 'gmbh', 'srl', 'plc']);
 
-// Ordered keyword rules: the first match wins.
+// Ordered keyword rules over accent-folded lowercase text, English and Spanish: the first match wins.
 const OUTCOME_RULES = Object.freeze([
-  ['closed-won', /closed[\s-]*won|\bwon\b/],
-  ['closed-lost', /closed[\s-]*lost|\blost\b/],
-  ['disqualified', /disqualif/],
-  ['stalled', /stall/],
-  ['advanced', /advanc/]
+  ['closed-won', /closed[\s-]*won|\bwon\b|\bganad[oa]s?\b/],
+  ['closed-lost', /closed[\s-]*lost|\blost\b|\bperdid[oa]s?\b/],
+  ['disqualified', /disqualif|descalific|expediente[\s-]*cerrado/],
+  ['stalled', /stall|estancad|\bpendiente/],
+  ['advanced', /advanc|\bavan[zc]/]
 ]);
 
 const text = (value) => (typeof value === 'string' ? value : value == null ? '' : String(value));
@@ -52,9 +52,9 @@ export function dealKey({ dealId, company } = {}) {
   return toSlug(dealId) || normalizeCompany(company);
 }
 
-/** Free-text outcome to one of: closed-won, closed-lost, disqualified, stalled, advanced, unclassified. */
+/** Free-text outcome (English or Spanish, accents ignored) to one of: closed-won, closed-lost, disqualified, stalled, advanced, unclassified. */
 export function normalizeOutcome(value) {
-  const lower = text(value).toLowerCase();
+  const lower = foldText(value);
   for (const [outcome, pattern] of OUTCOME_RULES) if (pattern.test(lower)) return outcome;
   return 'unclassified';
 }

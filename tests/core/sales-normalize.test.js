@@ -71,3 +71,22 @@ test('parseBranch maps per-industry branch values to the branch id and its indus
   assert.deepEqual(parseBranch(''), { branch: '' });
   assert.deepEqual(parseBranch(undefined), { branch: '' });
 });
+
+test('normalizeOutcome understands Spanish outcomes, with or without accents', () => {
+  const cases = {
+    Ganado: 'closed-won',
+    'cerrado-ganado': 'closed-won',
+    'Cerrado ganado': 'closed-won',
+    Perdido: 'closed-lost',
+    'cerrado-perdido': 'closed-lost',
+    Descalificado: 'disqualified',
+    'Expediente cerrado': 'disqualified',
+    Estancado: 'stalled',
+    'Pendiente de respuesta': 'stalled',
+    'Avanzó a diagnóstico': 'advanced',
+    avanzo: 'advanced',
+    'Avanza a demo': 'advanced',
+    'Demo agendada': 'unclassified'
+  };
+  for (const [text, expected] of Object.entries(cases)) assert.equal(normalizeOutcome(text), expected, text);
+});

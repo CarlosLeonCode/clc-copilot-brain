@@ -87,7 +87,7 @@ src/
 │   ├── query.js           queryBrain (allowed areas + playbooks)
 │   ├── plays.js           play frontmatter parse/validate (PLAY_KEYS), parseMotions, readPlayMeta, PLAY_TITLE_PREFIX
 │   ├── sales-stages.js    plain sections of system.md (SECTION_HEADINGS in en/es), stage number -> name
-│   ├── sales-normalize.js slugs, company/deal keys, outcomes, booleans, DEFAULT_MOTIONS, motionName(slug, lang)
+│   ├── sales-normalize.js slugs, company/deal keys, outcomes (English and Spanish), branches, booleans, DEFAULT_MOTIONS, motionName(slug, lang)
 │   ├── sales-scripts.js   parseScript: script markdown grammar -> conversations/steps/answers/cards + diagnostics (ADR 0008)
 │   ├── sales-glossary.js  parseGlossary, lookupTerm (glossary tables)
 │   ├── script-view.js     renderScriptPage + SCRIPT_CSS (one offline HTML page per script, generator meta)

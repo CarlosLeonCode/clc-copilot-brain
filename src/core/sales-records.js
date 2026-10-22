@@ -14,7 +14,8 @@ import { resolveCriteria } from './scorecard.js';
 import { getMethodology } from './methodology.js';
 
 const WIN_LOSS_SKIP = new Set(['README.md', 'post-mortem-template.md']);
-const WIN_LOSS_NAME = /^(\d{4}-\d{2}-\d{2})_(.+)_(won|lost)\.md$/i;
+const WIN_LOSS_NAME = /^(\d{4}-\d{2}-\d{2})_(.+)_(won|lost|ganado|perdido)\.md$/i;
+const NAMED_RESULT = Object.freeze({ won: 'won', lost: 'lost', ganado: 'won', perdido: 'lost' });
 
 const clean = (s) => String(s ?? '').replace(/[*`]/g, '').trim();
 
@@ -76,11 +77,11 @@ function parseCall(relPath, _fileName, text) {
   };
 }
 
-// Result order: frontmatter, then the YYYY-MM-DD_slug_won|lost file name, then the legacy table.
+// Result order: frontmatter, then the YYYY-MM-DD_slug_won|lost (or _ganado|_perdido) file name, then the legacy table.
 function parseWin(relPath, fileName, text) {
   const fm = parseFrontmatter(text, { topLevelOnly: true }) ?? {};
   const named = WIN_LOSS_NAME.exec(fileName);
-  const result = wonOrLost(fm.result) ?? (named ? named[3].toLowerCase() : undefined) ?? wonOrLost(tableField(text, ['outcome']));
+  const result = wonOrLost(fm.result) ?? (named ? NAMED_RESULT[named[3].toLowerCase()] : undefined) ?? wonOrLost(tableField(text, ['outcome']));
   if (!result) return { reason: 'no won or lost result in frontmatter, file name or table' };
   const date = [fm.date, named?.[1], tableField(text, ['close date', 'date closed'])].find((d) => isIsoDate(d));
   if (!date) return { reason: 'missing or invalid date' };
