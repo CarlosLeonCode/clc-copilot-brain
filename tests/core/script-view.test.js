@@ -24,6 +24,9 @@ test('linkInline only links the allowlisted relative targets', () => {
   assert.equal(sales('[Cold](./scripts/sample-co.html#cold-call)'), '<a href="./scripts/sample-co.html#cold-call">Cold</a>');
   assert.equal(sales('[Cold](../scripts/sample-co.html#a-1)'), '<a href="./scripts/sample-co.html#a-1">Cold</a>');
   assert.equal(sales('[Words](./glossary.md)'), '<a href="#glossary">Words</a>');
+  assert.equal(sales('[Glosario](./glosario-sandler.md)'), '<a href="#glossary">Glosario</a>');
+  assert.equal(sales('[Glosario](./glosario.md)'), '<a href="#glossary">Glosario</a>');
+  assert.equal(sales('[Bad](./glosario/x.md)'), 'Bad');
   assert.equal(linkInline('[Other](../scripts/sample-co.html#a)'), '<a href="../scripts/sample-co.html#a">Other</a>');
   assert.equal(linkInline('[Words](./glossary.md)'), 'Words');
   for (const bad of ['javascript:alert(1)', 'data:text/html,x', 'http://x.io', 'https://x.io', '//x.io', '../secret.md', './scripts/a/b.html', './scripts/A.html', './other.html', '/etc/passwd']) {

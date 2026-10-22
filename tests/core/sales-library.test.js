@@ -83,3 +83,23 @@ test('the sales page scripts and glossary texts exist in en and es', async () =>
     assert.match(t(lang, 'view.scripts.conversations', { count: 2 }), /2/);
   }
 });
+
+const GLOSARIO = '# Glosario Sandler\n\nIntro.\n\n---\n\n## Mentalidad\n\n| Término | Qué significa | Ejemplo |\n| :--- | :--- | :--- |\n| **Ve por el no** | Busca el no a propósito | "Me lo dices sin problema." |\n';
+
+test('loadLibrary reads a Spanish glosario*.md (Spanish headers by position) and names the file', () => withTmp((root) => {
+  writeFiles(root, { 'sales/glosario-sandler.md': GLOSARIO });
+  const { glossary } = loadLibrary(root);
+  assert.equal(glossary.file, 'glosario-sandler.md');
+  assert.deepEqual(glossary.groups[0].headers, ['Término', 'Qué significa', 'Ejemplo']);
+  assert.equal(glossary.groups[0].terms[0].term, 'Ve por el no');
+  assert.deepEqual(glossary.diagnostics, []);
+}));
+
+test('glossary.md wins over glosario files; among several glosario files the first by name wins', () => withTmp((root) => {
+  writeFiles(root, { 'sales/glosario-z.md': GLOSARIO, 'sales/glosario-a.md': GLOSARIO.replace('Ve por el no', 'Primero') });
+  assert.equal(loadLibrary(root).glossary.file, 'glosario-a.md');
+  assert.equal(loadLibrary(root).glossary.groups[0].terms[0].term, 'Primero');
+  writeFiles(root, { 'sales/glossary.md': GLOSSARY });
+  assert.equal(loadLibrary(root).glossary.file, 'glossary.md');
+  assert.equal(loadLibrary(root).glossary.groups[0].terms[0].term, 'Lead');
+}));

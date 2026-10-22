@@ -120,3 +120,11 @@ test('writeSalesPreview writes the page and every script page to the temp folder
     fs.rmSync(path.dirname(res.outputPath), { recursive: true, force: true });
   }
 }));
+
+test('a Spanish glosario file is the Glossary section of the page', () => withTmp((dir) => {
+  brain(dir, { 'sales/glosario-sandler.md': '# Glosario\n\n## Base\n\n| Término | Qué significa | Ejemplo |\n|---|---|---|\n| **Dolor** | Un problema | Pierden ventas |\n' }, 'es');
+  const { html } = buildSalesView(dir);
+  assert.match(html, /<h2 id="glossary">Glosario<\/h2>/);
+  assert.match(html, /<th>Término<\/th><th>Qué significa<\/th><th>Ejemplo<\/th>[\s\S]*<td><strong>Dolor<\/strong><\/td>/);
+  assert.match(html, /href="#glossary"/);
+}));

@@ -135,3 +135,13 @@ test('old starter scripts are flagged by hash only, never edited copies, and nev
   assert.doesNotMatch(after[0], /cold-outreach-email/);
   assert.match(after[0], /discovery-call-framework/);
 }));
+
+test('a glosario file linked from system.md counts as linked; an unlinked one is named by its real file', () => withTmp((dir) => {
+  initBrain(dir, { areas: ['sales'], language: 'es' });
+  write(dir, 'sales/glosario-sandler.md', '# Glosario\n\n## Base\n\n| Término | Qué significa | Ejemplo |\n|---|---|---|\n| **Dolor** | Un problema | Pierden ventas |\n');
+  const unlinked = warnings(dir).filter((m) => /glosario/i.test(m));
+  assert.equal(unlinked.length, 1);
+  assert.match(unlinked[0], /sales\/glosario-sandler\.md/);
+  write(dir, 'sales/system.md', `${read(dir, 'sales/system.md')}\nBúscalo en el [Glosario Sandler](./glosario-sandler.md).\n`);
+  assert.deepEqual(warnings(dir).filter((m) => /glos/i.test(m)), []);
+}));

@@ -29,8 +29,27 @@ export function scriptEntry(slug, text, htmlPath = '', { draft = false } = {}) {
 
 export const hasErrors = (entry) => entry.parsed.diagnostics.some((d) => d.level === 'error');
 
+const GLOSARIO_FILE = /^glosario.*\.md$/;
+
 /**
- * Read sales/scripts/*.md that declare `script:` (README and other notes are ignored) and sales/glossary.md.
+ * File name of the brain's glossary inside sales/: `glossary.md` when it exists, else the first `glosario*.md`
+ * by name (older Spanish brains, for example `glosario-sandler.md`), else null.
+ */
+export function findGlossaryFile(salesDir) {
+  let entries;
+  try {
+    entries = fs.readdirSync(salesDir, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+  const files = entries.filter((e) => e.isFile() || e.isSymbolicLink()).map((e) => e.name);
+  if (files.includes('glossary.md')) return 'glossary.md';
+  return files.filter((name) => GLOSARIO_FILE.test(name)).sort()[0] ?? null;
+}
+
+/**
+ * Read sales/scripts/*.md that declare `script:` (README and other notes are ignored) and the glossary
+ * (see findGlossaryFile; its file name is kept in `glossary.file`).
  * @returns {{scripts: {slug: string, file: string, parsed: object, htmlPath: string}[], glossary: object|null}}
  */
 export function loadLibrary(rootDir) {
@@ -49,8 +68,9 @@ export function loadLibrary(rootDir) {
       scripts.push({ ...scriptEntry(slug, text, path.join(scriptsDir, `${slug}.html`)), file: name });
     }
   }
-  const glossaryText = readText(path.join(salesDir, 'glossary.md'));
-  return { scripts, glossary: glossaryText === null ? null : parseGlossary(glossaryText) };
+  const glossaryFile = findGlossaryFile(salesDir);
+  const glossaryText = glossaryFile === null ? null : readText(path.join(salesDir, glossaryFile));
+  return { scripts, glossary: glossaryText === null ? null : { ...parseGlossary(glossaryText), file: glossaryFile } };
 }
 
 function skipReason(entry, target, boundary) {
@@ -158,10 +178,13 @@ export function checkSalesLibrary(rootDir) {
   for (const [file, text] of playTexts) warnings.push(...guionProblems(file, text, scripts));
 
   if (library.glossary) {
+    const where = `sales/${library.glossary.file}`;
     if (library.glossary.diagnostics.length > 0) {
-      warnings.push(`sales/glossary.md has problems: ${library.glossary.diagnostics.map((d) => `line ${d.line}: ${d.message}`).join('; ')}. ${FIX}`);
+      warnings.push(`${where} has problems: ${library.glossary.diagnostics.map((d) => `line ${d.line}: ${d.message}`).join('; ')}. ${FIX}`);
     }
-    if (system !== null && !/\]\((?:\.\/)?glossary\.md/.test(system)) warnings.push('The glossary (sales/glossary.md) is not linked from sales/system.md. Ask your assistant to add it to the map.');
+    if (system !== null && !system.includes(`](./${library.glossary.file}`) && !system.includes(`](${library.glossary.file}`)) {
+      warnings.push(`The glossary (${where}) is not linked from sales/system.md. Ask your assistant to add it to the map.`);
+    }
   }
 
   const legacy = mdFiles(path.join(salesDir, 'scripts')).filter((name) => name in LEGACY_STARTER_SCRIPT_HASHES
