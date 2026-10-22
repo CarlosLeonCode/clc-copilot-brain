@@ -444,7 +444,7 @@ Older brains used names with a colon (`/brain:onboarding`); they are now `/brain
 | `clc-brain add-area [folder]` | Add an area: `--preset operations` or `--custom legal_ops`. |
 | `clc-brain list-areas [folder]` | See installed and available areas. |
 | `clc-brain clean-demo [folder]` | Remove sample documents, keep yours. |
-| `clc-brain upgrade [folder] [--dry-run] [--yes]` | Update an existing brain to the latest commands and skills; your edits are kept as `.bak` copies. `--dry-run` previews, `--yes` applies. |
+| `clc-brain upgrade [folder] [--dry-run] [--yes] [--force-skills]` | Update an existing brain to the latest commands and skills. Skills you never changed are updated (the old copy is kept as `.bak`); skills you edited are kept as they are unless you add `--force-skills`. `--dry-run` previews, `--yes` applies. |
 | `clc-brain view [folder] [--open] [--draft <file>]` | Build the visual page of your sales process; add `--open` to open it in your browser, or `--draft <file>` to preview a change without saving it. |
 | `clc-brain stats [folder] [--month YYYY-MM] [--json]` | Show what's working in your sales (by type of sale, call guide and person) for this month and the last one; `--json` gives the raw numbers. |
 | `clc-brain mcp [folder]` | Start the optional MCP connection (used by the config above). |

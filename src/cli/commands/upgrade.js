@@ -1,4 +1,5 @@
 // `upgrade`: preview and apply template updates to an existing brain (replace-with-backup, add-if-missing).
+// Files a person edited are kept unless --force-skills.
 import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { diffLines } from '../../core/text-diff.js';
@@ -6,6 +7,23 @@ import { generateHarnessAdapters, harnessReportHasChanges } from '../../core/har
 import { applyUpgrade, planUpgrade } from '../../core/upgrade.js';
 
 const MAX_DIFF_LINES = 40;
+const MATRIX_REL = 'sales/qualification/qualification-matrix.md';
+
+/** One plain line for a skipped file: edited files are "kept", other skips keep their reason code. */
+function skipLine(s) {
+  if (s.reason === 'edited-locally') return `  ${pc.yellow('~')} ${s.path} ${pc.dim('kept (edited locally)')}`;
+  return `  ${pc.yellow('~')} ${s.path} ${pc.dim(`(${s.reason})`)}`;
+}
+
+function renderKeptHints(skips) {
+  const kept = skips.filter((s) => s.reason === 'edited-locally');
+  if (kept.some((s) => s.path !== MATRIX_REL)) {
+    console.log(pc.dim('  Edited skills are kept as they are. To replace them with the new version anyway (a .bak copy is kept), re-run with --force-skills.'));
+  }
+  if (kept.some((s) => s.path === MATRIX_REL)) {
+    console.log(pc.dim('  Your qualification matrix uses its own method, so the default qualification list was not added. Ask your assistant to add a list that matches your method.'));
+  }
+}
 
 function renderDiff(action) {
   const changed = diffLines(action.current ?? '', action.next).filter((l) => l.type !== 'same');
@@ -25,7 +43,10 @@ function renderPlan(actions) {
     const verb = verbs[a.policy] ?? 'Will replace';
     console.log(`\n${pc.bold(verb)} ${a.path} ${pc.dim('(backup: ' + a.path + '.bak)')}\n${renderDiff(a)}`);
   }
-  if (skips.length) console.log('\n' + pc.bold('Will skip:') + '\n' + skips.map((a) => `  ${pc.yellow('~')} ${a.path} ${pc.dim(`(${a.reason})`)}`).join('\n'));
+  if (skips.length) {
+    console.log('\n' + pc.bold('Will skip:') + '\n' + skips.map(skipLine).join('\n'));
+    renderKeptHints(skips);
+  }
 }
 
 // Shortcut files are regenerated from .agents/skills/ after the plan is applied; the preview covers what is on disk now.
@@ -46,15 +67,24 @@ function renderShortcutsResult(report) {
 function renderResult(result) {
   for (const path of result.added) console.log(`  ${pc.green('+')} added ${path}`);
   for (const r of result.replaced) console.log(`  ${pc.green('✔')} replaced ${r.path} ${pc.dim(`(backup: ${r.backup})`)}`);
-  for (const s of result.skipped) console.log(`  ${pc.yellow('~')} skipped ${s.path} ${pc.dim(`(${s.reason})`)}`);
+  // Files kept because they were edited are already listed in the plan above.
+  for (const s of result.skipped.filter((x) => x.reason !== 'edited-locally')) console.log(`  ${pc.yellow('~')} skipped ${s.path} ${pc.dim(`(${s.reason})`)}`);
 }
 
-/** Never writes without consent: --yes, or an interactive confirmation. Non-TTY without --yes only previews. */
+/**
+ * Never writes without consent: --yes, or an interactive confirmation. Non-TTY without --yes only previews.
+ * Edited template-owned files are kept unless --force-skills; a plan with only kept/skipped files is up to date.
+ */
 export async function runUpgrade(targetDir, options) {
   p.intro(pc.bgCyan(pc.black(' Second Brain Upgrade ')));
-  const plan = planUpgrade(targetDir);
+  const plan = planUpgrade(targetDir, { forceSkills: options['force-skills'] === true });
   const preview = generateHarnessAdapters(targetDir, { dryRun: true });
-  if (plan.actions.length === 0 && !harnessReportHasChanges(preview)) {
+  if (!plan.actions.some((a) => a.kind !== 'skip') && !harnessReportHasChanges(preview)) {
+    const skips = plan.actions;
+    if (skips.length) {
+      console.log('\n' + skips.map(skipLine).join('\n'));
+      renderKeptHints(skips);
+    }
     for (const w of preview.warnings) console.log(`  ${pc.yellow('!')} ${w}`);
     p.outro(pc.green('Brain is up to date: nothing to do.'));
     return 0;

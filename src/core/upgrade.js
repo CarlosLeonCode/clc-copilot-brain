@@ -1,10 +1,14 @@
 // Upgrade planner: bring template-owned files of an existing brain up to date. Plan first, apply second.
 // Allowlist only: everything not listed here is never touched.
 //   template-owned  = base .agents/skills/<name>/SKILL.md and skills/*.md  -> replace (with .bak backup) when bytes differ
+//                     and the brain still holds a version this package shipped (shipped-hashes.js); an edited copy is
+//                     kept (reason `edited-locally`) unless `forceSkills` is set
 //   add-if-missing  = new base skills, plus sales/system.md and sales/plays/*.md when `sales` is active
 // Slash-command shortcuts and old .claude/commands files are handled after apply by generateHarnessAdapters.
 //                     (in the brain language when templates/locales has that file, else in English)
-//   frontmatter-keys = sales/qualification/qualification-matrix.md: adds the template's `criteria` and label lines only when `criteria` is missing
+//   frontmatter-keys = sales/qualification/qualification-matrix.md: adds the template's `criteria` and label lines only when `criteria`
+//                     is missing and the matrix is still the template's (a shipped version, or one that still uses its
+//                     MEDDPICC wording); a matrix rewritten for another method is kept (reason `edited-locally`)
 //   managed-block   = AGENTS.md: only the text between the copilot-brain managed markers is refreshed
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,6 +19,8 @@ import { getBrainLanguage } from './brain-language.js';
 import { BrainError } from './errors.js';
 import { ensureDir, isInside, listMarkdownFiles } from './fs-utils.js';
 import { listSkillNames } from './harness-adapters.js';
+import { isShippedVersion } from './legacy-assets.js';
+import { SHIPPED_HASHES } from './shipped-hashes.js';
 import { TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR, TEMPLATES_LOCALES_DIR } from './package-paths.js';
 
 const PLACEHOLDER = /\{\{(COMPANY_NAME|INDUSTRY|TAGLINE|ACTIVE_AREAS_[A-Z]+|CREATED_AT|UPDATED_AT)\}\}/;
@@ -62,9 +68,13 @@ function managedFiles(templatesBaseDir, templatesAreasDir, activeAreas, salesOve
 
 /**
  * Compute what an upgrade would do. Only actionable entries are returned (an up-to-date brain => []).
- * @returns {{ actions: Array<{ path: string, policy: 'template-owned'|'add-if-missing'|'managed-block', kind: 'add'|'replace'|'skip', reason?: string, current?: string, next: string }> }}
+ * `forceSkills` also replaces template-owned files a person edited (old behavior); `shippedHashes` is for tests.
+ * @returns {{ actions: Array<{ path: string, policy: 'template-owned'|'add-if-missing'|'managed-block'|'frontmatter-keys', kind: 'add'|'replace'|'skip', reason?: string, current?: string, next: string }> }}
  */
-export function planUpgrade(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, templatesAreasDir = TEMPLATES_AREAS_DIR, templatesLocalesDir = TEMPLATES_LOCALES_DIR } = {}) {
+export function planUpgrade(rootDir, {
+  templatesBaseDir = TEMPLATES_BASE_DIR, templatesAreasDir = TEMPLATES_AREAS_DIR, templatesLocalesDir = TEMPLATES_LOCALES_DIR,
+  shippedHashes = SHIPPED_HASHES, forceSkills = false
+} = {}) {
   assertBrain(rootDir);
   const activeAreas = readKernel(rootDir).activeAreas || [];
   const salesOverlayDir = localeAreaDir('sales', getBrainLanguage(rootDir), templatesLocalesDir);
@@ -85,11 +95,13 @@ export function planUpgrade(rootDir, { templatesBaseDir = TEMPLATES_BASE_DIR, te
       }
       const current = fs.readFileSync(dest, 'utf8');
       if (Buffer.from(current, 'utf8').equals(Buffer.from(next, 'utf8'))) continue;
-      if (lstatOrNull(`${dest}.bak`)) actions.push({ path: file.rel, policy, kind: 'skip', reason: 'backup-exists', current, next });
+      if (!forceSkills && !isShippedVersion(file.rel, current, shippedHashes)) {
+        actions.push({ path: file.rel, policy, kind: 'skip', reason: 'edited-locally', current, next });
+      } else if (lstatOrNull(`${dest}.bak`)) actions.push({ path: file.rel, policy, kind: 'skip', reason: 'backup-exists', current, next });
       else actions.push({ path: file.rel, policy, kind: 'replace', current, next });
     }
   }
-  const matrix = planMatrixCriteria(rootDir, templatesAreasDir, activeAreas);
+  const matrix = planMatrixCriteria(rootDir, templatesAreasDir, activeAreas, shippedHashes);
   if (matrix) actions.push(matrix);
   const agents = planAgentsBlock(rootDir, templatesBaseDir);
   if (agents) actions.push(agents);
@@ -103,12 +115,18 @@ const FRONTMATTER_BLOCK = /^(\uFEFF?)---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 const PRE_DEAL_SIZE_CRITERIA = Object.freeze(FALLBACK_CRITERIA.filter((id) => id !== 'deal_size'));
 const CRITERIA_LINE = /^(criteria:[ \t]*)(["']?)(.*?)\2([ \t]*\r?)$/m;
 
+// The template's method name: a matrix that still uses it is the template's, so its criteria fit.
+const TEMPLATE_METHOD = /MEDDPICC/i;
+
 /**
  * The user's matrix is theirs: only the missing `criteria` list (and labels they do not have) is added to its
- * frontmatter, so existing brains keep working with the qualification scorecard. A declared list is never
- * rewritten; one that still holds every previous default only gets `deal_size` appended (see planDealSize).
+ * frontmatter, so existing brains keep working with the qualification scorecard. That happens only while the
+ * matrix is still the template's (a shipped version, or one that still uses its MEDDPICC wording); a matrix
+ * rewritten for another method (Sandler, BANT...) is kept, and the assistant can add criteria that match it.
+ * A declared list is never rewritten; one that still holds every previous default only gets `deal_size`
+ * appended (see planDealSize).
  */
-function planMatrixCriteria(rootDir, templatesAreasDir, activeAreas) {
+function planMatrixCriteria(rootDir, templatesAreasDir, activeAreas, shippedHashes) {
   const src = path.join(templatesAreasDir, ...MATRIX_REL.split('/'));
   const dest = path.join(rootDir, ...MATRIX_REL.split('/'));
   const stat = lstatOrNull(dest);
@@ -125,6 +143,8 @@ function planMatrixCriteria(rootDir, templatesAreasDir, activeAreas) {
   if (fm && Object.hasOwn(fm, 'criteria')) {
     next = planDealSize(fm, own, current, tpl[2].split(/\r?\n/).filter((l) => missing(keyOf(l))));
     if (!next) return null;
+  } else if (!isShippedVersion(MATRIX_REL, current, shippedHashes) && !TEMPLATE_METHOD.test(current)) {
+    return { ...base, kind: 'skip', reason: 'edited-locally', current, next: current };
   } else {
     const lines = tpl[2].split(/\r?\n/).filter((l) => missing(keyOf(l)));
     next = own

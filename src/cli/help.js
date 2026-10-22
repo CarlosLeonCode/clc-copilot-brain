@@ -43,6 +43,7 @@ ${pc.bold('DOCTOR OPTIONS:')}
 ${pc.bold('UPGRADE OPTIONS:')}
   -y, --yes           Apply the plan (without a TTY, upgrade only previews unless --yes)
   --dry-run           Show the plan and diffs without writing anything
+  --force-skills      Also replace skills you edited with the new version (a .bak copy is kept)
 
 ${pc.bold('VIEW OPTIONS:')}
   --open              Open the page in your default browser after building it

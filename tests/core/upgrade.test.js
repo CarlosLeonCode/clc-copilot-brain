@@ -5,7 +5,9 @@ import path from 'node:path';
 import { planUpgrade, applyUpgrade } from '../../src/core/upgrade.js';
 import { initBrain } from '../../src/core/scaffold.js';
 import { TEMPLATES_AREAS_DIR, TEMPLATES_BASE_DIR } from '../../src/core/package-paths.js';
+import { contentHash } from '../../src/core/legacy-assets.js';
 import { withTmp, writeFiles } from './helpers.js';
+import { execFileSync } from 'node:child_process';
 
 const kernel = (areas) => JSON.stringify({ activeAreas: areas });
 
@@ -17,7 +19,9 @@ function setup(tmp, { brain = {}, base = {}, areas = {}, active = ['sales'] } = 
   writeFiles(tpl, { '.agents/skills/call/SKILL.md': 'call v2\n', 'skills/skill_x.md': 'x v2\n', 'AGENTS.md': 'agents\n', ...base });
   writeFiles(tplAreas, { 'sales/system.md': 'system\n', 'sales/plays/cold-call.md': 'play\n', 'sales/README.md': 'readme\n', ...areas });
   writeFiles(root, { 'org-kernel.json': kernel(active), ...brain });
-  return { root, opts: { templatesBaseDir: tpl, templatesAreasDir: tplAreas } };
+  // "v1" stands for an older version the package shipped (an untouched copy); anything else counts as edited.
+  const shippedHashes = { '.agents/skills/call/SKILL.md': [contentHash('call v1\n')], 'skills/skill_x.md': [contentHash('x v1\n')] };
+  return { root, opts: { templatesBaseDir: tpl, templatesAreasDir: tplAreas, shippedHashes } };
 }
 const find = (plan, p) => plan.actions.find((a) => a.path === p);
 
@@ -35,6 +39,46 @@ test('plan classifies per policy: replace differing, add missing, never touch th
   assert.equal(find(plan, 'sales/plays/cold-call.md'), undefined, 'existing play is never touched');
   assert.equal(find(plan, 'AGENTS.md'), undefined);
   assert.equal(find(plan, 'sales/README.md'), undefined, 'only system.md and plays are managed in areas');
+}));
+
+test('an edited template-owned file is kept (edited locally): no replace, no .bak', () => withTmp((tmp) => {
+  const { root, opts } = setup(tmp, { brain: { '.agents/skills/call/SKILL.md': 'my Sandler call\n', 'skills/skill_x.md': 'x v1\r\n' } });
+  const plan = planUpgrade(root, opts);
+  const call = find(plan, '.agents/skills/call/SKILL.md');
+  assert.deepEqual([call.policy, call.kind, call.reason], ['template-owned', 'skip', 'edited-locally']);
+  assert.equal(find(plan, 'skills/skill_x.md').kind, 'replace', 'a shipped version with CRLF endings is still untouched');
+  const res = applyUpgrade(root, plan);
+  assert.deepEqual(res.skipped.find((s) => s.path === '.agents/skills/call/SKILL.md'), { path: '.agents/skills/call/SKILL.md', reason: 'edited-locally' });
+  assert.equal(fs.readFileSync(path.join(root, '.agents/skills/call/SKILL.md'), 'utf8'), 'my Sandler call\n');
+  assert.equal(fs.existsSync(path.join(root, '.agents/skills/call/SKILL.md.bak')), false);
+}));
+
+test('forceSkills replaces edited files with a .bak and still never clobbers an existing .bak', () => withTmp((tmp) => {
+  const { root, opts } = setup(tmp, { brain: { '.agents/skills/call/SKILL.md': 'my Sandler call\n', 'skills/skill_x.md': 'my x\n', 'skills/skill_x.md.bak': 'precious\n' } });
+  const plan = planUpgrade(root, { ...opts, forceSkills: true });
+  assert.equal(find(plan, '.agents/skills/call/SKILL.md').kind, 'replace');
+  assert.deepEqual([find(plan, 'skills/skill_x.md').kind, find(plan, 'skills/skill_x.md').reason], ['skip', 'backup-exists']);
+  applyUpgrade(root, plan);
+  assert.equal(fs.readFileSync(path.join(root, '.agents/skills/call/SKILL.md'), 'utf8'), 'call v2\n');
+  assert.equal(fs.readFileSync(path.join(root, '.agents/skills/call/SKILL.md.bak'), 'utf8'), 'my Sandler call\n');
+  assert.equal(fs.readFileSync(path.join(root, 'skills/skill_x.md.bak'), 'utf8'), 'precious\n');
+}));
+
+test('real shipped hashes: an older shipped skill is replaced, an edit of it is kept', (t) => withTmp((tmp) => {
+  const rel = '.agents/skills/retro/SKILL.md';
+  let old;
+  try {
+    const commits = execFileSync('git', ['log', '--format=%H', '--', `templates/base/${rel}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).split('\n').filter(Boolean);
+    old = execFileSync('git', ['show', `${commits.at(-1)}:templates/base/${rel}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch {
+    return t.skip('git history unavailable');
+  }
+  const root = path.join(tmp, 'brain');
+  initBrain(root, { areas: ['sales'] });
+  fs.writeFileSync(path.join(root, rel), old);
+  assert.equal(find(planUpgrade(root), rel).kind, 'replace');
+  fs.writeFileSync(path.join(root, rel), `${old}\nUse Sandler.\n`);
+  assert.equal(find(planUpgrade(root), rel).reason, 'edited-locally');
 }));
 
 test('sales files are only planned when sales is active', () => withTmp((tmp) => {

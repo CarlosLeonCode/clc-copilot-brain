@@ -5,19 +5,23 @@ import path from 'node:path';
 import { planUpgrade, applyUpgrade } from '../../src/core/upgrade.js';
 import { parseFrontmatter } from '../../src/core/plays.js';
 import { resolveCriteria, FALLBACK_CRITERIA } from '../../src/core/scorecard.js';
+import { contentHash } from '../../src/core/legacy-assets.js';
 import { withTmp, writeFiles } from './helpers.js';
+import { execFileSync } from 'node:child_process';
 
 const MATRIX = 'sales/qualification/qualification-matrix.md';
 const TEMPLATE = '---\ncriteria: metrics, champion\nlabel_metrics: "Measurable impact"\nlabel_champion: "Internal supporter"\n---\n# Template matrix\n';
 
-function setup(tmp, matrix, { active = ['sales'] } = {}) {
+// `shipped` marks the brain's matrix as an untouched copy of an older template version.
+function setup(tmp, matrix, { active = ['sales'], shipped = true } = {}) {
   const base = path.join(tmp, 'pkg', 'base');
   const areas = path.join(tmp, 'pkg', 'areas');
   const root = path.join(tmp, 'brain');
   writeFiles(base, { 'AGENTS.md': 'agents\n' });
   writeFiles(areas, { 'sales/system.md': 'system\n', [MATRIX]: TEMPLATE });
   writeFiles(root, { 'org-kernel.json': JSON.stringify({ activeAreas: active }), 'sales/system.md': 'system\n', ...(matrix === undefined ? {} : { [MATRIX]: matrix }) });
-  return { root, opts: { templatesBaseDir: base, templatesAreasDir: areas } };
+  const shippedHashes = { [MATRIX]: shipped && matrix !== undefined ? [contentHash(matrix)] : [] };
+  return { root, opts: { templatesBaseDir: base, templatesAreasDir: areas, shippedHashes } };
 }
 const action = (plan) => plan.actions.find((a) => a.path === MATRIX);
 const read = (root) => fs.readFileSync(path.join(root, MATRIX), 'utf8');
@@ -66,12 +70,40 @@ test('missing matrix, sales not active, or an existing backup: nothing is writte
   assert.equal(read(bak.root), '# Old\n');
 }));
 
-test('the shipped template upgrades an old matrix to the full default list', () => withTmp((tmp) => {
+test('the shipped template upgrades an untouched old matrix to the full default list', (t) => withTmp((tmp) => {
+  let old;
+  try {
+    const commits = execFileSync('git', ['log', '--format=%H', '--', `templates/areas/${MATRIX}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).split('\n').filter(Boolean);
+    old = execFileSync('git', ['show', `${commits.at(-1)}:templates/areas/${MATRIX}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch {
+    return t.skip('git history unavailable');
+  }
   const root = path.join(tmp, 'brain');
-  writeFiles(root, { 'org-kernel.json': JSON.stringify({ activeAreas: ['sales'] }), [MATRIX]: '# Old matrix\n' });
+  writeFiles(root, { 'org-kernel.json': JSON.stringify({ activeAreas: ['sales'] }), [MATRIX]: old });
   applyUpgrade(root, planUpgrade(root));
   assert.deepEqual(resolveCriteria(parseFrontmatter(read(root))).ids, FALLBACK_CRITERIA);
   assert.equal(resolveCriteria(parseFrontmatter(read(root))).source, 'matrix');
+}));
+
+test('a matrix rewritten for another method, without criteria, is kept (edited locally)', () => withTmp((tmp) => {
+  const sandler = '# Matriz de calificación Sandler\n\n| Calificador | Qué buscas |\n| **1. Dolor** | El dolor |\n';
+  const { root, opts } = setup(tmp, sandler, { shipped: false });
+  const a = action(planUpgrade(root, opts));
+  assert.deepEqual([a.policy, a.kind, a.reason], ['frontmatter-keys', 'skip', 'edited-locally']);
+  applyUpgrade(root, planUpgrade(root, opts));
+  assert.equal(read(root), sandler);
+  assert.equal(fs.existsSync(path.join(root, `${MATRIX}.bak`)), false);
+  const fresh = path.join(tmp, 'fresh');
+  writeFiles(fresh, { 'org-kernel.json': JSON.stringify({ activeAreas: ['sales'] }), [MATRIX]: sandler });
+  assert.equal(action(planUpgrade(fresh)).reason, 'edited-locally', 'the real shipped list does not know a Sandler matrix');
+}));
+
+test('an edited matrix that still uses the template MEDDPICC wording gets the criteria', () => withTmp((tmp) => {
+  const edited = '# Our MEDDPICC matrix\n\nWe added a note.\n';
+  const { root, opts } = setup(tmp, edited, { shipped: false });
+  assert.equal(action(planUpgrade(root, opts)).kind, 'replace');
+  applyUpgrade(root, planUpgrade(root, opts));
+  assert.equal(parseFrontmatter(read(root)).criteria, 'metrics, champion');
 }));
 
 const OLD_CRITERIA = 'metrics, economic_buyer, decision_criteria, decision_process, paper_process, identified_pain, champion, competition';

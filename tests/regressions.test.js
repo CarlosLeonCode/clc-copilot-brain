@@ -146,7 +146,7 @@ test('doctor without --fix and without a TTY does not prompt and exits 1 on erro
 test('--help documents every flag the commands accept', () => {
   const { stdout, status } = cli('--help');
   assert.equal(status, 0);
-  for (const flag of ['--name', '--industry', '--tagline', '--areas', '--language', '--demo', '--clean', '--yes', '--preset', '--custom', '--fix', '--dry-run', 'upgrade', 'view', '--open', '--draft', 'stats', '--month', '--json']) {
+  for (const flag of ['--name', '--industry', '--tagline', '--areas', '--language', '--demo', '--clean', '--yes', '--preset', '--custom', '--fix', '--dry-run', '--force-skills', 'upgrade', 'view', '--open', '--draft', 'stats', '--month', '--json']) {
     assert.ok(stdout.includes(flag), `help is missing ${flag}`);
   }
 });
