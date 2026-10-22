@@ -86,10 +86,22 @@ export function parseMotions(value) {
 /** Title prefix of a play heading ("# Play: Cold Call", "# Guía: Llamada en frío"). */
 export const PLAY_TITLE_PREFIX = /^(?:play|gu[ií]a):\s*/i;
 const TITLE = /^#\s+(.+?)\s*$/m;
-const BRANCH_ROW = /^\|\s*(B\d+)\s*\|\s*([^|]+?)\s*\|/;
+// A branch row: `| B1 | trigger |`, or a per-industry row `| B1 · Retail | trigger |` (the trigger may be empty).
+const BRANCH_ROW = /^\|\s*(B\d+)(?:\s*[·•:\-–—]\s*([^|]*?))?\s*\|\s*([^|]*?)\s*\|/;
 
+/** Branch rows; a per-industry row carries `industry` and keeps the generic row's trigger when its own is empty. */
 function branchesOf(text) {
-  return section(text, SECTION_HEADINGS.branches).split(/\r?\n/).map((line) => BRANCH_ROW.exec(line)).filter(Boolean).map((m) => ({ id: m[1], when: m[2] }));
+  const generic = new Map();
+  return section(text, SECTION_HEADINGS.branches).split(/\r?\n/).map((line) => BRANCH_ROW.exec(line)).filter(Boolean).flatMap((m) => {
+    const [, id, industry, when] = m;
+    if (!industry) {
+      if (!when) return [];
+      generic.set(id, when);
+      return [{ id, when }];
+    }
+    const trigger = when || generic.get(id) || '';
+    return trigger ? [{ id, when: trigger, industry }] : [];
+  });
 }
 
 /**

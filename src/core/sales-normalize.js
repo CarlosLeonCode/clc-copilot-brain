@@ -59,6 +59,19 @@ export function normalizeOutcome(value) {
   return 'unclassified';
 }
 
+// "B1", "b1", "B1 · Retail", "B1·Retail", "b1 - retail": the branch id, then an optional industry after a separator.
+const BRANCH_VALUE = /^b(\d+)(?:\s*[·•:|\-–—]\s*|\s+)(.+)$|^b(\d+)$/i;
+
+/** Branch value of a call log to its play branch id ("B1") and, for a per-industry row, its industry. Other text stays as written. */
+export function parseBranch(value) {
+  const raw = text(value).trim();
+  const m = BRANCH_VALUE.exec(raw);
+  if (!m) return { branch: raw };
+  if (m[3]) return { branch: `B${m[3]}` };
+  const industry = m[2].trim();
+  return industry ? { branch: `B${m[1]}`, industry } : { branch: `B${m[1]}` };
+}
+
 /** Booleans and case-insensitive "true"/"false" only; anything else is undefined. */
 export function parseBool(value) {
   if (typeof value === 'boolean') return value;

@@ -113,3 +113,14 @@ test('the page shows computed numbers from call logs on disk and leaves sample d
     assert.match(page, /Zoe/);
     assert.match(page, /Inbound/);
   }));
+
+test('"By industry" shows only when a call has an industry; a per-industry branch stalls under the generic trigger', () => {
+  assert.doesNotMatch(html([call(1)]), /By industry/);
+  const out = html([call(1, { industry: 'Retail', goalMet: false }), call(2, { industry: 'retail' }), call(3)]);
+  assert.match(out, /By industry/);
+  assert.match(out, /Retail[\s\S]*2 calls/);
+  assert.match(out, /No industry recorded[\s\S]*1 call/);
+  assert.match(out, /They say no budget/);
+  const es = renderDashboard(buildSalesReport({ calls: [call(1, { industry: 'Retail' })], wins: [], plays: [play()], stageNames: new Map(), skipped: [], demoExcluded: 0 }, { now: NOW, lang: 'es' }), 'es');
+  assert.match(es, /Por industria/);
+});

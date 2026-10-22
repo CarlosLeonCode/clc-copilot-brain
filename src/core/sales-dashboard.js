@@ -75,6 +75,7 @@ function windowCard(w, lang) {
   const guides = w.byPlay.filter((p) => p.calls > 0);
   if (guides.length > 0) parts.push(`<h4>${esc(t(lang, 'dash.byPlay'))}</h4>`, ...guides.map((p) => guideBlock(p, lang)));
   parts.push(`<h4>${esc(t(lang, 'dash.byRep'))}</h4>`, ...w.byRep.map((r) => metric(r.rep, `${plural(r.calls, 'calls', lang)}. ${goalText(r.success, lang)}`, r.success)));
+  if (w.byIndustry.length > 0) parts.push(`<h4>${esc(t(lang, 'dash.byIndustry'))}</h4>`, ...w.byIndustry.map((r) => metric(r.name, `${plural(r.calls, 'calls', lang)}. ${goalText(r.success, lang)}`, r.success)));
   parts.push(scoreSection(w.scorecard, lang));
   return `<section class="card dash"><h3>${esc(title)}</h3>\n${parts.join('\n')}\n</section>`;
 }

@@ -64,6 +64,7 @@ function parseCall(relPath, _fileName, text) {
       dealKey: dealKey({ dealId: log.dealId, company: log.prospect }),
       play: log.play,
       branch: log.branch,
+      industry: log.industry,
       motion: log.motion,
       leadSource: log.leadSource,
       goalMet: log.goalMet,

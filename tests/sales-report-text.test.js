@@ -40,3 +40,10 @@ test('empty month says there are no calls and unclassified and demo notes appear
   assert.match(un, /Not classified yet/);
   assert.match(un, /type of sale/);
 });
+
+test('the text report lists calls by industry only when one is recorded', () => {
+  assert.doesNotMatch(text([call(1)]), /By industry/);
+  const out = text([call(1, { industry: 'Retail' }), call(2)]);
+  assert.match(out, /By industry\n  Retail: 1 call, goal reached/);
+  assert.match(out, /  No industry recorded: 1 call/);
+});

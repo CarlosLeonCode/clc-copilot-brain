@@ -173,3 +173,24 @@ test('readCallLog reads disqualify tolerantly: true, TRUE, garbage, absent', () 
   assert.equal(readCallLog('---\ndisqualify: maybe\n---\n').disqualify, undefined);
   assert.equal(readCallLog('---\nrep: "A"\n---\n').disqualify, undefined);
 });
+
+test('readCallLog maps a per-industry branch to its id and takes the industry from it unless industry is set', () => {
+  const fromBranch = readCallLog('---\nrep: "A"\nbranch: "B1 · Retail"\n---\n');
+  assert.equal(fromBranch.branch, 'B1');
+  assert.equal(fromBranch.industry, 'Retail');
+  const own = readCallLog('---\nrep: "A"\nbranch: "B1 · Retail"\nindustry: "Ropa"\n---\n');
+  assert.equal(own.industry, 'Ropa');
+  const none = readCallLog('---\nrep: "A"\nbranch: "B2"\n---\n');
+  assert.equal(none.branch, 'B2');
+  assert.equal(none.industry, undefined);
+});
+
+test('captureCall writes an optional industry after the branch', () =>
+  withTmp((dir) => {
+    assert.equal(CALL_FIELDS.industry, 'industry');
+    const { relPath } = captureCall(dir, { ...call, branch: 'B1', industry: 'Turismo / Hotelería' });
+    const fm = parseFrontmatter(readLog(dir, relPath));
+    assert.equal(fm.industry, 'Turismo / Hotelería');
+    assert.deepEqual(Object.keys(fm).slice(-3), ['branch', 'industry', 'created_at']);
+    assert.equal(readCallLog(readLog(dir, relPath)).industry, 'Turismo / Hotelería');
+  }));

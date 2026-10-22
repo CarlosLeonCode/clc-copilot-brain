@@ -79,7 +79,7 @@ test('criteria come from records.criteria in matrix order; unknown qual ids are 
 
 test('legacy windows keep their existing keys; scorecard is additive', () => {
   const m = computeSalesMetrics(data([call(1, null)]), { month: '2026-09' });
-  assert.deepEqual(Object.keys(m), ['month', 'complete', 'totals', 'outcomes', 'byMotion', 'byPlay', 'byRep', 'scorecard']);
+  assert.deepEqual(Object.keys(m), ['month', 'complete', 'totals', 'outcomes', 'byMotion', 'byPlay', 'byRep', 'byIndustry', 'scorecard']);
 });
 
 const many = (n, month, value, offset = 0) => Array.from({ length: n }, (_, i) => call(offset + i, card({ discovery: value }, { qualification: { metrics: 'evidenced' } }), month));

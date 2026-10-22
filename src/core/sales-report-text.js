@@ -140,6 +140,10 @@ function windowLines(w, lang) {
 
   lines.push('', t(lang, 'dash.byRep'));
   for (const r of w.byRep) lines.push(`  ${r.rep}: ${plural(r.calls, 'calls', lang)}, ${t(lang, 'report.goalReached', { value: rateText(r.success, 'calls', lang) })}`);
+  if (w.byIndustry.length) {
+    lines.push('', t(lang, 'dash.byIndustry'));
+    for (const r of w.byIndustry) lines.push(`  ${r.name}: ${plural(r.calls, 'calls', lang)}, ${t(lang, 'report.goalReached', { value: rateText(r.success, 'calls', lang) })}`);
+  }
   return [...lines, ...scoreLines(w.scorecard, lang), ''];
 }
 

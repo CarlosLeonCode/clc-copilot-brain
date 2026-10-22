@@ -4,7 +4,7 @@ import path from 'node:path';
 import { BrainError } from './errors.js';
 import { isInside } from './fs-utils.js';
 import { parseFrontmatter } from './plays.js';
-import { parseBool, toSlug } from './sales-normalize.js';
+import { parseBool, parseBranch, toSlug } from './sales-normalize.js';
 import { readScorecard } from './scorecard.js';
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -25,14 +25,15 @@ export const CALL_FIELDS = Object.freeze({
   dealId: 'deal_id',
   play: 'play',
   branch: 'branch',
+  industry: 'industry',
   goalMet: 'goal_met',
   gateAdvanced: 'gate_advanced',
   disqualify: 'disqualify'
 });
 
 // Frontmatter key order. Optional fields are omitted when absent.
-const FRONTMATTER_ORDER = Object.freeze(['rep', 'prospect', 'date', 'stage', 'outcome', 'motion', 'leadSource', 'dealId', 'play', 'branch', 'goalMet', 'gateAdvanced', 'disqualify']);
-const OPTIONAL = new Set(['motion', 'leadSource', 'dealId', 'play', 'branch', 'goalMet', 'gateAdvanced', 'disqualify']);
+const FRONTMATTER_ORDER = Object.freeze(['rep', 'prospect', 'date', 'stage', 'outcome', 'motion', 'leadSource', 'dealId', 'play', 'branch', 'industry', 'goalMet', 'gateAdvanced', 'disqualify']);
+const OPTIONAL = new Set(['motion', 'leadSource', 'dealId', 'play', 'branch', 'industry', 'goalMet', 'gateAdvanced', 'disqualify']);
 // Free-text tags stored as slugs so the same motion or source always reads the same.
 const SLUGGED = Object.freeze(['motion', 'leadSource', 'dealId']);
 
@@ -104,7 +105,7 @@ ${rawTranscript ? `## 6. Raw Call Transcript\n\`\`\`text\n${rawTranscript}\n\`\`
 /**
  * @param {string} rootDir
  * @param {{ rep: string, prospect: string, date: string, summary: string, stage: string, outcome: string,
- *   motion?: string, leadSource?: string, dealId?: string, play?: string, branch?: string, goalMet?: boolean, gateAdvanced?: boolean, disqualify?: boolean, notes?: string, objections?: string[], actionItems?: string[], rawTranscript?: string }} call
+ *   motion?: string, leadSource?: string, dealId?: string, play?: string, branch?: string, industry?: string, goalMet?: boolean, gateAdvanced?: boolean, disqualify?: boolean, notes?: string, objections?: string[], actionItems?: string[], rawTranscript?: string }} call
  * @returns {{ relPath: string }} path relative to rootDir (posix separators)
  */
 export function captureCall(rootDir, call) {
@@ -159,7 +160,11 @@ export function readCallLog(text) {
     outcome: fm.outcome
   };
   if (fm.play !== undefined) record.play = fm.play;
-  if (fm.branch !== undefined) record.branch = fm.branch;
+  // "B1 · Retail" counts as branch B1; its industry is used when the log has no `industry` of its own.
+  const branch = fm.branch === undefined ? null : parseBranch(fm.branch);
+  if (branch) record.branch = branch.branch;
+  const industry = String(fm.industry ?? '').trim() || branch?.industry;
+  if (industry) record.industry = industry;
   if (fm.motion) record.motion = toSlug(fm.motion) || undefined;
   if (fm.lead_source) record.leadSource = toSlug(fm.lead_source) || undefined;
   if (fm.deal_id) record.dealId = toSlug(fm.deal_id) || undefined;

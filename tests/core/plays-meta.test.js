@@ -52,3 +52,15 @@ test('win-loss template offers optional motion, lead_source, deal_id and result 
   const fm = parseFrontmatter(fs.readFileSync(path.join(SALES, 'win-loss', 'post-mortem-template.md'), 'utf8'));
   assert.deepEqual(Object.keys(fm), ['motion', 'lead_source', 'deal_id', 'result']);
 });
+
+test('per-industry branch rows parse as the branch with an industry; an empty trigger keeps the generic one', () => {
+  const text = '---\nplay: cold-call\n---\n# Play: Cold\n\n## Situaciones\n\n| Situación | Cuándo pasa | Qué decir |\n|---|---|---|\n'
+    + '| B1 | Contestan la llamada | Di tu comercial |\n| B1 · Turismo / Hotelería | **Turismo:** Contesta el hotel | Hola |\n| B1·Retail |  | Hola tienda |\n| B2 | Otra cosa | Algo |\n';
+  const { branches } = readPlayMeta('cold-call.md', text);
+  assert.deepEqual(branches, [
+    { id: 'B1', when: 'Contestan la llamada' },
+    { id: 'B1', when: '**Turismo:** Contesta el hotel', industry: 'Turismo / Hotelería' },
+    { id: 'B1', when: 'Contestan la llamada', industry: 'Retail' },
+    { id: 'B2', when: 'Otra cosa' }
+  ]);
+});

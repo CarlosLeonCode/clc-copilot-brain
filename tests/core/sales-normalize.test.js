@@ -59,3 +59,15 @@ test('default motions and friendly names (R1.4)', () => {
   assert.equal(motionName('partner'), 'Partner');
   assert.equal(motionName('trade-show'), 'Trade Show');
 });
+
+test('parseBranch maps per-industry branch values to the branch id and its industry', async () => {
+  const { parseBranch } = await import('../../src/core/sales-normalize.js');
+  assert.deepEqual(parseBranch('B1 · Retail'), { branch: 'B1', industry: 'Retail' });
+  assert.deepEqual(parseBranch('B1·Retail'), { branch: 'B1', industry: 'Retail' });
+  assert.deepEqual(parseBranch('b12 - turismo / hotelería'), { branch: 'B12', industry: 'turismo / hotelería' });
+  assert.deepEqual(parseBranch(' b3 '), { branch: 'B3' });
+  assert.deepEqual(parseBranch('B2'), { branch: 'B2' });
+  assert.deepEqual(parseBranch('Objection'), { branch: 'Objection' });
+  assert.deepEqual(parseBranch(''), { branch: '' });
+  assert.deepEqual(parseBranch(undefined), { branch: '' });
+});

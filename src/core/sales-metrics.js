@@ -1,5 +1,5 @@
 // Pure sales metrics: month windows, sample-size rules and motion resolution. No I/O.
-import { toSlug, motionName, DEFAULT_MOTIONS } from './sales-normalize.js';
+import { foldText, toSlug, motionName, parseBranch, DEFAULT_MOTIONS } from './sales-normalize.js';
 import { DEFAULT_LANGUAGE, t } from './i18n.js';
 import { DIMENSIONS, COUNT_KEYS, resolveCriteria, criterionLabel } from './scorecard.js';
 import { computeDealVerdicts } from './deal-verdict.js';
@@ -110,9 +110,11 @@ function group(items, keyOf) {
 }
 
 function stallPoints(calls, play, lang) {
-  const whenOf = (branch) => {
+  const whenOf = (value) => {
+    const { branch } = parseBranch(value);
     if (!branch) return t(lang, 'metrics.noBranch');
-    return play?.branches?.find((b) => b.id === branch)?.when || t(lang, 'metrics.unknownBranch');
+    const rows = play?.branches?.filter((b) => b.id === branch) ?? [];
+    return (rows.find((b) => !b.industry) ?? rows[0])?.when || t(lang, 'metrics.unknownBranch');
   };
   const counts = new Map();
   for (const c of calls.filter((x) => x.goalMet === false)) {
@@ -173,6 +175,14 @@ export function computeSalesMetrics(records, { month, complete = false, lang = D
     rep: key === '' ? t(lang, 'metrics.noRep') : mine[0].rep.trim(), calls: mine.length, success: rateOf(mine, 'goalMet'), stageAdvance: rateOf(mine, 'gateAdvanced')
   }));
 
+  // By industry only when at least one call of the month records one; names group case and accent insensitively.
+  const industryKey = (c) => foldText(c.industry).trim();
+  const byIndustry = inMonth.some(industryKey)
+    ? [...group(inMonth, industryKey)].map(([key, mine]) => ({
+      industry: key, name: key === '' ? t(lang, 'metrics.noIndustry') : mine[0].industry.trim(), calls: mine.length, success: rateOf(mine, 'goalMet'), stageAdvance: rateOf(mine, 'gateAdvanced')
+    })).sort((a, b) => (a.industry === '') - (b.industry === '') || b.calls - a.calls || a.name.localeCompare(b.name))
+    : [];
+
   return {
     month,
     complete,
@@ -181,6 +191,7 @@ export function computeSalesMetrics(records, { month, complete = false, lang = D
     byMotion,
     byPlay,
     byRep,
+    byIndustry,
     scorecard: scorecardOf(inMonth, records)
   };
 }
