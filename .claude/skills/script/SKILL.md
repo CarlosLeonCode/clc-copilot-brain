@@ -62,6 +62,7 @@ tag: Opening
 say: Hi [NAME], this is [REP] from Sample Co.
 detail: Pause and let them answer.
 tip: Slow down
+coach: If they sound busy, ask for a better time instead of pushing on.
 tone: start
 next: Close
 
@@ -71,6 +72,9 @@ say: Great, let me explain in one sentence.
 tone: yes
 next: end
 
+#### Busy right now
+next: Second call
+
 #### Not now
 say: No problem, when is a better time?
 tone: no
@@ -79,17 +83,26 @@ next: end
 ### Close
 say: Can we book ten minutes on Tuesday?
 tone: action
+
+## Second call
+goal: Pick up where we left off
+
+### Check in
+say: Hi [NAME], following up on our short call.
+tone: follow
 ```
 
 Grammar notes:
 
 - Frontmatter: `script` (equals the file name without `.md`), `title`, `industry` (optional), `version` (whole number), `status` (`draft` or `active`).
 - `##` is one conversation: `play:` (a guide in `sales/plays/`), `goal:`, `note:`, then `- ` tips before the first step.
-- `###` is one step: `branch:` (the guide's branch code), `tag:` (small label), `say:` (the words), `detail:` (extra paragraph, repeatable), `tip:`, `tone:`, `next:`.
-- `####` is one buyer answer under a step: its title is the label, and it adds `when:` (when the buyer says it). It takes `tag:`, `say:`, `detail:`, `tip:`, `tone:`, `next:` too.
+- `###` is one step: `branch:` (the guide's branch code), `tag:` (small label), `say:` (the words), `detail:` (extra paragraph, repeatable), `tip:`, `coach:` (a call tip for the rep, shown in its own box), `tone:`, `next:`.
+- `####` is one buyer answer under a step: its title is the label, and it adds `when:` (when the buyer says it). It takes `tag:`, `say:`, `detail:`, `tip:`, `coach:`, `tone:`, `next:` too.
+- An answer without `say:` is fine: it is just a choice that leads straight to its `next:` (for example "Busy right now" above).
 - A second `say:` or `tag:` in the same step or answer starts another stacked card.
 - `tone:` is one of start, plain, action, yes, no, follow.
-- `next:` is the title of a step or conversation, or `end`.
+- `next:` is the title of a step or conversation, or `end`. It can point to another conversation: the call jumps to that conversation's first step. Without `next:`, an answer follows its step's `next:`, then the step below it; the last step ends the call.
+- The script page opens as a live assistant: it shows one step at a time, the buyer answers become buttons, and each click shows what to say next. A "Full diagram" button shows the whole script at once.
 - Use `[PLACEHOLDER]` for names. Do not use raw HTML.
 
 ## 3. Preview

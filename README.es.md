@@ -113,7 +113,7 @@ Tu cerebro trae un sistema de ventas listo para usar que puedes adaptar a la for
 - 🧭 **Tipos de venta**: prospección en frío, solicitudes entrantes, referidos y clientes actuales. Puedes agregar los tuyos.
 - 📝 **Notas de llamadas**: después de cada llamada, di *"Registra esta llamada"*. Tu asistente anota el tipo de venta, de dónde vino el contacto y si la llamada cumplió su objetivo, y te pregunta antes de guardar.
 - 📅 **Una revisión mensual**: pregunta *"¿Cómo me fue este mes?"*. Tu asistente lee los números reales, propone cambios a tus guías y no cambia nada hasta que lo apruebas.
-- 🎬 **Guiones para cualquier industria**: di *"Hazme un guion para restaurantes"*. Tu asistente te pregunta por tus clientes y tus palabras, te muestra una vista previa y lo guarda solo cuando dices que sí. Se abre como una página visual que puedes leer durante una llamada.
+- 🎬 **Guiones para cualquier industria**: di *"Hazme un guion para restaurantes"*. Tu asistente te pregunta por tus clientes y tus palabras, te muestra una vista previa y lo guarda solo cuando dices que sí. Se abre como un asistente en vivo paso a paso durante la llamada: tocas lo que respondió el cliente y te muestra qué decir.
 - 📖 **Un glosario**: pregunta *"¿Qué significa MEDDPICC?"* y recibe una respuesta clara. El asistente puede añadir los términos que usa tu equipo, y aparecen en tu página de ventas.
 
 ### 👁️ Mira tu proceso de ventas

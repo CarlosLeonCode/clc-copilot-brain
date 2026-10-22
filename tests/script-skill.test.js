@@ -48,6 +48,17 @@ test('the grammar example in the skill is neutral and parses with no diagnostics
   for (const tone of ['start', 'plain', 'action', 'yes', 'no', 'follow']) assert.ok(text.includes(tone), tone);
 });
 
+test('the skill documents coach:, answers without say:, jumps to another conversation and the live assistant', () => {
+  const text = read(SKILL);
+  const block = /```markdown\n(---\nscript:[\s\S]*?)\n```/.exec(text)[1];
+  assert.match(block, /^coach: /m, 'the example shows coach:');
+  const answers = parseScript(block).conversations.flatMap((c) => c.steps.flatMap((s) => s.answers));
+  assert.ok(answers.some((a) => a.cards.length === 0 && a.next), 'the example shows an answer with only next:');
+  assert.match(text, /without `say:`/i);
+  assert.match(text, /another conversation/i);
+  assert.match(text, /live assistant/i);
+});
+
 test('the skill previews with --draft, fixes until valid, asks before saving and refreshes the page', () => {
   const text = read(SKILL);
   const preview = text.indexOf('clc-brain view --draft');

@@ -61,7 +61,8 @@ export const SHIPPED_HASHES = Object.freeze({
   ],
   ".agents/skills/script/SKILL.md": [
     "0b10ce2ca682edf6c4fe206bc6e8274d2cf864f22a87cd420fb5c36af8d7de60",
-    "7e70db97c2c4c830e56049f1006b162353e7d61da12c61831c7930e887a79981"
+    "7e70db97c2c4c830e56049f1006b162353e7d61da12c61831c7930e887a79981",
+    "da2aaf2853625bb440202e017cfc55558fa90c6bbbdbbdd935c1ac95c506d2a8"
   ],
   ".agents/skills/sop-auditor/SKILL.md": [
     "a5687e7ea12cdde0d7967b603f4748a5539319358bbce13a194deac91a4a1271",

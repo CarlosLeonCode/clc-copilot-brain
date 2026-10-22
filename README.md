@@ -113,7 +113,7 @@ Your brain comes with a ready-to-use sales system that you can shape to the way 
 - 🧭 **Types of sale**: cold outreach, inbound requests, referrals and existing customers. You can add your own.
 - 📝 **Call notes**: after each call, say *"Log this call"*. Your assistant records the type of sale, where the lead came from and whether the call reached its goal, and asks before saving.
 - 📅 **A monthly review**: ask *"How did this month go?"*. Your assistant reads the real numbers, proposes changes to your guides, and changes nothing until you approve.
-- 🎬 **Scripts for any industry**: say *"Write me a script for restaurants"*. Your assistant asks about your customers and your words, shows you a preview, and saves it only after you say yes. It opens as a visual page you can read during a call.
+- 🎬 **Scripts for any industry**: say *"Write me a script for restaurants"*. Your assistant asks about your customers and your words, shows you a preview, and saves it only after you say yes. It opens as a step-by-step live assistant during the call: tap what the customer answered and it shows what to say next.
 - 📖 **A glossary**: ask *"What does MEDDPICC mean?"* and get a plain answer. The assistant can add the terms your team uses, and they show up on your sales page.
 
 ### 👁️ See your sales process

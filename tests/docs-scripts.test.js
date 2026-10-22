@@ -39,3 +39,13 @@ test('ADR 0008 has the standard sections and records the key decisions', () => {
   for (const heading of ['## Context', '## Decision', '## Consequences']) assert.ok(text.includes(heading), heading);
   for (const needle of ['method', 'generator', 'glossary', 'legacy', 'English']) assert.match(text, new RegExp(needle, 'i'), needle);
 });
+
+test('the docs say scripts open as a step-by-step live assistant and record the one inline script decision', () => {
+  assert.match(read('README.md'), /live assistant/i);
+  assert.match(read('README.es.md'), /asistente en vivo/i);
+  const tech = read('TECHNICAL.md');
+  for (const needle of ['coach:', 'buildAssistant', 'inline script', 'progressive enhancement']) assert.ok(tech.includes(needle), `TECHNICAL.md mentions ${needle}`);
+  const adr = read('docs/Journal/0009-live-script-assistant.md');
+  for (const heading of ['## Context', '## Decision', '## Consequences']) assert.ok(adr.includes(heading), heading);
+  for (const needle of ['inline', 'no network', 'textContent', 'sales-system.html', '0008']) assert.match(adr, new RegExp(needle, 'i'), needle);
+});
