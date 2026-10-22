@@ -53,6 +53,7 @@ Most people who use this brain are not technical. They write in plain English or
 | "Show me my sales process" / "Muéstrame mi proceso de ventas" / "Quiero ver mis flujos" | Run `clc-brain view --open` in this folder and tell the person the page with their sales steps and call guides is open. If you cannot run it, tell them the one command to type, or offer to open the file sales/sales-system.html if it already exists. |
 | "Put my brain in Spanish" / "Pon mi cerebro en español" / "Cambia el idioma" | Ask one yes/no question. After a yes, set `language` in `org-kernel.json` (`"es"` for Spanish, `"en"` for English), offer once to translate the starter guides and the sales map (translate only after a yes), then refresh the page with `clc-brain view`. |
 | "Update my brain" / "Actualiza mi cerebro" | Run `clc-brain upgrade --dry-run`, explain in plain words what would change, and run `clc-brain upgrade --yes` only after the person says yes. |
+| "Migrate my brain" / "Migra mi cerebro" | Run `clc-brain migrate` (it only shows a plan), explain in plain words what would change and what needs the assistant, and run `clc-brain migrate --yes` only after the person says yes. It never deletes files; offer to remove listed sample files one by one, only after a yes. |
 
 After any approved change to the sales pipeline or a call guide, refresh the sales system page by running `clc-brain view`, then tell the person in plain words that their sales page is up to date.
 

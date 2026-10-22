@@ -15,6 +15,7 @@ ${pc.bold('COMMANDS:')}
   ${pc.green('doctor')} [dir]       Audit repository health, schemas, and repair broken symlinks
   ${pc.green('list-areas')} [dir]   Show installed vs available domain areas
   ${pc.green('mcp')} [dir]          Start the Model Context Protocol (MCP) server over stdio
+  ${pc.green('migrate')} [dir]      Bring an older brain to the current formats (preview first; .bak copies, never deletes)
   ${pc.green('stats')} [dir]        Show how your sales are going: results by type of sale, call guide and person
   ${pc.green('upgrade')} [dir]      Update template-owned commands and skills of an existing brain (backups kept)
   ${pc.green('view')} [dir]         Build a visual page of your sales system (sales/sales-system.html)
@@ -51,6 +52,10 @@ ${pc.bold('UPGRADE OPTIONS:')}
   --dry-run           Show the plan and diffs without writing anything
   --force-skills      Also replace skills you edited with the new version (a .bak copy is kept)
 
+${pc.bold('MIGRATE OPTIONS:')}
+  (none)              Preview the plan only: nothing is written
+  -y, --yes           Apply the plan (each changed file keeps a .bak copy; hand-made pages are never written)
+
 ${pc.bold('VIEW OPTIONS:')}
   --open              Open the page in your default browser after building it
   --draft <file>      Preview a draft call guide, script or pipeline without saving it (repeatable);
@@ -75,6 +80,8 @@ ${pc.bold('EXAMPLES:')}
   $ copilot-brain mcp ./my-brain
   $ copilot-brain stats ./my-brain --month 2026-09
   $ copilot-brain upgrade ./my-brain --dry-run
+  $ copilot-brain migrate ./my-brain
+  $ copilot-brain migrate ./my-brain --yes
   $ copilot-brain view ./my-brain --open
   $ copilot-brain view ./my-brain --draft /tmp/cold-call-draft.md --open
 `;

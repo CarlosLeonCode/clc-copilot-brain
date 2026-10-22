@@ -404,6 +404,7 @@ Los cerebros anteriores usaban nombres con dos puntos (`/brain:onboarding`); aho
 | `clc-brain list-areas [carpeta]` | Muestra las áreas instaladas y disponibles. |
 | `clc-brain clean-demo [carpeta]` | Elimina los documentos de ejemplo y conserva los tuyos. |
 | `clc-brain upgrade [carpeta] [--dry-run] [--yes]` | Actualiza un cerebro existente a los últimos comandos y skills; tus ediciones quedan como copias `.bak`. `--dry-run` previsualiza, `--yes` aplica. |
+| `clc-brain migrate [carpeta] [--yes]` | Pone un cerebro antiguo al formato actual: guarda cómo vende el equipo si falta, agrega el encabezado de guion a los guiones que ya siguen el formato y enlaza un glosario en español desde el mapa de ventas. Solo muestra el plan, salvo que agregues `--yes`; cada archivo cambiado guarda una copia `.bak` y no se borra nada. Los guiones que hay que reescribir y los archivos de ejemplo que sobran quedan listados para tu asistente. |
 | `clc-brain view [carpeta] [--open] [--draft <archivo>]` | Crea la página visual de tu proceso de ventas; añade `--open` para abrirla en tu navegador, o `--draft <archivo>` para ver un cambio antes de guardarlo. |
 | `clc-brain stats [carpeta] [--month YYYY-MM] [--json]` | Muestra qué está funcionando en tus ventas (por tipo de venta, guía de llamada y persona) este mes y el anterior; `--json` da los números en bruto. |
 | `clc-brain mcp [carpeta]` | Inicia la conexión MCP opcional (la usa la configuración de arriba). |

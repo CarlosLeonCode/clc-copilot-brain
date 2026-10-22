@@ -81,6 +81,8 @@ src/
 │   ├── areas.js           PRESET_AREAS, area id rule ^[a-z0-9_-]+$, add/list areas, resolveAllowedAreas
 │   ├── doctor.js          runDoctor (structured results), repairBrain (non-destructive)
 │   ├── upgrade.js         planUpgrade/applyUpgrade (allowlist: replace-with-backup, add-if-missing, AGENTS.md managed block; ADR 0005, 0006)
+│   ├── migrate.js         planMigration/applyMigration (older brains: methodology, script headers, glossary link; .bak, never deletes)
+│   ├── sample-content.js  leftover sample ICP and sample names in skills (doctor, migrate)
 │   ├── demo.js            demo assets derived from templates/areas, cleanDemo
 │   ├── calls.js           captureCall (strict date, containment, quoted frontmatter, no overwrite), CALL_FIELDS, readCallLog
 │   ├── objections.js      captureObjection (schema-validated)
@@ -111,7 +113,7 @@ src/
 │   └── errors.js, fs-utils.js, package-paths.js
 ├── cli/                   Adapter: argv parsing, @clack/prompts, picocolors, exit codes
 │   ├── main.js, args.js, help.js, prompt.js, render.js
-│   └── commands/          init, add-area, list-areas, doctor, clean-demo, upgrade, view, stats, mcp
+│   └── commands/          init, add-area, list-areas, doctor, clean-demo, upgrade, migrate, view, stats, mcp
 └── mcp/                   Adapter: JSON-RPC 2.0 stdio server + thin tool handlers
     ├── server.js, tools.js, prompts.js
 ```
@@ -146,6 +148,17 @@ src/
 | `mcp [dir]` | |
 
 `clc-brain --help` is authoritative (`src/cli/help.js`).
+
+### Migration (`src/core/migrate.js`)
+
+`clc-brain migrate [dir] [--yes]` prints a plan in the brain language and changes nothing unless `--yes` is passed. Steps, only when they apply:
+
+- `methodology` missing from `org-kernel.json`: set it to `inferMethodology` (sandler when the qualification matrix or `sales/system.md` uses Sandler terms, else meddpicc), right after `language`.
+- A `sales/scripts/*.md` without frontmatter: add `script/title/version: 1/status: active` only when the result parses with no diagnostics (`scriptHeaderFor`); otherwise it is listed for the assistant to convert.
+- Only a `glosario*.md` glossary and no link to it in `sales/system.md`: append a marked line linking it. Files are never renamed.
+- Industry rows (`B1 · Retail`) and legacy samples (unmodified `sales/icps/enterprise-cto.md`, legacy starter scripts by hash) are notes only.
+
+Every write first copies the file to `<file>.bak` with `COPYFILE_EXCL`; an existing backup, a file changed since the plan, or a non-regular file is skipped. Nothing is deleted and no HTML is written.
 
 ### Upgrade Policy (`src/core/upgrade.js`, ADR 0005, 0006)
 

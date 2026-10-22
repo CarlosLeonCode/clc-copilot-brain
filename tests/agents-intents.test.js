@@ -253,3 +253,14 @@ test('READMEs say the assistant guides you from the first hi and that clc-brain 
   assert.match(tech, /`setup`/);
   assert.match(tech, /start screen/i);
 });
+
+test('both AGENTS.md files route "migrate my brain" to a migrate preview, applied only after a yes', () => {
+  for (const rel of FILES) {
+    const row = read(rel).split('\n').find((l) => /Migrate my brain/.test(l));
+    assert.ok(row, `${rel} needs the migrate intent`);
+    assert.match(row, /Migra mi cerebro/);
+    assert.match(row, /`clc-brain migrate`/);
+    assert.match(row, /plain words/);
+    assert.match(row, /`clc-brain migrate --yes` only after/);
+  }
+});

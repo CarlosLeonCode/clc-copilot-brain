@@ -1,4 +1,4 @@
-// Texts of the doctor, upgrade, view and add-area messages, merged into the i18n dictionaries. Pure data.
+// Texts of the doctor, upgrade, view, add-area and migrate messages, merged into the i18n dictionaries. Pure data.
 // English texts are the historical messages; Spanish uses a neutral "tú".
 
 export const MESSAGES = Object.freeze({
@@ -152,7 +152,27 @@ export const MESSAGES = Object.freeze({
     'cli.addArea.customTitle': 'Area Display Title:',
     'cli.addArea.customPurpose': 'Brief purpose or scope of this area:',
     'cli.addArea.customCreated': 'Custom area "{id}" created!',
-    'cli.addArea.customAt': 'Scaffolded custom domain at ./{id}/'
+    'cli.addArea.customAt': 'Scaffolded custom domain at ./{id}/',
+    // migrate
+    'cli.notBrain': '{dir} is not a brain (no org-kernel.json). Run "clc-brain init" first.',
+    'cli.migrate.title': ' Brain migration ',
+    'cli.migrate.willChange': 'Will change (each file keeps a .bak copy):',
+    'cli.migrate.methodology': 'Set how your team sells to "{method}" in org-kernel.json (worked out from your sales files)',
+    'cli.migrate.scriptHeader': 'Add a script header to {path} so it shows as a script on your sales page',
+    'cli.migrate.glossaryLink': 'Link your glossary ({file}) from sales/system.md',
+    'cli.migrate.blocked': '(will be skipped: {path} already exists)',
+    'cli.migrate.notes': 'Good to know (nothing changes):',
+    'cli.migrate.scriptConvert': '{path} is not in the script format yet. Ask your assistant to convert it (it only saves after you say yes).',
+    'cli.migrate.industryRows': { one: '{count} industry row in your call guides is already understood: nothing to change.', other: '{count} industry rows in your call guides are already understood: nothing to change.' },
+    'cli.migrate.legacySample': '{path} is sample content from the templates. It can be removed after you confirm with your assistant.',
+    'cli.migrate.nothing': 'Your brain is already in the current format: nothing to migrate.',
+    'cli.migrate.nothingToApply': 'Nothing to change automatically.',
+    'cli.migrate.dryRun': 'Preview only: no files were changed. Run again with {flag} to apply these changes.',
+    'cli.migrate.applied': 'changed {path} (backup: {backup})',
+    'cli.migrate.skipped.backup-exists': 'skipped {path}: {backup} already exists',
+    'cli.migrate.skipped.changed': 'skipped {path}: it changed while migrating; run migrate again',
+    'cli.migrate.skipped.not-a-file': 'skipped {path}: it is not a regular file',
+    'cli.migrate.done': 'Migration complete.'
   },
   es: {
     'doctor.kernelMissing': 'Falta org-kernel.json en la carpeta principal del cerebro.',
@@ -298,6 +318,26 @@ export const MESSAGES = Object.freeze({
     'cli.addArea.customTitle': 'Nombre visible del área:',
     'cli.addArea.customPurpose': 'Propósito o alcance breve del área:',
     'cli.addArea.customCreated': '¡Área propia "{id}" creada!',
-    'cli.addArea.customAt': 'Área propia creada en ./{id}/'
+    'cli.addArea.customAt': 'Área propia creada en ./{id}/',
+    // migrate
+    'cli.notBrain': '{dir} no es un cerebro (no tiene org-kernel.json). Ejecuta primero "clc-brain init".',
+    'cli.migrate.title': ' Migración del cerebro ',
+    'cli.migrate.willChange': 'Se cambiará (cada archivo guarda una copia .bak):',
+    'cli.migrate.methodology': 'Guardar en org-kernel.json que tu equipo vende con "{method}" (deducido de tus archivos de ventas)',
+    'cli.migrate.scriptHeader': 'Agregar el encabezado de guion a {path} para que se vea como guion en tu página de ventas',
+    'cli.migrate.glossaryLink': 'Enlazar tu glosario ({file}) desde sales/system.md',
+    'cli.migrate.blocked': '(se saltará: {path} ya existe)',
+    'cli.migrate.notes': 'Para que lo sepas (no cambia nada):',
+    'cli.migrate.scriptConvert': '{path} todavía no tiene el formato de guion. Pide a tu asistente que lo convierta (solo guarda después de que digas que sí).',
+    'cli.migrate.industryRows': { one: '{count} fila por industria en tus guías de llamada ya se entiende: no hay nada que cambiar.', other: '{count} filas por industria en tus guías de llamada ya se entienden: no hay nada que cambiar.' },
+    'cli.migrate.legacySample': '{path} es contenido de ejemplo de las plantillas. Se puede quitar después de que lo confirmes con tu asistente.',
+    'cli.migrate.nothing': 'Tu cerebro ya tiene el formato actual: no hay nada que migrar.',
+    'cli.migrate.nothingToApply': 'No hay nada que cambiar automáticamente.',
+    'cli.migrate.dryRun': 'Solo vista previa: no se cambió ningún archivo. Vuelve a ejecutar con {flag} para aplicar estos cambios.',
+    'cli.migrate.applied': 'se cambió {path} (copia: {backup})',
+    'cli.migrate.skipped.backup-exists': 'se saltó {path}: {backup} ya existe',
+    'cli.migrate.skipped.changed': 'se saltó {path}: cambió mientras se migraba; vuelve a ejecutar migrate',
+    'cli.migrate.skipped.not-a-file': 'se saltó {path}: no es un archivo normal',
+    'cli.migrate.done': 'Migración terminada.'
   }
 });
