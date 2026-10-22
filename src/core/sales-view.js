@@ -12,7 +12,7 @@ import { EMPTY_LOG_LINE, SECTION_HEADINGS, plainSystemSection, section, stageNam
 import { loadSalesReport } from './sales-records.js';
 import { DASHBOARD_CSS, renderDashboard } from './sales-dashboard.js';
 import { linkInline } from './script-view.js';
-import { loadLibrary, writeScriptPages } from './sales-library.js';
+import { loadLibrary, loadScriptPages, writeScriptPages } from './sales-library.js';
 import { mergeDraftScripts, renderGlossarySection, renderScriptsSection } from './sales-sections.js';
 import { FLOWCHART_CSS, layoutFlowchart, parseFlowchart, renderFlowchartSvg } from './flowchart.js';
 
@@ -342,6 +342,7 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
     return { path: d.path, kind: d.kind, id: draftIds[i], ok: status.ok, error: status.error };
   });
   const glossary = library.glossary && library.glossary.groups.length > 0 ? library.glossary : null;
+  const scriptPages = loadScriptPages(rootDir, merged.entries.map((e) => e.slug));
   const preview = drafts.length > 0;
   const company = readCompanyName(kernelPath, lang);
   const date = now.toISOString().slice(0, 10);
@@ -362,7 +363,7 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
 <h1>${heading}</h1>
 <p>${text('view.updated', { date })}</p>
 </header>
-${preview ? `<p class="note preview-note">${text('view.previewNote')}</p>\n` : ''}<nav aria-label="${text('view.navLabel')}">${[...plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`), ...(glossary ? [`<a href="#scripts">${text('view.scripts.title')}</a>`, `<a href="#glossary">${text('view.glossary.title')}</a>`] : merged.entries.length > 0 ? [`<a href="#scripts">${text('view.scripts.title')}</a>`] : [])].join('')}</nav>
+${preview ? `<p class="note preview-note">${text('view.previewNote')}</p>\n` : ''}<nav aria-label="${text('view.navLabel')}">${[...plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`), ...(glossary || merged.entries.length > 0 || scriptPages.length > 0 ? [`<a href="#scripts">${text('view.scripts.title')}</a>`] : []), ...(glossary ? [`<a href="#glossary">${text('view.glossary.title')}</a>`] : [])].join('')}</nav>
 <h2>${text('view.system.title')}</h2>
 <section class="card">
 ${markdownToHtml(plainSystemSection(systemMd))}
@@ -374,7 +375,7 @@ ${pipelineDraft ? `<div class="card-head">${draftBadge(true, lang)}</div>\n` : '
 </section>
 <h2>${text('view.guides.title')}</h2>
 ${plays.map((play) => renderPlay(play, lang)).join('\n')}
-${renderScriptsSection(merged.entries, lang)}
+${renderScriptsSection(merged.entries, lang, scriptPages)}
 ${renderGlossarySection(glossary, lang)}
 <footer>${text('view.footer')}</footer>
 </main>

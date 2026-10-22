@@ -21,10 +21,20 @@ function scriptCard(entry, lang) {
   return `<section class="card"><div class="card-head"><h3>${escapeHtml(parsed.title || entry.slug)}</h3>${draft}</div>${body}</section>`;
 }
 
-/** The Scripts section: one card per script, or a localized empty state. */
-export function renderScriptsSection(entries, lang = DEFAULT_LANGUAGE) {
-  const cards = entries.length > 0
-    ? entries.map((entry) => scriptCard(entry, lang)).join('\n')
+/** Hand-made visual script pages: linked when the file name is safe, else shown as plain text. */
+function pagesCard(pages, lang) {
+  const items = pages.map((p) => (SKILL_NAME_PATTERN.test(p.slug)
+    ? `<li><a href="./scripts/${p.slug}.html">${escapeHtml(p.title)}</a></li>`
+    : `<li>${escapeHtml(p.title)}</li>`)).join('');
+  return `<section class="card"><div class="card-head"><h3>${text(lang, 'view.scripts.pages')}</h3></div><ul>${items}</ul></section>`;
+}
+
+/** The Scripts section: one card per script, a card listing hand-made script pages, or a localized empty state. */
+export function renderScriptsSection(entries, lang = DEFAULT_LANGUAGE, pages = []) {
+  const parts = entries.map((entry) => scriptCard(entry, lang));
+  if (pages.length > 0) parts.push(pagesCard(pages, lang));
+  const cards = parts.length > 0
+    ? parts.join('\n')
     : `<section class="card"><p>${text(lang, 'view.scripts.empty')}</p></section>`;
   return `<h2 id="scripts">${text(lang, 'view.scripts.title')}</h2>\n${cards}`;
 }

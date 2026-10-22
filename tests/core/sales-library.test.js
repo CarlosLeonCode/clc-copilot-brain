@@ -103,3 +103,21 @@ test('glossary.md wins over glosario files; among several glosario files the fir
   assert.equal(loadLibrary(root).glossary.file, 'glossary.md');
   assert.equal(loadLibrary(root).glossary.groups[0].terms[0].term, 'Lead');
 }));
+
+test('loadScriptPages lists hand-made pages with a title from <title> or <h1>; generated pages and script pages are left out', async () => withTmp(async (root) => {
+  const { loadScriptPages } = await import('../../src/core/sales-library.js');
+  writeFiles(root, {
+    'sales/scripts/guiones-retail.html': '<html><head><title>Guiones &amp; Retail</title></head><body><h1>Other</h1></body></html>',
+    'sales/scripts/guiones-ropa.html': '<html><body><h1 class="x">Guiones <em>Ropa</em></h1></body></html>',
+    'sales/scripts/Raro Nombre.html': '<html><body>no title</body></html>',
+    'sales/scripts/generated.html': '<meta name="generator" content="clc-brain"><title>Gen</title>',
+    'sales/scripts/sample-co.md': SAMPLE,
+    'sales/scripts/sample-co.html': '<title>Hand-made page of a script</title>'
+  });
+  assert.deepEqual(loadScriptPages(root, ['sample-co']), [
+    { file: 'Raro Nombre.html', slug: 'Raro Nombre', title: 'Raro Nombre' },
+    { file: 'guiones-retail.html', slug: 'guiones-retail', title: 'Guiones & Retail' },
+    { file: 'guiones-ropa.html', slug: 'guiones-ropa', title: 'Guiones Ropa' }
+  ]);
+  assert.deepEqual(loadScriptPages(path.join(root, 'nowhere')), []);
+}));

@@ -145,3 +145,14 @@ test('a glosario file linked from system.md counts as linked; an unlinked one is
   write(dir, 'sales/system.md', `${read(dir, 'sales/system.md')}\nBúscalo en el [Glosario Sandler](./glosario-sandler.md).\n`);
   assert.deepEqual(warnings(dir).filter((m) => /glos/i.test(m)), []);
 }));
+
+test('a .md without a header in sales/scripts/ is reported as not recognized, with a plain fix; README is not', () => withTmp((dir) => {
+  initBrain(dir, { areas: ['sales'], language: 'en' });
+  write(dir, 'sales/scripts/acuerdo-previo.md', '# Acuerdo previo\n\nTexto.\n');
+  write(dir, 'sales/scripts/README.md', '# About\n');
+  const found = warnings(dir).filter((m) => /not recognized/.test(m));
+  assert.equal(found.length, 1);
+  assert.match(found[0], /sales\/scripts\/acuerdo-previo\.md/);
+  assert.doesNotMatch(found[0], /README/);
+  assert.match(found[0], /ask your assistant/i);
+}));

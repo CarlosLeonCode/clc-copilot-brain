@@ -128,3 +128,16 @@ test('a Spanish glosario file is the Glossary section of the page', () => withTm
   assert.match(html, /<th>Término<\/th><th>Qué significa<\/th><th>Ejemplo<\/th>[\s\S]*<td><strong>Dolor<\/strong><\/td>/);
   assert.match(html, /href="#glossary"/);
 }));
+
+test('hand-made script pages are listed and linked in the Scripts section, escaped, and never overwritten', () => withTmp((dir) => {
+  const handMade = '<html><head><title>Guiones &lt;Retail&gt; &amp; "más"<script>x</script></title></head></html>';
+  brain(dir, { 'sales/scripts/guiones-retail.html': handMade, 'sales/scripts/Mal Nombre.html': '<h1>Raro</h1>' }, 'es');
+  const { html } = writeSalesView(dir);
+  assert.match(html, /<a href="#scripts">Tus guiones<\/a>/);
+  assert.match(html, /<a href="\.\/scripts\/guiones-retail\.html">Guiones &lt;Retail&gt; &amp; &quot;más&quot; x<\/a>/);
+  assert.doesNotMatch(html, /<script>/);
+  assert.doesNotMatch(html, /Todavía no hay guiones/);
+  assert.match(html, /<li>Raro<\/li>/);
+  assert.doesNotMatch(html, /href="\.\/scripts\/Mal/);
+  assert.equal(fs.readFileSync(path.join(dir, 'sales/scripts/guiones-retail.html'), 'utf8'), handMade);
+}));

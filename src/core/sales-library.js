@@ -73,6 +73,45 @@ export function loadLibrary(rootDir) {
   return { scripts, glossary: glossaryText === null ? null : { ...parseGlossary(glossaryText), file: glossaryFile } };
 }
 
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+const decodeEntities = (value) => value.replace(/&(#\d+|#x[0-9a-f]+|[a-z]+);/gi, (whole, code) => {
+  if (code[0] !== '#') return ENTITIES[code.toLowerCase()] ?? whole;
+  const n = code[1].toLowerCase() === 'x' ? Number.parseInt(code.slice(2), 16) : Number.parseInt(code.slice(1), 10);
+  return Number.isInteger(n) && n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : whole;
+});
+const plainTextOf = (html) => decodeEntities(html.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+
+/** Title of a hand-made page: its <title>, else its first <h1>, else ''. Plain text (tags dropped, entities decoded). */
+function pageTitle(html) {
+  for (const pattern of [/<title[^>]*>([\s\S]*?)<\/title>/i, /<h1[^>]*>([\s\S]*?)<\/h1>/i]) {
+    const title = plainTextOf(pattern.exec(html)?.[1] ?? '');
+    if (title) return title;
+  }
+  return '';
+}
+
+/**
+ * Hand-made visual script pages: sales/scripts/*.html without the generator marker, other than the pages of the
+ * scripts in `scriptSlugs`. They are listed on the sales page and never written.
+ * @returns {{file: string, slug: string, title: string}[]}
+ */
+export function loadScriptPages(rootDir, scriptSlugs = []) {
+  const dir = path.join(rootDir, 'sales', 'scripts');
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const own = new Set(scriptSlugs);
+  return entries.filter((e) => e.isFile() && e.name.endsWith('.html')).map((e) => e.name).sort().flatMap((file) => {
+    const slug = file.replace(/\.html$/, '');
+    const html = own.has(slug) ? null : readText(path.join(dir, file));
+    if (html === null || html.includes(GENERATOR_MARKER)) return [];
+    return [{ file, slug, title: pageTitle(html) || slug }];
+  });
+}
+
 function skipReason(entry, target, boundary) {
   if (!SKILL_NAME_PATTERN.test(entry.slug)) return 'The file name must use lowercase letters, digits and single hyphens.';
   if (hasErrors(entry)) return 'The script needs fixing before its page can be made.';
@@ -187,8 +226,13 @@ export function checkSalesLibrary(rootDir) {
     }
   }
 
-  const legacy = mdFiles(path.join(salesDir, 'scripts')).filter((name) => name in LEGACY_STARTER_SCRIPT_HASHES
+  const scriptFiles = mdFiles(path.join(salesDir, 'scripts')).filter((name) => name !== 'README.md');
+  const legacy = scriptFiles.filter((name) => name in LEGACY_STARTER_SCRIPT_HASHES
     && isLegacyStarterScript(name, readText(path.join(salesDir, 'scripts', name)) ?? ''));
+  const unrecognized = scriptFiles.filter((name) => !legacy.includes(name) && parseFrontmatter(readText(path.join(salesDir, 'scripts', name)) ?? '') === null);
+  if (unrecognized.length > 0) {
+    warnings.push(`These files in sales/scripts/ are not recognized as scripts because they have no script header at the top: ${unrecognized.map((n) => `sales/scripts/${n}`).join(', ')}. They are kept as they are. Ask your assistant to convert them to the script format (it only saves after you say yes).`);
+  }
   if (legacy.length > 0) warnings.push(`These are old example scripts that no longer ship: ${legacy.map((n) => `sales/scripts/${n}`).join(', ')}. Ask your assistant to remove them (it only does so after you say yes).`);
   return warnings;
 }
