@@ -23,3 +23,24 @@ The sales page, script pages and draft previews were styled with hand-written CS
 - Pages are larger: the shared CSS (about 18 KB) is inlined in every page and class lists repeat per element, most visibly in the script page's embedded assistant data. They remain single offline files.
 - `@tailwindcss/cli` brings a dev-only dependency chain (`@parcel/watcher`) that `npm audit` currently flags; it never ships to users.
 - Rejected: the Tailwind Play CDN (needs the network and runs a compiler in the page), a runtime Tailwind dependency (heavier installs, compiling on users' machines), a separate CSS file next to each page (more files, a `<link>`), and `@apply`-based semantic classes (keeps the hand-written vocabulary we wanted to drop).
+
+## Addendum: design base of script pages
+
+The first real users preferred their hand-made live script pages (Tailwind 3, Inter, slate ink, blue brand) to the generated ones. Script pages now reproduce that base style and its elements from the same markdown grammar, with no new keys:
+
+| Hand-made element | Generated from |
+| :--- | :--- |
+| Sticky nav: brand, live/diagram switch, conversation links | company and script `title`, conversations |
+| Top bar with flow tabs, Undo, Restart (sidebar from 1200px) | conversations |
+| Kicker, title, "Goal: **…**" subtitle | conversation number, `##` heading, `goal:` |
+| Card with a coloured top stripe | `tone:` (`yes`, `no`, `action`, `follow`) |
+| Small uppercase step/tag label | `###` step title, or a `tag:` that already names it |
+| Words to say behind a blue bar ("🗣️ Script" live) | `say:` |
+| Script lines, smaller bold-condition lines | `detail:` (`**If …:**` prefix) |
+| Amber "What to do" box | `tip:` |
+| Violet advice box | `coach:`; `note:` and rules close the conversation |
+| Answer pills, lanes, pair, close-row | `####` answers (unchanged layouts) |
+| Numbered answer buttons, keys 1-9, Backspace | answers of the step in progress |
+| "↳ Client answered" chip on the next card, green end banner | the picked answer, `next: end` / last step |
+
+Tokens move to that palette (`ink` slate, `accent` #356ae6, emerald/rose/amber stripes, amber `tip*`, violet `coach*`) with dark values kept, and the sales page shares them. The hand-made page's call summary panel (JSON copy for call logging) is not part of the base and stays out.
