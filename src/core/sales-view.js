@@ -10,11 +10,13 @@ import { getBrainLanguage } from './brain-language.js';
 import { DEFAULT_LANGUAGE, t } from './i18n.js';
 import { EMPTY_LOG_LINE, SECTION_HEADINGS, plainSystemSection, section, stageNames } from './sales-stages.js';
 import { loadSalesReport } from './sales-records.js';
-import { DASHBOARD_CSS, renderDashboard } from './sales-dashboard.js';
+import { renderDashboard } from './sales-dashboard.js';
 import { linkInline } from './script-view.js';
 import { loadLibrary, loadScriptPages, writeScriptPages } from './sales-library.js';
 import { mergeDraftScripts, parseIndustryPacks, renderGlossarySection, renderIndustryPacksSection, renderScriptsSection } from './sales-sections.js';
-import { FLOWCHART_CSS, layoutFlowchart, parseFlowchart, renderFlowchartSvg } from './flowchart.js';
+import { layoutFlowchart, parseFlowchart, renderFlowchartSvg } from './flowchart.js';
+import { PAGE_CSS } from './styles/compiled.js';
+import * as C from './page-classes.js';
 
 export const SALES_VIEW_FILE = 'sales-system.html';
 export const SALES_PREVIEW_FILE = 'sales-system-preview.html';
@@ -153,7 +155,7 @@ function stepsList(graph, lang) {
       .map((e) => `<li>${escapeHtml(e.label ? t(lang, 'diagram.if', { label: e.label }) : t(lang, 'diagram.then'))} → ${escapeHtml(names.get(e.to))}</li>`);
     return `<li>${escapeHtml(names.get(n.id))}${next.length > 0 ? `<ul>${next.join('')}</ul>` : ''}</li>`;
   });
-  return `<div class="diagram-text"><p class="note">${escapeHtml(t(lang, 'diagram.stepsNote'))}</p><ol>${items.join('')}</ol></div>`;
+  return `<div data-diagram="text" class="${C.DIAGRAM_TEXT}"><p class="${C.NOTE}">${escapeHtml(t(lang, 'diagram.stepsNote'))}</p><ol>${items.join('')}</ol></div>`;
 }
 
 /**
@@ -168,35 +170,35 @@ function diagram(code, { wide = false, title, idPrefix, lang = DEFAULT_LANGUAGE 
     const partial = parseFlowchart(code, { lenient: true });
     const html = partial.nodes.length > 0
       ? stepsList(partial, lang)
-      : `<div class="diagram-text"><p class="note">${escapeHtml(t(lang, 'diagram.cannotDraw'))}</p></div>`;
+      : `<div data-diagram="text" class="${C.DIAGRAM_TEXT}"><p class="${C.NOTE}">${escapeHtml(t(lang, 'diagram.cannotDraw'))}</p></div>`;
     return { html, ok: false, error: err.message };
   }
   const layout = layoutFlowchart(graph);
   const minWidth = wide ? undefined : Math.min(layout.width, Math.max(MIN_TREE_WIDTH, layout.width * MIN_TREE_SCALE));
-  return { html: `<div class="diagram${wide ? ' diagram-wide' : ''}">${renderFlowchartSvg(graph, layout, { title, idPrefix, minWidth })}</div>`, ok: true };
+  return { html: `<div data-diagram="${wide ? 'wide' : 'tree'}" class="${wide ? C.DIAGRAM_WIDE : C.DIAGRAM_TREE}">${renderFlowchartSvg(graph, layout, { title, idPrefix, minWidth })}</div>`, ok: true };
 }
 
 /** The Guion cell of a play row, shown only when it holds an allowed script link. */
 function scriptLink(cell) {
   const html = cell ? inline(cell) : '';
-  return html.includes('<a ') ? `<span class="script-link">${html}</span>` : '';
+  return html.includes('<a ') ? `<span class="${C.SCRIPT_LINK}">${html}</span>` : '';
 }
 
-const draftBadge = (draft, lang) => (draft ? `<span class="badge badge-draft">${escapeHtml(t(lang, 'view.draftBadge'))}</span>` : '');
+const draftBadge = (draft, lang) => (draft ? `<span data-badge="draft" class="${C.BADGE_DRAFT}">${escapeHtml(t(lang, 'view.draftBadge'))}</span>` : '');
 
 function renderPlay(play, lang) {
-  const label = (key) => `<span class="label">${escapeHtml(t(lang, key))}</span>`;
-  const steps = play.steps.length > 0 ? `<p class="meta">${label('play.usedIn')} ${play.steps.map(escapeHtml).join(', ')}</p>` : '';
-  const goal = play.goal ? `<p class="goal">${label('play.goal')} ${inline(play.goal)}</p>` : '';
-  const version = play.version ? `<span class="badge">${escapeHtml(t(lang, 'play.version', { version: play.version }))}</span>` : '';
+  const label = (key) => `<span class="${C.LABEL}">${escapeHtml(t(lang, key))}</span>`;
+  const steps = play.steps.length > 0 ? `<p class="${C.MUTED}">${label('play.usedIn')} ${play.steps.map(escapeHtml).join(', ')}</p>` : '';
+  const goal = play.goal ? `<p>${label('play.goal')} ${inline(play.goal)}</p>` : '';
+  const version = play.version ? `<span class="${C.BADGE}">${escapeHtml(t(lang, 'play.version', { version: play.version }))}</span>` : '';
   const say = play.branches.length > 0
-    ? `<details><summary>${escapeHtml(t(lang, 'play.whatToSay'))}</summary><ul class="talk">${play.branches.map((b) => `<li>${b.when ? `<span class="when">${inline(b.when)}</span>` : ''}<span class="say">${inline(b.say)}</span>${scriptLink(b.script)}</li>`).join('')}</ul></details>`
+    ? `<details><summary>${escapeHtml(t(lang, 'play.whatToSay'))}</summary><ul class="${C.TALK_LIST}">${play.branches.map((b) => `<li class="${C.TALK_ITEM}">${b.when ? `<span class="${C.WHEN}">${inline(b.when)}</span>` : ''}<span class="${C.SAY}">${inline(b.say)}</span>${scriptLink(b.script)}</li>`).join('')}</ul></details>`
     : '';
   const learned = play.learnings.length > 0
     ? `<details><summary>${escapeHtml(t(lang, 'play.learned'))}</summary><ul>${play.learnings.map((l) => `<li>${inline(l)}</li>`).join('')}</ul></details>`
     : '';
-  return `<section class="card" id="${play.anchor}">
-<div class="card-head"><h3>${escapeHtml(play.title)}</h3>${version}${draftBadge(play.draft, lang)}</div>
+  return `<section class="${C.CARD}" id="${play.anchor}">
+<div class="${C.CARD_HEAD}"><h3>${escapeHtml(play.title)}</h3>${version}${draftBadge(play.draft, lang)}</div>
 ${goal}
 ${steps}
 ${play.rendered ? play.rendered.html : ''}
@@ -204,47 +206,6 @@ ${say}
 ${learned}
 </section>`;
 }
-
-const STYLE = `:root{--bg:#f7f7f5;--card:#fff;--text:#1f2328;--muted:#5b6470;--border:#e3e3de;--accent:#2f6fde;--soft:#eef3fc;--fc-node:#fff;--fc-stroke:#2f6fde;--fc-decision:#fff8e6;--fc-decision-stroke:#c98a00;--fc-text:#1f2328;--fc-line:#8a929c;--fc-label-bg:#eef3fc;--fc-label:#3d4550;--draft-bg:#fff4d6;--draft-text:#7a4b00;--draft-border:#e8c46a}
-@media (prefers-color-scheme:dark){:root{--bg:#16181c;--card:#1f2227;--text:#e8e8e6;--muted:#a3a9b2;--border:#33373e;--accent:#7aa7ff;--soft:#232a36;--fc-node:#1f2227;--fc-stroke:#7aa7ff;--fc-decision:#2e2715;--fc-decision-stroke:#e0b04a;--fc-text:#e8e8e6;--fc-line:#7d848e;--fc-label-bg:#232a36;--fc-label:#c9ced6;--draft-bg:#3a2f12;--draft-text:#f3d58a;--draft-border:#6b5520}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-main{max-width:960px;margin:0 auto;padding:32px 16px 64px}
-header h1{margin:0;font-size:1.9rem;line-height:1.2}
-header p{margin:4px 0 0;color:var(--muted)}
-nav{margin:24px 0;display:flex;flex-wrap:wrap;gap:8px}
-nav a{padding:6px 12px;border-radius:999px;background:var(--soft);color:var(--accent);text-decoration:none;font-size:.95rem}
-nav a:hover{text-decoration:underline}
-h2{margin:40px 0 12px;font-size:1.4rem}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:16px 0}
-.card-head{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
-.card-head h3{margin:0;font-size:1.25rem}
-.badge{font-size:.8rem;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:2px 10px}
-.badge-draft{color:var(--draft-text);background:var(--draft-bg);border-color:var(--draft-border);font-weight:600}
-.preview-note{background:var(--draft-bg);color:var(--draft-text);border:1px solid var(--draft-border)}
-.label{font-weight:600}
-.meta{color:var(--muted)}
-.diagram{overflow-x:auto;margin:16px 0;padding:12px;border-radius:10px;background:var(--bg)}
-.diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
-.diagram-wide{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.diagram-wide svg{max-width:none;margin:0}
-.diagram-text ol{margin:8px 0 0}
-.diagram-text ul{color:var(--muted)}
-.note{font-size:.9rem;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 12px}
-details{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}
-summary{cursor:pointer;font-weight:600;color:var(--accent)}
-ul.talk{list-style:none;padding:0}
-table{border-collapse:collapse;width:100%;margin-top:8px;font-size:.95rem}
-th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--border);padding:6px 10px}
-th{color:var(--muted);font-weight:600}
-.script-link{display:block;font-size:.9rem}
-.needs-fix{background:var(--draft-bg);color:var(--draft-text)}
-ul.talk li{margin:12px 0;padding-left:12px;border-left:3px solid var(--soft)}
-.when{display:block;font-size:.9rem;color:var(--muted)}
-.say{display:block}
-footer{margin-top:48px;color:var(--muted);font-size:.9rem}
-${DASHBOARD_CSS}
-${FLOWCHART_CSS}`;
 
 const FLOWCHART_START = /^\s*(?:flowchart|graph)\b/m;
 
@@ -356,30 +317,30 @@ export function buildSalesView(rootDir, { now = new Date(), drafts = [] } = {}) 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${heading}</title>
-<style>${STYLE}</style>
+<style>${PAGE_CSS}</style>
 </head>
-<body>
-<main>
-<header>
+<body class="${C.BODY}">
+<main class="${C.MAIN}">
+<header class="${C.HEADER}">
 <h1>${heading}</h1>
 <p>${text('view.updated', { date })}</p>
 </header>
-${preview ? `<p class="note preview-note">${text('view.previewNote')}</p>\n` : ''}<nav aria-label="${text('view.navLabel')}">${[...plays.map((p) => `<a href="#${p.anchor}">${escapeHtml(p.title)}</a>`), ...(glossary || merged.entries.length > 0 || scriptPages.length > 0 ? [`<a href="#scripts">${text('view.scripts.title')}</a>`] : []), ...(packs ? [`<a href="#industry-packs">${text('view.packs.title')}</a>`] : []), ...(glossary ? [`<a href="#glossary">${text('view.glossary.title')}</a>`] : [])].join('')}</nav>
+${preview ? `<p class="${C.NOTE_PREVIEW}">${text('view.previewNote')}</p>\n` : ''}<nav class="${C.NAV}" aria-label="${text('view.navLabel')}">${[...plays.map((p) => [p.anchor, escapeHtml(p.title)]), ...(glossary || merged.entries.length > 0 || scriptPages.length > 0 ? [['scripts', text('view.scripts.title')]] : []), ...(packs ? [['industry-packs', text('view.packs.title')]] : []), ...(glossary ? [['glossary', text('view.glossary.title')]] : [])].map(([anchor, label]) => `<a href="#${anchor}">${label}</a>`).join('')}</nav>
 <h2>${text('view.system.title')}</h2>
-<section class="card">
+<section class="${C.CARD}">
 ${markdownToHtml(plainSystemSection(systemMd))}
 </section>
 ${renderDashboard(loadSalesReport(rootDir, { now, lang }), lang)}
 <h2>${text('view.pipeline.title')}</h2>
-<section class="card">
-${pipelineDraft ? `<div class="card-head">${draftBadge(true, lang)}</div>\n` : ''}${pipelineRendered ? pipelineRendered.html : `<p>${text('view.pipeline.empty')}</p>`}
+<section class="${C.CARD}">
+${pipelineDraft ? `<div class="${C.CARD_HEAD}">${draftBadge(true, lang)}</div>\n` : ''}${pipelineRendered ? pipelineRendered.html : `<p>${text('view.pipeline.empty')}</p>`}
 </section>
 <h2>${text('view.guides.title')}</h2>
 ${plays.map((play) => renderPlay(play, lang)).join('\n')}
 ${renderScriptsSection(merged.entries, lang, scriptPages)}
 ${renderIndustryPacksSection(packs, lang)}
 ${renderGlossarySection(glossary, lang)}
-<footer>${text('view.footer')}</footer>
+<footer class="${C.FOOTER}">${text('view.footer')}</footer>
 </main>
 </body>
 </html>

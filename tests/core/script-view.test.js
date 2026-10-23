@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildAssistant, linkInline, renderScriptPage, SCRIPT_CSS } from '../../src/core/script-view.js';
+import { buildAssistant, linkInline, renderScriptPage } from '../../src/core/script-view.js';
 import { parseScript } from '../../src/core/sales-scripts.js';
 import { SAMPLE } from '../fixtures/sample-script.js';
 
@@ -37,14 +37,14 @@ test('linkInline only links the allowlisted relative targets', () => {
   }
 });
 
-test('renders card tone classes start|plain|action|yes|no|follow and a lane per buyer answer', () => {
+test('renders card tones start|plain|action|yes|no|follow and a lane per buyer answer', () => {
   const tones = ['start', 'plain', 'action', 'yes', 'no', 'follow'];
   const body = '## C\n### S\n' + tones.map((tn) => `say: card ${tn}\ntone: ${tn}\n`).join('') + '#### A\nsay: a\ntag: b\nsay: b2\n';
   const html = renderScriptPage(parseScript(FM() + body), { lang: 'en' });
-  for (const tn of tones) assert.match(html, new RegExp(`class="card ${tn}"`));
-  assert.match(html, /class="lane"/);
+  for (const tn of tones) assert.match(html, new RegExp(`data-tone="${tn}"`));
+  assert.match(html, /<section data-lane /);
   assert.match(html, /<meta name="generator" content="clc-brain">/);
-  assert.match(html, /<div class="pill [yn]?"?>A<\/div>|<div class="pill[^"]*">A<\/div>/);
+  assert.match(html, /<div data-pill="plain" class="[^"]*">A<\/div>/);
 });
 
 test('renders the sample with title, goal, rules, details, tip, when, next and back links', () => {
@@ -52,25 +52,25 @@ test('renders the sample with title, goal, rules, details, tip, when, next and b
   for (const piece of ['Sample Co scripts', 'Book a short meeting', 'Smile before dialing', 'Pause and let them answer.', 'Slow down', 'They ask a question', 'id="cold-call-b1"', 'href="#cold-call-step-2"', 'href="#follow-up"', 'Goal', 'Rules']) {
     assert.ok(html.includes(piece), piece);
   }
-  assert.match(html, /<html lang="en">/);
+  assert.match(html, /<html lang="en"[ >]/);
   assert.match(html, /<title>Sample Co · Sample Co scripts<\/title>/);
-  assert.match(html, /class="pill y"/);
-  assert.match(html, /class="pill n"/);
+  assert.match(html, /data-pill="y"/);
+  assert.match(html, /data-pill="n"/);
 });
 
 test('layout by answer count: 0 single column, 1 column, 2 pair, 3 close-row, 4+ lanes, multi-card lanes', () => {
   const none = withAnswers(0);
-  for (const cls of ['pair', 'close-row', 'lanes', 'lane']) assert.ok(!none.includes(`class="${cls}`), cls);
+  assert.ok(!none.includes('data-layout=') && !none.includes('data-lane'));
   const one = withAnswers(1);
-  assert.match(one, /class="col answers"/);
-  assert.ok(!one.includes('class="pair"') && !one.includes('class="lanes'));
-  assert.match(withAnswers(2), /class="pair"/);
-  assert.match(withAnswers(3), /class="close-row"/);
-  assert.match(withAnswers(4), /class="lanes"/);
-  assert.match(withAnswers(5), /class="lanes"/);
-  assert.match(withAnswers(1, true), /class="lanes one"/);
-  assert.match(withAnswers(2, true), /class="lanes two"/);
-  assert.match(withAnswers(3, true), /class="lanes three"/);
+  assert.match(one, /data-layout="single"/);
+  assert.ok(!one.includes('data-layout="pair"') && !one.includes('data-layout="lanes'));
+  assert.match(withAnswers(2), /data-layout="pair"/);
+  assert.match(withAnswers(3), /data-layout="close-row"/);
+  assert.match(withAnswers(4), /data-layout="lanes"/);
+  assert.match(withAnswers(5), /data-layout="lanes"/);
+  assert.match(withAnswers(1, true), /data-layout="lanes-1"/);
+  assert.match(withAnswers(2, true), /data-layout="lanes-2"/);
+  assert.match(withAnswers(3, true), /data-layout="lanes-3"/);
 });
 
 const HOSTILE = FM() + `intro <script>alert(1)</script>
@@ -104,7 +104,6 @@ test('output is offline: exactly one inline script with no src or network api, n
     assert.ok(!/https?:\/\//i.test(html), 'http');
     assert.ok(!/url\((?!#)/i.test(html), 'url(');
   }
-  assert.ok(!/url\(/.test(SCRIPT_CSS));
 });
 
 test('urls typed in text stay readable (entity-encoded colon) but are never literal', () => {
@@ -124,10 +123,10 @@ test('hostile text is escaped, never active markup', () => {
 test('draft shows the localized validate-before-judging badge in en and es; active shows none', () => {
   const draft = parseScript(FM('draft') + '## C\n### S\nsay: hi\n');
   const active = parseScript(FM('active') + '## C\n### S\nsay: hi\n');
-  assert.match(renderScriptPage(draft, { lang: 'en' }), /class="draft"[^>]*>[^<]*validate/i);
-  assert.match(renderScriptPage(draft, { lang: 'es' }), /class="draft"[^>]*>[^<]*(valida|prueba)/i);
-  assert.ok(!renderScriptPage(active, { lang: 'en' }).includes('class="draft"'));
-  assert.ok(!renderScriptPage(active, { lang: 'es' }).includes('class="draft"'));
+  assert.match(renderScriptPage(draft, { lang: 'en' }), /data-badge="draft"[^>]*>[^<]*validate/i);
+  assert.match(renderScriptPage(draft, { lang: 'es' }), /data-badge="draft"[^>]*>[^<]*(valida|prueba)/i);
+  assert.ok(!renderScriptPage(active, { lang: 'en' }).includes('data-badge="draft"'));
+  assert.ok(!renderScriptPage(active, { lang: 'es' }).includes('data-badge="draft"'));
   assert.match(renderScriptPage(active, { lang: 'en', draft: true }), /not saved yet/);
 });
 
@@ -165,7 +164,7 @@ test('coach: renders a localized call-tip box in the diagram (en and es)', () =>
   const src = FM() + '## C\n### S\nsay: q\ncoach: Breathe <b>and</b> wait\n#### A\nsay: r\ncoach: Do not rush\n';
   const en = renderScriptPage(parseScript(src), { lang: 'en' });
   const es = renderScriptPage(parseScript(src), { lang: 'es' });
-  assert.match(en, /class="coach"><div class="coach-tag">💬 Call tip<\/div><p>Breathe &lt;b&gt;and&lt;\/b&gt; wait<\/p>/);
+  assert.match(en, /data-coach class="[^"]*"><div class="[^"]*">💬 Call tip<\/div><p>Breathe &lt;b&gt;and&lt;\/b&gt; wait<\/p>/);
   assert.ok(en.includes('Do not rush'));
   assert.match(es, /💬 Recomendación para la llamada/);
 });
@@ -210,7 +209,7 @@ test('buildAssistant maps conversations to flows, steps to nodes and answers to 
   assert.match(open.html, /Smile while you talk/);
   assert.deepEqual(open.options.map((o) => o.label), ['Yes', 'Just route', 'Later', 'Bye']);
   assert.equal(open.options[0].when, 'They say yes');
-  assert.match(open.options[0].reply, /class="card yes"/);
+  assert.match(open.options[0].reply, /data-tone="yes"/);
   assert.equal(open.options[1].reply, '', 'an answer without say: has no reply card');
   assert.deepEqual(open.options.map((o) => o.to), [[0, 1], [0, 1], [1, 0], null]);
   const book = first.steps[1];
@@ -233,15 +232,15 @@ test('an answer without next: follows the step next:, then the step below, then 
 
 test('the page holds the live assistant (hidden without js) and the full diagram, with localized controls', () => {
   const html = renderScriptPage(parseScript(LIVE), { lang: 'es' });
-  assert.match(html, /<div id="assistant" class="assistant" hidden>/);
-  assert.match(html, /<div id="diagram" class="diagram">/);
-  assert.match(html, /<div id="modes" class="modes" role="group" aria-label="[^"]+" hidden>/);
-  assert.match(html, /<button type="button" class="mode" data-mode="live"[^>]*>Asistente en vivo<\/button>/);
-  assert.match(html, /<button type="button" class="mode" data-mode="diagram"[^>]*>Diagrama completo<\/button>/);
-  assert.match(html, /<button type="button" class="flow-tab" data-flow="1"[^>]*>2\. Second talk<\/button>/);
+  assert.match(html, /<div id="assistant" class="[^"]*" hidden>/);
+  assert.match(html, /<div id="diagram">/);
+  assert.match(html, /<div id="modes" class="[^"]*" role="group" aria-label="[^"]+" hidden>/);
+  assert.match(html, /<button type="button" class="[^"]*" data-mode="live"[^>]*>Asistente en vivo<\/button>/);
+  assert.match(html, /<button type="button" class="[^"]*" data-mode="diagram"[^>]*>Diagrama completo<\/button>/);
+  assert.match(html, /<button type="button" class="[^"]*" data-flow="1"[^>]*>2\. Second talk<\/button>/);
   assert.match(html, /<button type="button" id="live-undo"[^>]*>[^<]*Deshacer<\/button>/);
   assert.match(html, /<button type="button" id="live-restart"[^>]*>[^<]*Reiniciar<\/button>/);
-  assert.match(html, /<div id="live-stream" class="stream" aria-live="polite"><\/div>/);
+  assert.match(html, /<div id="live-stream" class="[^"]*" aria-live="polite"><\/div>/);
   assert.ok(!/<button(?![^>]*type="button")/.test(html), 'every button is type=button');
 });
 

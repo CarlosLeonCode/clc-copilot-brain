@@ -621,15 +621,8 @@ export function layoutFlowchart(graph) {
 const ESCAPES = Object.freeze({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' });
 const esc = (text) => String(text ?? '').replace(/[&<>"']/g, (ch) => ESCAPES[ch]);
 
-/** Styles for the SVG classes; colours come from --fc-* variables so pages can theme them. */
-export const FLOWCHART_CSS = `.fc{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-.fc-shape{fill:var(--fc-node,#fff);stroke:var(--fc-stroke,#2f6fde);stroke-width:1.5}
-.fc-decision{fill:var(--fc-decision,#fff8e6);stroke:var(--fc-decision-stroke,#c98a00)}
-.fc-text{fill:var(--fc-text,#1f2328);font-size:14px}
-.fc-edge{fill:none;stroke:var(--fc-line,#8a929c);stroke-width:1.6}
-.fc-arrowhead{fill:var(--fc-line,#8a929c)}
-.fc-label-bg{fill:var(--fc-label-bg,#eef3fc)}
-.fc-label{fill:var(--fc-label,#5b6470);font-size:13px}`;
+// SVG paint classes (fc, fc-shape, fc-decision, fc-text, fc-edge, fc-arrowhead, fc-label-bg, fc-label) are styled in
+// src/core/styles/brain.css (@layer components); colours come from the --fc-* variables there.
 
 function textLines(lines, x, y, lineHeight, cls) {
   const top = y - ((lines.length - 1) * lineHeight) / 2;
@@ -661,15 +654,15 @@ export function renderFlowchartSvg(graph, layout, { title = 'Flowchart', idPrefi
     `<title id="${prefix}-title">${esc(title)}</title>`,
     `<defs><marker id="${marker}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="fc-arrowhead" d="M0,0 L10,5 L0,10 z"/></marker></defs>`
   ];
-  for (const e of layout.edges) parts.push(`<path class="fc-edge${e.back ? ' fc-back' : ''}" d="${e.path}" marker-end="url(#${marker})"/>`);
+  for (const e of layout.edges) parts.push(`<path class="fc-edge"${e.back ? ' data-back' : ''} d="${e.path}" marker-end="url(#${marker})"/>`);
   for (const e of layout.edges) {
     if (!e.labelBox) continue;
     const l = e.labelBox;
-    parts.push(`<g class="fc-elabel"><rect class="fc-label-bg" x="${Math.round((l.x - l.w / 2) * 10) / 10}" y="${Math.round((l.y - l.h / 2) * 10) / 10}" width="${l.w}" height="${l.h}" rx="${Math.min(10, l.h / 2)}"/>${textLines(l.lines, l.x, l.y, LABEL_LINE_H, 'fc-label')}</g>`);
+    parts.push(`<g data-fc="label"><rect class="fc-label-bg" x="${Math.round((l.x - l.w / 2) * 10) / 10}" y="${Math.round((l.y - l.h / 2) * 10) / 10}" width="${l.w}" height="${l.h}" rx="${Math.min(10, l.h / 2)}"/>${textLines(l.lines, l.x, l.y, LABEL_LINE_H, 'fc-label')}</g>`);
   }
   for (const n of graph.nodes) {
     const b = layout.nodes.get(n.id);
-    parts.push(`<g class="fc-node">${shapeSvg(b)}${textLines(b.lines, b.x, b.y, LINE_H, 'fc-text')}</g>`);
+    parts.push(`<g data-fc="node">${shapeSvg(b)}${textLines(b.lines, b.x, b.y, LINE_H, 'fc-text')}</g>`);
   }
   parts.push('</svg>');
   return parts.join('\n');

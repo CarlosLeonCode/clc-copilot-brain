@@ -151,7 +151,7 @@ test('renderFlowchartSvg draws one shape per node, one path per edge, accessible
   assert.match(svg, /role="img"/);
   assert.match(svg, /<title[^>]*>My flow<\/title>/);
   assert.doesNotMatch(svg, /https?:/, "no URLs, not even the xmlns (inline SVG in HTML does not need it)");
-  assert.equal(countOf(svg, 'class="fc-node'), 3);
+  assert.equal(countOf(svg, 'data-fc="node"'), 3);
   assert.equal(countOf(svg, 'class="fc-edge'), 3);
   assert.equal(countOf(svg, '<polygon class="fc-shape'), 1, 'decision is a diamond');
   assert.match(svg, /<marker /);
@@ -178,7 +178,7 @@ test('every shipped template diagram parses and renders', () => {
     assert.ok(source, `${rel} has a mermaid diagram`);
     const graph = parseFlowchart(source);
     const svg = renderFlowchartSvg(graph, layoutFlowchart(graph), { title: rel });
-    assert.equal(countOf(svg, 'class="fc-node'), graph.nodes.length, rel);
+    assert.equal(countOf(svg, 'data-fc="node"'), graph.nodes.length, rel);
     assert.equal(countOf(svg, 'class="fc-edge'), graph.edges.length, rel);
   }
 });

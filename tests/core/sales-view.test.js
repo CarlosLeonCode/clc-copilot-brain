@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { buildSalesView, detectDraftKind, escapeHtml, loadDraft, markdownToHtml, writeSalesPreview, writeSalesView } from '../../src/core/sales-view.js';
 import { initBrain } from '../../src/core/scaffold.js';
+import { PAGE_CSS } from '../../src/core/styles/compiled.js';
 import { BrainError } from '../../src/core/errors.js';
 import { withTmp, writeFiles } from './helpers.js';
 
@@ -69,8 +70,8 @@ test('a diagram that cannot be drawn becomes a readable list of steps, never raw
     });
     const { html, plays } = buildSalesView(dir);
     assert.equal(countOf(html, '<svg'), plays.length, 'the broken diagram is not drawn');
-    const card = /<section class="card" id="play-broken">[\s\S]*?<\/section>/.exec(html)[0];
-    assert.match(card, /class="diagram-text"/);
+    const card = /<section class="[^"]*" id="play-broken">[\s\S]*?<\/section>/.exec(html)[0];
+    assert.match(card, /data-diagram="text"/);
     assert.match(card, /Say hello/);
     assert.match(card, /If Interested[^<]*→[^<]*Book a meeting/);
     assert.doesNotMatch(card, /flowchart|-->|\[\[/);
@@ -144,13 +145,16 @@ test('the pipeline diagram keeps a readable size and scrolls sideways; decision 
   withTmp((dir) => {
     initBrain(dir, { areas: ['sales'] });
     const { html } = buildSalesView(dir);
-    assert.equal(countOf(html, '<div class="diagram diagram-wide"><svg'), 1);
-    assert.match(html, /\.diagram-wide\{[^}]*overflow-x:auto/);
-    assert.match(html, /\.diagram svg\{[^}]*max-width:100%/);
-    assert.match(html, /\.diagram-wide svg\{[^}]*max-width:none/);
-    const trees = [...html.matchAll(/<div class="diagram"><svg[^>]*>/g)].map((m) => m[0]);
+    const wide = [...html.matchAll(/<div data-diagram="wide" class="([^"]*)"><svg/g)].map((m) => m[1].split(' '));
+    assert.equal(wide.length, 1);
+    for (const cls of ['overflow-x-auto', '[&_svg]:max-w-none']) assert.ok(wide[0].includes(cls), cls);
+    const trees = [...html.matchAll(/<div data-diagram="tree" class="([^"]*)">(<svg[^>]*>)/g)];
+    for (const [, cls] of trees) assert.ok(cls.split(' ').includes('[&_svg]:max-w-full'), 'decision trees shrink to the card');
+    for (const cls of ['.overflow-x-auto{overflow-x:auto}', '.\\[\\&_svg\\]\\:max-w-full svg{max-width:100%}', '.\\[\\&_svg\\]\\:max-w-none svg{max-width:none}']) {
+      assert.ok(PAGE_CSS.includes(cls), cls);
+    }
     assert.equal(trees.length, 4);
-    for (const tag of trees) {
+    for (const [, , tag] of trees) {
       const width = Number(/ width="([\d.]+)"/.exec(tag)[1]);
       const min = Number(/min-width:([\d.]+)px/.exec(tag)[1]);
       assert.ok(min <= width && min >= Math.min(width, 300), 'decision trees shrink but stay readable');
@@ -203,7 +207,7 @@ test('a draft play replaces the saved play with the same id and is marked as a d
     assert.equal(plays.length, 4, 'replaced, not added');
     assert.match(html, /<title>[^<]*Preview/);
     assert.match(html, /<h1>[^<]*Preview/);
-    const card = /<section class="card" id="play-cold-call">[\s\S]*?<\/section>/.exec(html)[0];
+    const card = /<section class="[^"]*" id="play-cold-call">[\s\S]*?<\/section>/.exec(html)[0];
     assert.match(card, /Draft — not saved yet/);
     assert.match(card, /Send a two-line email/);
     assert.equal(countOf(html, 'Draft — not saved yet'), 1, 'only the draft card carries the badge');

@@ -58,7 +58,7 @@ test('page: criterion labels come from the matrix, bars are divs, no ids or jarg
   const out = html(calls, { criteria });
   assert.match(out, /Budget/);
   assert.match(out, /The &lt;real&gt; problem/);
-  assert.match(out, /class="fill" style="width:60%"/);
+  assert.match(out, /data-fill class="[^"]*" style="width:60%"/);
   assert.doesNotMatch(out, /<script|<link|<img|http|url\(|`|\|/);
   assert.doesNotMatch(out, /\w_\w/);
   assert.doesNotMatch(out, /MEDDPICC|\bgate\b|\bplay\b/i);
@@ -109,7 +109,7 @@ test('deals: zero scored calls say so; empty state is a plain line', () => {
 
 test('page: deals card shows labels, the all-months note, escapes HTML and has no ids', () => {
   const out = html(deals());
-  assert.match(out, /<section class="card dash">/);
+  assert.match(out, /<section data-card="dash" class="[^"]*">/);
   assert.match(out, /Deals: what to do next/);
   assert.match(out, /Based on all calls, not only this month\./);
   assert.match(out, /Ready &lt;Co&gt;/);

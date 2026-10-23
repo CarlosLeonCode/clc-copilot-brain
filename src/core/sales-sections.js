@@ -6,6 +6,7 @@ import { SKILL_NAME_PATTERN } from './harness-adapters.js';
 import { linkInline } from './script-view.js';
 import { hasErrors, scriptEntry } from './sales-library.js';
 import { SEPARATOR_ROW, splitRow } from './sales-glossary.js';
+import * as C from './page-classes.js';
 
 const text = (lang, key, vars) => escapeHtml(t(lang, key, vars));
 const page = (value) => linkInline(value, { page: true });
@@ -13,13 +14,13 @@ const page = (value) => linkInline(value, { page: true });
 function scriptCard(entry, lang) {
   const { parsed } = entry;
   const broken = hasErrors(entry);
-  const draft = entry.draft ? `<span class="badge badge-draft">${text(lang, 'view.draftBadge')}</span>` : '';
-  const conversations = parsed.conversations.map((c) => `<li>${escapeHtml(c.title)}${c.goal ? ` <span class="meta">${page(c.goal)}</span>` : ''}</li>`).join('');
+  const draft = entry.draft ? `<span data-badge="draft" class="${C.BADGE_DRAFT}">${text(lang, 'view.draftBadge')}</span>` : '';
+  const conversations = parsed.conversations.map((c) => `<li>${escapeHtml(c.title)}${c.goal ? ` <span class="${C.MUTED}">${page(c.goal)}</span>` : ''}</li>`).join('');
   const body = broken
-    ? `<p class="note needs-fix">${text(lang, 'view.scripts.needsFix')}</p>`
-    : `<p class="meta">${text(lang, 'view.scripts.conversations', { count: parsed.conversations.length })}</p><ul>${conversations}</ul>`
+    ? `<p data-note="needs-fix" class="${C.NOTE_NEEDS_FIX}">${text(lang, 'view.scripts.needsFix')}</p>`
+    : `<p class="${C.MUTED}">${text(lang, 'view.scripts.conversations', { count: parsed.conversations.length })}</p><ul>${conversations}</ul>`
       + (SKILL_NAME_PATTERN.test(entry.slug) ? `<p><a href="./scripts/${entry.slug}.html">${text(lang, 'view.scripts.open')}</a></p>` : '');
-  return `<section class="card"><div class="card-head"><h3>${escapeHtml(parsed.title || entry.slug)}</h3>${draft}</div>${body}</section>`;
+  return `<section class="${C.CARD}"><div class="${C.CARD_HEAD}"><h3>${escapeHtml(parsed.title || entry.slug)}</h3>${draft}</div>${body}</section>`;
 }
 
 /** Hand-made visual script pages: linked when the file name is safe, else shown as plain text. */
@@ -27,7 +28,7 @@ function pagesCard(pages, lang) {
   const items = pages.map((p) => (SKILL_NAME_PATTERN.test(p.slug)
     ? `<li><a href="./scripts/${p.slug}.html">${escapeHtml(p.title)}</a></li>`
     : `<li>${escapeHtml(p.title)}</li>`)).join('');
-  return `<section class="card"><div class="card-head"><h3>${text(lang, 'view.scripts.pages')}</h3></div><ul>${items}</ul></section>`;
+  return `<section class="${C.CARD}"><div class="${C.CARD_HEAD}"><h3>${text(lang, 'view.scripts.pages')}</h3></div><ul>${items}</ul></section>`;
 }
 
 /** The Scripts section: one card per script, a card listing hand-made script pages, or a localized empty state. */
@@ -36,7 +37,7 @@ export function renderScriptsSection(entries, lang = DEFAULT_LANGUAGE, pages = [
   if (pages.length > 0) parts.push(pagesCard(pages, lang));
   const cards = parts.length > 0
     ? parts.join('\n')
-    : `<section class="card"><p>${text(lang, 'view.scripts.empty')}</p></section>`;
+    : `<section class="${C.CARD}"><p>${text(lang, 'view.scripts.empty')}</p></section>`;
   return `<h2 id="scripts">${text(lang, 'view.scripts.title')}</h2>\n${cards}`;
 }
 
@@ -48,7 +49,7 @@ export function renderGlossarySection(glossary, lang = DEFAULT_LANGUAGE) {
     const rows = group.terms.map((e) => `<tr><td><strong>${escapeHtml(e.term)}</strong></td><td>${page(e.meaning)}</td><td>${page(e.example)}</td></tr>`).join('');
     return `<details><summary>${escapeHtml(group.name)}</summary><table>${head}<tbody>${rows}</tbody></table></details>`;
   }).join('\n');
-  return `<h2 id="glossary">${text(lang, 'view.glossary.title')}</h2>\n<section class="card glossary">\n${groups}\n</section>`;
+  return `<h2 id="glossary">${text(lang, 'view.glossary.title')}</h2>\n<section class="${C.CARD}">\n${groups}\n</section>`;
 }
 
 /** Merge draft scripts into the library entries (a draft replaces the saved script with the same slug). */
@@ -98,5 +99,5 @@ export function renderIndustryPacksSection(packs, lang = DEFAULT_LANGUAGE) {
   if (!packs) return '';
   const head = `<thead><tr>${packs.headers.map((h) => `<th>${page(h)}</th>`).join('')}</tr></thead>`;
   const rows = packs.rows.map((cells) => `<tr>${cells.map((c) => `<td>${page(c)}</td>`).join('')}</tr>`).join('');
-  return `<h2 id="industry-packs">${text(lang, 'view.packs.title')}</h2>\n<section class="card"><table>${head}<tbody>${rows}</tbody></table></section>`;
+  return `<h2 id="industry-packs">${text(lang, 'view.packs.title')}</h2>\n<section class="${C.CARD}"><table>${head}<tbody>${rows}</tbody></table></section>`;
 }

@@ -4,6 +4,7 @@
 import { escapeHtml } from './html-escape.js';
 import { DEFAULT_LANGUAGE, t } from './i18n.js';
 import { foldText } from './sales-normalize.js';
+import { PAGE_CSS } from './styles/compiled.js';
 
 const SLUG = '[a-z0-9]+(?:-[a-z0-9]+)*';
 const SCRIPT_LINK = new RegExp(`^(?:\\./|\\.\\./)scripts/(${SLUG})\\.html(#${SLUG})?$`);
@@ -41,112 +42,113 @@ export function linkInline(text, { page = false } = {}) {
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
-export const SCRIPT_CSS = `:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#5b6470;--line:#e3e3de;--accent:#2f6fde;--accent-bg:#eef3fc;--green:#2f8f5b;--green-bg:#eef8f2;--red:#c2405a;--red-bg:#fdf1f4;--yellow:#b7791f;--yellow-bg:#fdf6e9;--shadow:0 6px 20px rgba(31,35,40,.07)}
-@media (prefers-color-scheme:dark){:root{--bg:#16181c;--card:#1f2227;--ink:#e8e8e6;--muted:#a3a9b2;--line:#33373e;--accent:#7aa7ff;--accent-bg:#232a36;--green:#6fcf97;--green-bg:#1c2b23;--red:#ef8aa0;--red-bg:#2f1c22;--yellow:#e8b65a;--yellow-bg:#2d2618;--shadow:0 6px 20px rgba(0,0,0,.35)}}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-html,body{margin:0;background:var(--bg);color:var(--ink)}
-body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
-a{color:var(--accent)}
-.header{max-width:1200px;margin:0 auto;padding:28px 16px 10px}
-.kicker{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
-h1{margin:6px 0 4px;font-size:27px;line-height:1.15}
-h2{margin:6px 0 4px;font-size:22px;line-height:1.2}
-.subtitle{color:var(--muted);font-size:13px;line-height:1.45;max-width:780px}
-.subtitle p{margin:0 0 6px}
-.draft{display:inline-block;margin-top:10px;padding:4px 10px;border-radius:999px;background:var(--yellow-bg);border:1px solid var(--yellow);color:var(--yellow);font-size:11px;font-weight:700}
-.board{max-width:1200px;margin:0 auto;padding:10px 16px 40px}
-.col{display:flex;flex-direction:column;align-items:center}
-.card{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:15px;box-shadow:var(--shadow);padding:15px 17px;width:100%;max-width:680px}
-.card .when{font-size:11.5px;color:var(--muted);margin-bottom:6px}
-.card .tag{font-size:9.5px;font-weight:850;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
-.card .title{font-size:15px;line-height:1.38;font-weight:700}
-.card .script{margin-top:9px;font-size:13px;line-height:1.5;color:var(--muted)}
-.card .script p{margin:0 0 7px}
-.card .script p:last-child{margin:0}
-.card .tip{margin-top:10px;font-size:11.5px;line-height:1.4;color:var(--accent);font-weight:600}
-.start,.plain{background:var(--card)}
-.yes{border-color:var(--green);background:var(--green-bg)}
-.no{border-color:var(--red);background:var(--red-bg)}
-.action{border-color:var(--accent);background:var(--accent-bg)}
-.follow{border-color:var(--yellow);background:var(--yellow-bg)}
-.pill{position:absolute;top:-11px;left:14px;padding:3px 9px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:9px;font-weight:850;letter-spacing:.07em}
-.pill.y{color:var(--green);border-color:var(--green)}
-.pill.n{left:auto;right:14px;color:var(--red);border-color:var(--red)}
-.connector{height:20px;width:2px;background:var(--line);position:relative;flex:none}
-.connector:after{content:"";position:absolute;bottom:-1px;left:-4px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--line)}
-.step-title{font-size:11px;font-weight:700;color:var(--muted);margin:0 0 8px;text-align:center}
-.next{margin-top:10px;font-size:12px;color:var(--muted);font-weight:600}
-.pair{display:grid;grid-template-columns:2fr 1fr;gap:20px;width:100%;max-width:1000px;align-items:start}
-.pair .card,.close-row .card,.lane .card{max-width:none}
-.close-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:100%;max-width:1000px}
-.section-title{margin:30px 0 14px;text-align:center;font-size:11px;font-weight:850;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
-.lanes{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
-.lanes.three{grid-template-columns:repeat(3,1fr)}
-.lanes.two{grid-template-columns:repeat(2,1fr);max-width:calc((100% - 32px) / 3 * 2 + 16px);margin:0 auto}
-.lanes.one{grid-template-columns:minmax(0,680px);justify-content:center}
-.lane{border:1px solid var(--line);border-radius:18px;padding:18px 14px 20px;background:color-mix(in srgb,var(--card) 55%,var(--bg))}
-.lane-head{text-align:center;margin-bottom:16px}
-.lane-head .number{font-size:10px;font-weight:850;letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
-.lane-head h3{margin:4px 0 0;font-size:16px}
-.lane-head .when{margin-top:5px;font-size:11.5px;color:var(--muted);line-height:1.35}
-.stack{display:flex;flex-direction:column;align-items:center}
-.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:18px;margin:26px auto 0;font-size:11px;color:var(--muted)}
-.legend span{display:flex;align-items:center;gap:6px}
-.dot{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid var(--line)}
-.dot.g{background:var(--green-bg);border-color:var(--green)}
-.dot.r{background:var(--red-bg);border-color:var(--red)}
-.dot.b{background:var(--accent-bg);border-color:var(--accent)}
-.dot.y{background:var(--yellow-bg);border-color:var(--yellow)}
-.note{max-width:860px;margin:14px 0 0;padding:12px 16px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:12px;line-height:1.5;background:var(--card)}
-.note strong{color:var(--ink)}
-.note ul{margin:6px 0 0;padding-left:18px}
-.flows{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line)}
-.nav-inner{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:6px}
-.nav-inner a{font-size:12.5px;font-weight:700;color:var(--ink);text-decoration:none;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
-.flow{scroll-margin-top:60px;border-top:1px solid var(--line)}
-.back{max-width:1200px;margin:0 auto;padding:0 16px 30px;text-align:right;font-size:12px}
-.coach{margin-top:10px;padding:10px 13px;border:1.5px dashed var(--accent);border-radius:12px;background:color-mix(in srgb,var(--accent-bg) 50%,var(--card));font-size:12px;line-height:1.5;color:var(--ink)}
-.coach-tag{font-size:9.5px;font-weight:850;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
-.coach p{margin:0}
-[hidden]{display:none!important}
-.modes{display:inline-flex;gap:4px;margin-top:12px;padding:3px;border-radius:999px;border:1px solid var(--line);background:var(--card)}
-.mode{font:inherit;font-size:12px;font-weight:750;border:0;background:none;color:var(--muted);padding:6px 14px;border-radius:999px;cursor:pointer}
-.mode.active{background:var(--accent);color:var(--card)}
-.assistant{max-width:860px;margin:0 auto;padding:10px 16px 60px}
-.live-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 14px;margin-bottom:18px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
-.flow-tabs,.live-actions{display:flex;flex-wrap:wrap;gap:6px}
-.flow-tab{font:inherit;font-size:12px;font-weight:750;padding:7px 13px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);cursor:pointer}
-.flow-tab.active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
-.live-btn{font:inherit;font-size:11.5px;font-weight:750;padding:7px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
-.live-btn:hover{border-color:var(--muted)}
-#live-restart:hover{border-color:var(--red);color:var(--red)}
-.live-head h2{margin-top:4px}
-.live-hint{color:var(--muted);font-size:12.5px;line-height:1.45;margin:12px 0 18px}
-.stream{display:flex;flex-direction:column;align-items:center}
-.live-node,.live-reply{width:100%;max-width:680px;outline:none}
-.live-node .step-title{text-align:left}
-.live-cards,.live-reply{display:flex;flex-direction:column;align-items:center}
-.live-node.current .live-cards .card{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
-.response{margin-top:12px;padding:12px 14px;border:1.5px dashed var(--line);border-radius:14px;background:var(--card)}
-.live-node.current .response{border-color:var(--accent)}
-.response-prompt{font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
-.options{display:flex;flex-direction:column;gap:8px}
-.opt{font:inherit;text-align:left;display:flex;flex-direction:column;gap:3px;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:13.5px;font-weight:700;line-height:1.35}
-.opt:hover,.opt:focus-visible,.opt.chosen{border-color:var(--accent);background:var(--accent-bg)}
-.live-node:not(.current) .opt:not(.chosen){opacity:.55}
-.opt-when{font-size:11.5px;font-weight:500;color:var(--muted)}
-.choice{padding:5px 12px;border-radius:999px;border:1px solid var(--accent);background:var(--accent-bg);color:var(--accent);font-size:12px;font-weight:600;outline:none}
-.jump{font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;text-align:center}
-.end-banner{width:100%;max-width:680px;text-align:center;padding:16px 18px;border-radius:14px;background:var(--green-bg);border:1.5px solid var(--green);color:var(--green);font-weight:800;font-size:14.5px;outline:none}
-@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.live-new{animation:rise .2s ease-out}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.live-new{animation:none}}
-@media (max-width:980px){.lanes,.lanes.three{grid-template-columns:repeat(2,1fr)}.lanes.two{max-width:none}}
-@media (max-width:640px){.pair,.close-row,.lanes,.lanes.three,.lanes.two{grid-template-columns:1fr}h1{font-size:22px}}`;
+// Tailwind class lists of script pages. This file is an @source of src/core/styles/brain.css, so every class here is
+// compiled into src/core/styles/compiled.js: write whole class names only (never build them from pieces), then run
+// `npm run build:css`. State lives in attributes (aria-pressed, data-current, data-past), styled with variants.
+const S = Object.freeze({
+  html: 'scroll-smooth motion-reduce:scroll-auto bg-page text-ink',
+  body: 'm-0 bg-page text-ink font-ui [&_a:not([class])]:text-accent',
+  header: 'max-w-[1200px] mx-auto pt-7 px-4 pb-2.5',
+  kicker: 'text-[11px] font-extrabold tracking-[.12em] uppercase text-accent',
+  h1: 'mt-1.5 mb-1 mx-0 text-[22px] tablet:text-[27px] leading-[1.15]',
+  h2: 'mt-1.5 mb-1 mx-0 text-[22px] leading-[1.2]',
+  subtitle: 'text-muted text-[13px] leading-[1.45] max-w-[780px] [&_p]:mt-0 [&_p]:mb-1.5',
+  draft: 'inline-block mt-2.5 py-1 px-2.5 rounded-full bg-yellow-soft border border-yellow text-yellow text-[11px] font-bold',
+  board: 'max-w-[1200px] mx-auto pt-2.5 px-4 pb-10',
+  col: 'flex flex-col items-center',
+  connector: 'relative flex-none h-5 w-0.5 bg-line after:absolute after:-bottom-px after:-left-1 after:border-x-[5px] after:border-x-transparent after:border-t-[7px] after:border-t-line',
+  card: 'relative border-[1.5px] rounded-[15px] shadow-[var(--card-shadow)] py-[15px] px-[17px] w-full in-data-current:shadow-[0_0_0_2px_var(--color-accent),var(--card-shadow)]',
+  cardNarrow: 'max-w-[680px]',
+  cardWide: 'max-w-none',
+  when: 'text-[11.5px] text-muted mb-1.5',
+  tag: 'text-[9.5px] font-[850] tracking-[.1em] uppercase text-muted mb-[7px]',
+  title: 'text-[15px] leading-[1.38] font-bold',
+  details: 'mt-[9px] text-[13px] leading-[1.5] text-muted [&_p]:mt-0 [&_p]:mb-[7px] [&_p:last-child]:mb-0',
+  tip: 'mt-2.5 text-[11.5px] leading-[1.4] text-accent font-semibold',
+  coach: 'mt-2.5 py-2.5 px-[13px] border-[1.5px] border-dashed border-accent rounded-xl bg-[color-mix(in_srgb,var(--color-accent-soft)_50%,var(--color-card))] text-[12px] leading-[1.5] text-ink [&_p]:m-0',
+  coachTag: 'text-[9.5px] font-[850] tracking-[.1em] uppercase text-accent mb-[5px]',
+  pill: 'absolute -top-[11px] py-[3px] px-[9px] rounded-full bg-card border text-[9px] font-[850] tracking-[.07em]',
+  stepTitle: 'mt-0 mb-2 text-[11px] font-bold text-muted text-center',
+  next: 'mt-2.5 text-[12px] text-muted font-semibold',
+  pair: 'grid grid-cols-1 tablet:grid-cols-[2fr_1fr] gap-5 w-full max-w-[1000px] items-start',
+  closeRow: 'grid grid-cols-1 tablet:grid-cols-3 gap-4 w-full max-w-[1000px]',
+  sectionTitle: 'mt-[30px] mb-3.5 text-center text-[11px] font-[850] tracking-[.11em] uppercase text-muted',
+  lane: 'border border-line rounded-[18px] pt-[18px] px-3.5 pb-5 bg-[color-mix(in_srgb,var(--color-card)_55%,var(--color-page))]',
+  laneHead: 'text-center mb-4',
+  laneNumber: 'text-[10px] font-[850] tracking-[.1em] text-accent uppercase',
+  laneTitle: 'mt-1 mb-0 mx-0 text-[16px]',
+  laneWhen: 'mt-[5px] text-[11.5px] text-muted leading-[1.35]',
+  note: 'max-w-[860px] mt-3.5 mb-0 mx-0 py-3 px-4 border border-line rounded-xl text-muted text-[12px] leading-[1.5] bg-card [&_strong]:text-ink [&_ul]:mt-1.5 [&_ul]:mb-0 [&_ul]:pl-[18px]',
+  nav: 'sticky top-0 z-20 bg-card border-b border-line',
+  navInner: 'max-w-[1200px] mx-auto py-2.5 px-4 flex flex-wrap gap-1.5',
+  navLink: 'text-[12.5px] font-bold text-ink no-underline py-1.5 px-[11px] rounded-full border border-line bg-page',
+  flow: 'scroll-mt-[60px] border-t border-line',
+  back: 'max-w-[1200px] mx-auto pt-0 px-4 pb-[30px] text-right text-[12px]',
+  legend: 'flex flex-wrap justify-center gap-[18px] mt-[26px] mx-auto mb-0 text-[11px] text-muted',
+  legendItem: 'flex items-center gap-1.5',
+  dot: 'inline-block w-2.5 h-2.5 rounded-full border',
+  modes: 'inline-flex gap-1 mt-3 p-[3px] rounded-full border border-line bg-card',
+  mode: 'font-ui text-[12px] font-[750] border-0 bg-transparent text-muted py-1.5 px-3.5 rounded-full cursor-pointer aria-pressed:bg-accent aria-pressed:text-card',
+  assistant: 'max-w-[860px] mx-auto pt-2.5 px-4 pb-[60px]',
+  liveBar: 'flex flex-wrap justify-between items-center gap-2.5 py-2.5 px-3.5 mb-[18px] bg-card border-[1.5px] border-line rounded-2xl shadow-[var(--card-shadow)]',
+  group: 'flex flex-wrap gap-1.5',
+  flowTab: 'font-ui text-[12px] font-[750] py-[7px] px-[13px] rounded-full border-[1.5px] border-line bg-page text-muted cursor-pointer aria-pressed:bg-accent-soft aria-pressed:border-accent aria-pressed:text-accent',
+  undo: 'font-ui text-[11.5px] font-[750] py-[7px] px-3 rounded-[10px] border-[1.5px] border-line bg-card text-ink cursor-pointer hover:border-muted',
+  restart: 'font-ui text-[11.5px] font-[750] py-[7px] px-3 rounded-[10px] border-[1.5px] border-line bg-card text-ink cursor-pointer hover:border-red hover:text-red',
+  liveHead: '[&_h2]:mt-1',
+  liveHint: 'mt-3 mb-[18px] mx-0 text-muted text-[12.5px] leading-[1.45]',
+  stream: 'flex flex-col items-center'
+});
 
-const CONNECTOR = '<div class="connector"></div>';
-const PILL_BY_TONE = { yes: 'pill y', no: 'pill n', follow: 'pill n' };
+/** Card tones: border and background of each `tone:`. */
+const TONE = Object.freeze({
+  start: 'border-line bg-card',
+  plain: 'border-line bg-card',
+  yes: 'border-green bg-green-soft',
+  no: 'border-red bg-red-soft',
+  action: 'border-accent bg-accent-soft',
+  follow: 'border-yellow bg-yellow-soft'
+});
+
+/** The answer pill on a card: [data-pill value, side and colours]. */
+const PILL = Object.freeze({
+  plain: ['plain', 'left-[14px] border-line'],
+  yes: ['y', 'left-[14px] text-green border-green'],
+  no: ['n', 'right-[14px] text-red border-red']
+});
+const PILL_BY_TONE = { yes: PILL.yes, no: PILL.no, follow: PILL.no };
+
+/** Legend dots: [tone key, dot colours]. */
+const LEGEND = [['yes', 'bg-green-soft border-green'], ['no', 'bg-red-soft border-red'], ['action', 'bg-accent-soft border-accent'], ['follow', 'bg-yellow-soft border-yellow']];
+
+/** Answer layouts: [data-layout value, grid classes] by lane count (4 or more share the last one). */
+const LANES = Object.freeze({
+  1: ['lanes-1', 'grid gap-4 items-start grid-cols-[minmax(0,680px)] justify-center'],
+  2: ['lanes-2', 'grid gap-4 items-start grid-cols-1 tablet:grid-cols-2 mx-auto desktop:max-w-[calc((100%-32px)/3*2+16px)]'],
+  3: ['lanes-3', 'grid gap-4 items-start grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3'],
+  many: ['lanes', 'grid gap-4 items-start grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-4']
+});
+
+/** Classes the live assistant script puts on the elements it builds (sent to the page in its data). */
+export const LIVE_CLASSES = Object.freeze({
+  node: 'w-full max-w-[680px] outline-none',
+  connector: S.connector,
+  jump: 'mb-2 text-center text-[11px] font-[850] tracking-[.08em] uppercase text-accent',
+  stepTitle: 'mt-0 mb-2 text-[11px] font-bold text-muted text-left',
+  cards: 'flex flex-col items-center',
+  response: 'mt-3 py-3 px-3.5 border-[1.5px] border-dashed border-line rounded-[14px] bg-card in-data-current:border-accent',
+  prompt: 'mb-2.5 text-[11px] font-[850] tracking-[.08em] uppercase text-accent',
+  options: 'flex flex-col gap-2',
+  option: 'font-ui text-left flex flex-col gap-[3px] py-[11px] px-3.5 rounded-xl border-[1.5px] border-line bg-card text-ink cursor-pointer text-[13.5px] font-bold leading-[1.35] '
+    + 'hover:border-accent hover:bg-accent-soft focus-visible:border-accent focus-visible:bg-accent-soft aria-pressed:border-accent aria-pressed:bg-accent-soft in-data-past:not-aria-pressed:opacity-55',
+  optionWhen: 'text-[11.5px] font-medium text-muted',
+  choice: 'py-[5px] px-3 rounded-full border border-accent bg-accent-soft text-accent text-[12px] font-semibold outline-none',
+  reply: 'w-full max-w-[680px] outline-none flex flex-col items-center',
+  end: 'w-full max-w-[680px] text-center py-4 px-[18px] rounded-[14px] bg-green-soft border-[1.5px] border-green text-green font-extrabold text-[14.5px] outline-none',
+  rise: 'animate-rise motion-reduce:animate-none'
+});
+
+const CONNECTOR = `<div class="${S.connector}"></div>`;
 const paragraphs = (text) => text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
   .map((p) => `<p>${linkInline(p.replace(/\s*\n\s*/g, ' '))}</p>`).join('');
 const isEnd = (owner) => foldText(owner.next).trim() === 'end';
@@ -154,71 +156,73 @@ const isEnd = (owner) => foldText(owner.next).trim() === 'end';
 // An answer may have no card at all (a pure routing option: its label leads straight to `next:`).
 const NO_CARD = Object.freeze({ tag: '', say: '', details: [], tip: '', coach: '', tone: 'plain' });
 
-function renderCard(card = NO_CARD, { lang = DEFAULT_LANGUAGE, pill = '', when = '', extra = '' } = {}) {
-  const coach = card.coach && `<div class="coach"><div class="coach-tag">${plain(t(lang, 'script.coach'))}</div><p>${linkInline(card.coach)}</p></div>`;
-  const parts = [pill, when && `<div class="when">${plain(when)}</div>`, card.tag && `<div class="tag">${plain(card.tag)}</div>`,
-    card.say && `<div class="title">${linkInline(card.say)}</div>`,
-    card.details?.length ? `<div class="script">${card.details.map((d) => `<p>${linkInline(d)}</p>`).join('')}</div>` : '',
-    card.tip && `<div class="tip">${linkInline(card.tip)}</div>`, coach, extra];
-  return `<div class="card ${card.tone || 'plain'}">${parts.filter(Boolean).join('')}</div>`;
+function renderCard(card = NO_CARD, { lang = DEFAULT_LANGUAGE, pill = '', when = '', extra = '', wide = false } = {}) {
+  const coach = card.coach && `<div data-coach class="${S.coach}"><div class="${S.coachTag}">${plain(t(lang, 'script.coach'))}</div><p>${linkInline(card.coach)}</p></div>`;
+  const parts = [pill, when && `<div class="${S.when}">${plain(when)}</div>`, card.tag && `<div class="${S.tag}">${plain(card.tag)}</div>`,
+    card.say && `<div class="${S.title}">${linkInline(card.say)}</div>`,
+    card.details?.length ? `<div class="${S.details}">${card.details.map((d) => `<p>${linkInline(d)}</p>`).join('')}</div>` : '',
+    card.tip && `<div class="${S.tip}">${linkInline(card.tip)}</div>`, coach, extra];
+  const tone = TONE[card.tone] ? card.tone : 'plain';
+  return `<div data-tone="${tone}" class="${S.card} ${wide ? S.cardWide : S.cardNarrow} ${TONE[tone]}">${parts.filter(Boolean).join('')}</div>`;
 }
 
 const renderCards = (cards, lang) => cards.map((card) => renderCard(card, { lang })).join(CONNECTOR);
 
 function nextLine(owner, lang) {
   if (!owner.next) return '';
-  if (isEnd(owner)) return `<div class="next">${plain(t(lang, 'script.end'))}</div>`;
+  if (isEnd(owner)) return `<div class="${S.next}">${plain(t(lang, 'script.end'))}</div>`;
   const label = plain(owner.next);
   const target = owner.nextAnchor ? `<a href="#${escapeHtml(owner.nextAnchor)}">${label}</a>` : label;
-  return `<div class="next">${plain(t(lang, 'script.next'))} ${target}</div>`;
+  return `<div class="${S.next}">${plain(t(lang, 'script.next'))} ${target}</div>`;
 }
 
 function answerPill(answer) {
-  const cls = PILL_BY_TONE[answer.cards[0]?.tone] ?? 'pill';
-  return `<div class="${cls}">${plain(answer.label)}</div>`;
+  const [kind, side] = PILL_BY_TONE[answer.cards[0]?.tone] ?? PILL.plain;
+  return `<div data-pill="${kind}" class="${S.pill} ${side}">${plain(answer.label)}</div>`;
 }
 
 function renderLane(answer, number, lang) {
-  const head = `<div class="lane-head"><div class="number">${plain(t(lang, 'script.route', { number: String(number).padStart(2, '0') }))}</div>`
-    + `<h3>${plain(answer.label)}</h3>${answer.when ? `<div class="when">${plain(answer.when)}</div>` : ''}</div>`;
-  const cards = answer.cards.map((card, i) => renderCard(card, { lang, pill: i === 0 ? answerPill(answer) : '' }));
-  return `<section class="lane">${head}<div class="stack">${cards.join(CONNECTOR)}</div>${nextLine(answer, lang)}</section>`;
+  const head = `<div class="${S.laneHead}"><div class="${S.laneNumber}">${plain(t(lang, 'script.route', { number: String(number).padStart(2, '0') }))}</div>`
+    + `<h3 class="${S.laneTitle}">${plain(answer.label)}</h3>${answer.when ? `<div class="${S.laneWhen}">${plain(answer.when)}</div>` : ''}</div>`;
+  const cards = answer.cards.map((card, i) => renderCard(card, { lang, wide: true, pill: i === 0 ? answerPill(answer) : '' }));
+  return `<section data-lane class="${S.lane}">${head}<div class="${S.col}">${cards.join(CONNECTOR)}</div>${nextLine(answer, lang)}</section>`;
 }
 
 function renderAnswers(step, lang) {
   const { answers } = step;
   const n = answers.length;
   if (n === 0) return '';
-  const single = (answer) => renderCard(answer.cards[0], { lang, pill: answerPill(answer), when: answer.when, extra: nextLine(answer, lang) });
+  const single = (answer, wide) => renderCard(answer.cards[0], { lang, wide, pill: answerPill(answer), when: answer.when, extra: nextLine(answer, lang) });
   const lanes = answers.some((a) => a.cards.length > 1) || n >= 4;
-  const wrap = (inner) => `<div class="col">${CONNECTOR}</div>${inner}`;
+  const wrap = (inner) => `<div class="${S.col}">${CONNECTOR}</div>${inner}`;
   if (lanes) {
-    const cls = { 1: 'lanes one', 2: 'lanes two', 3: 'lanes three' }[n] ?? 'lanes';
-    return wrap(`<div class="section-title">${plain(t(lang, 'script.routes', { count: n }))}</div><div class="${cls}">${answers.map((a, i) => renderLane(a, i + 1, lang)).join('')}</div>`);
+    const [layout, cls] = LANES[n] ?? LANES.many;
+    return wrap(`<div class="${S.sectionTitle}">${plain(t(lang, 'script.routes', { count: n }))}</div><div data-layout="${layout}" class="${cls}">${answers.map((a, i) => renderLane(a, i + 1, lang)).join('')}</div>`);
   }
-  if (n === 1) return wrap(`<div class="col answers">${single(answers[0])}</div>`);
-  return wrap(`<div class="${n === 2 ? 'pair' : 'close-row'}">${answers.map(single).join('')}</div>`);
+  if (n === 1) return wrap(`<div data-layout="single" class="${S.col}">${single(answers[0], false)}</div>`);
+  const [layout, cls] = n === 2 ? ['pair', S.pair] : ['close-row', S.closeRow];
+  return wrap(`<div data-layout="${layout}" class="${cls}">${answers.map((a) => single(a, true)).join('')}</div>`);
 }
 
 function renderStep(step, lang) {
   const next = step.answers.length === 0 ? nextLine(step, lang) : '';
-  return `<div class="step" id="${escapeHtml(step.anchor)}"><div class="step-title">${plain(step.title)}</div>`
-    + `<div class="col">${renderCards(step.cards, lang)}${next}</div>${renderAnswers(step, lang)}${step.answers.length ? nextLine(step, lang) : ''}</div>`;
+  return `<div id="${escapeHtml(step.anchor)}"><div class="${S.stepTitle}">${plain(step.title)}</div>`
+    + `<div class="${S.col}">${renderCards(step.cards, lang)}${next}</div>${renderAnswers(step, lang)}${step.answers.length ? nextLine(step, lang) : ''}</div>`;
 }
 
 function conversationHead(conv, index, lang) {
   const rules = conv.rules.length
-    ? `<div class="note"><strong>${plain(t(lang, 'script.rules'))}</strong><ul>${conv.rules.map((r) => `<li>${linkInline(r)}</li>`).join('')}</ul></div>` : '';
-  const goal = conv.goal ? `<div class="subtitle"><strong>${plain(t(lang, 'script.goal'))}:</strong> ${linkInline(conv.goal)}</div>` : '';
-  const note = conv.note ? `<div class="note">${linkInline(conv.note)}</div>` : '';
-  return `<div class="kicker">${index + 1}</div><h2>${plain(conv.title)}</h2>${goal}${note}${rules}`;
+    ? `<div class="${S.note}"><strong>${plain(t(lang, 'script.rules'))}</strong><ul>${conv.rules.map((r) => `<li>${linkInline(r)}</li>`).join('')}</ul></div>` : '';
+  const goal = conv.goal ? `<div class="${S.subtitle}"><strong>${plain(t(lang, 'script.goal'))}:</strong> ${linkInline(conv.goal)}</div>` : '';
+  const note = conv.note ? `<div class="${S.note}">${linkInline(conv.note)}</div>` : '';
+  return `<div class="${S.kicker}">${index + 1}</div><h2 class="${S.h2}">${plain(conv.title)}</h2>${goal}${note}${rules}`;
 }
 
 function renderConversation(conv, index, { lang, hasNav }) {
   const links = [hasNav && `<a href="#top">${plain(t(lang, 'script.backToMenu'))}</a>`, `<a href="../sales-system.html">${plain(t(lang, 'script.backToPage'))}</a>`].filter(Boolean);
-  return `<section class="flow" id="${escapeHtml(conv.anchor)}"><header class="header">${conversationHead(conv, index, lang)}</header>`
-    + `<main class="board">${conv.steps.map((s) => renderStep(s, lang)).join(`<div class="col">${CONNECTOR}</div>`)}</main>`
-    + `<div class="back">${links.join(' · ')}</div></section>`;
+  return `<section class="${S.flow}" id="${escapeHtml(conv.anchor)}"><header class="${S.header}">${conversationHead(conv, index, lang)}</header>`
+    + `<main class="${S.board}">${conv.steps.map((s) => renderStep(s, lang)).join(`<div class="${S.col}">${CONNECTOR}</div>`)}</main>`
+    + `<div class="${S.back}">${links.join(' · ')}</div></section>`;
 }
 
 const LIVE_UI = ['ask', 'answered', 'end'];
@@ -258,7 +262,7 @@ export function buildAssistant(script, lang = DEFAULT_LANGUAGE) {
     })
   }));
   const ui = Object.fromEntries(LIVE_UI.map((key) => [key, t(lang, `script.live.${key}`)]));
-  return { flows, anchors, ui };
+  return { flows, anchors, ui, cls: LIVE_CLASSES };
 }
 
 // JSON inside the one inline script: `<` and `>` become \u escapes so the data can never close the script or open
@@ -278,6 +282,7 @@ const ASSISTANT_JS = `(function () {
   var head = doc.getElementById('live-head');
   var tabs = [].slice.call(doc.querySelectorAll('[data-flow]'));
   var modeButtons = [].slice.call(doc.querySelectorAll('[data-mode]'));
+  var cls = data.cls;
   var trail = [];
 
   function node(tag, cls, html) {
@@ -294,7 +299,6 @@ const ASSISTANT_JS = `(function () {
   }
   function stepOf(entry) { return data.flows[entry.f].steps[entry.s]; }
   function press(button, on) {
-    button.classList.toggle('active', on);
     button.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
 
@@ -325,25 +329,26 @@ const ASSISTANT_JS = `(function () {
     trail.forEach(function (entry, i) {
       var step = stepOf(entry);
       var last = i === trail.length - 1;
-      var box = node('div', 'live-node' + (last ? ' current' : '') + (i > from ? ' live-new' : ''));
+      var box = node('div', cls.node + (i > from ? ' ' + cls.rise : ''));
+      box.setAttribute(last ? 'data-current' : 'data-past', '');
       box.id = 'live-' + i;
       box.tabIndex = -1;
       if (i > 0) {
-        stream.appendChild(node('div', 'connector'));
-        if (trail[i - 1].f !== entry.f) box.appendChild(node('div', 'jump', data.flows[entry.f].title));
+        stream.appendChild(node('div', cls.connector));
+        if (trail[i - 1].f !== entry.f) box.appendChild(node('div', cls.jump, data.flows[entry.f].title));
       }
-      if (step.title) box.appendChild(node('div', 'step-title', step.title));
-      if (step.html) box.appendChild(node('div', 'live-cards', step.html));
+      if (step.title) box.appendChild(node('div', cls.stepTitle, step.title));
+      if (step.html) box.appendChild(node('div', cls.cards, step.html));
       if (step.options.length) {
-        var response = node('div', 'response');
-        if (step.ask) response.appendChild(label('div', 'response-prompt', data.ui.ask));
-        var list = node('div', 'options');
+        var response = node('div', cls.response);
+        if (step.ask) response.appendChild(label('div', cls.prompt, data.ui.ask));
+        var list = node('div', cls.options);
         step.options.forEach(function (option, o) {
-          var button = node('button', 'opt' + (entry.pick === o ? ' chosen' : ''));
+          var button = node('button', cls.option);
           button.type = 'button';
           button.setAttribute('aria-pressed', entry.pick === o ? 'true' : 'false');
-          button.appendChild(node('span', 'opt-label', option.label));
-          if (option.when) button.appendChild(node('span', 'opt-when', option.when));
+          button.appendChild(node('span', '', option.label));
+          if (option.when) button.appendChild(node('span', cls.optionWhen, option.when));
           button.addEventListener('click', function () { choose(i, o); });
           list.appendChild(button);
         });
@@ -359,14 +364,14 @@ const ASSISTANT_JS = `(function () {
       var chosen = step.options[entry.pick];
       var after = [];
       if (step.ask) {
-        var badge = label('div', 'choice', data.ui.answered + ' ');
+        var badge = label('div', cls.choice, data.ui.answered + ' ');
         badge.appendChild(node('strong', '', chosen.label));
         after.push(badge);
       }
-      if (chosen.reply) after.push(node('div', 'live-reply', chosen.reply));
+      if (chosen.reply) after.push(node('div', cls.reply, chosen.reply));
       after.forEach(function (el) {
-        stream.appendChild(node('div', 'connector'));
-        if (i >= from) el.className += ' live-new';
+        stream.appendChild(node('div', cls.connector));
+        if (i >= from) el.className += ' ' + cls.rise;
         el.tabIndex = -1;
         stream.appendChild(el);
         if (i >= from && from >= 0 && !focus) focus = el;
@@ -379,8 +384,8 @@ const ASSISTANT_JS = `(function () {
     }
   }
   function endBanner(isNew) {
-    stream.appendChild(node('div', 'connector'));
-    var banner = label('div', 'end-banner' + (isNew ? ' live-new' : ''), data.ui.end);
+    stream.appendChild(node('div', cls.connector));
+    var banner = label('div', cls.end + (isNew ? ' ' + cls.rise : ''), data.ui.end);
     banner.tabIndex = -1;
     stream.appendChild(banner);
     return isNew ? banner : null;
@@ -409,13 +414,13 @@ const ASSISTANT_JS = `(function () {
 })();`;
 
 function renderAssistant(script, lang) {
-  const tabs = script.conversations.map((c, i) => `<button type="button" class="flow-tab" data-flow="${i}" aria-pressed="false">${i + 1}. ${plain(c.title)}</button>`).join('');
-  return `<div id="assistant" class="assistant" hidden>`
-    + `<div class="live-bar"><div class="flow-tabs" role="group" aria-label="${plain(t(lang, 'script.live.tabs'))}">${tabs}</div>`
-    + `<div class="live-actions"><button type="button" id="live-undo" class="live-btn">⬅ ${plain(t(lang, 'script.live.undo'))}</button>`
-    + `<button type="button" id="live-restart" class="live-btn">↺ ${plain(t(lang, 'script.live.restart'))}</button></div></div>`
-    + `<div id="live-head" class="live-head"></div><p class="live-hint">${plain(t(lang, 'script.live.hint'))}</p>`
-    + `<div id="live-stream" class="stream" aria-live="polite"></div></div>`;
+  const tabs = script.conversations.map((c, i) => `<button type="button" class="${S.flowTab}" data-flow="${i}" aria-pressed="false">${i + 1}. ${plain(c.title)}</button>`).join('');
+  return `<div id="assistant" class="${S.assistant}" hidden>`
+    + `<div class="${S.liveBar}"><div class="${S.group}" role="group" aria-label="${plain(t(lang, 'script.live.tabs'))}">${tabs}</div>`
+    + `<div class="${S.group}"><button type="button" id="live-undo" class="${S.undo}">⬅ ${plain(t(lang, 'script.live.undo'))}</button>`
+    + `<button type="button" id="live-restart" class="${S.restart}">↺ ${plain(t(lang, 'script.live.restart'))}</button></div></div>`
+    + `<div id="live-head" class="${S.liveHead}"></div><p class="${S.liveHint}">${plain(t(lang, 'script.live.hint'))}</p>`
+    + `<div id="live-stream" class="${S.stream}" aria-live="polite"></div></div>`;
 }
 
 /** One complete offline HTML document for a parsed script: the live assistant (with JavaScript) and the full diagram. */
@@ -423,30 +428,30 @@ export function renderScriptPage(script, { lang = DEFAULT_LANGUAGE, company = ''
   const hasNav = script.conversations.length > 1;
   const title = company ? `${company} · ${script.title}` : script.title;
   const nav = hasNav
-    ? `<nav class="flows" id="top"><div class="nav-inner">${script.conversations.map((c, i) => `<a href="#${escapeHtml(c.anchor)}">${i + 1}. ${plain(c.title)}</a>`).join('')}</div></nav>` : '<span id="top"></span>';
+    ? `<nav class="${S.nav}" id="top"><div class="${S.navInner}">${script.conversations.map((c, i) => `<a class="${S.navLink}" href="#${escapeHtml(c.anchor)}">${i + 1}. ${plain(c.title)}</a>`).join('')}</div></nav>` : '<span id="top"></span>';
   const badges = [script.status === 'draft' && t(lang, 'script.draftBadge'), draft && t(lang, 'view.draftBadge')].filter(Boolean)
-    .map((label) => `<div class="draft">${plain(label)}</div>`).join('');
-  const legend = [['g', 'yes'], ['r', 'no'], ['b', 'action'], ['y', 'follow']]
-    .map(([dot, key]) => `<span><i class="dot ${dot}"></i>${plain(t(lang, `script.legend.${key}`))}</span>`).join('');
-  const modes = `<div id="modes" class="modes" role="group" aria-label="${plain(t(lang, 'script.live.views'))}" hidden>`
-    + `<button type="button" class="mode" data-mode="live" aria-pressed="false">${plain(t(lang, 'script.live.mode'))}</button>`
-    + `<button type="button" class="mode" data-mode="diagram" aria-pressed="false">${plain(t(lang, 'script.live.diagram'))}</button></div>`;
+    .map((label) => `<div data-badge="draft" class="${S.draft}">${plain(label)}</div>`).join('');
+  const legend = LEGEND
+    .map(([key, colors]) => `<span class="${S.legendItem}"><i class="${S.dot} ${colors}"></i>${plain(t(lang, `script.legend.${key}`))}</span>`).join('');
+  const modes = `<div id="modes" class="${S.modes}" role="group" aria-label="${plain(t(lang, 'script.live.views'))}" hidden>`
+    + `<button type="button" class="${S.mode}" data-mode="live" aria-pressed="false">${plain(t(lang, 'script.live.mode'))}</button>`
+    + `<button type="button" class="${S.mode}" data-mode="diagram" aria-pressed="false">${plain(t(lang, 'script.live.diagram'))}</button></div>`;
   return `<!doctype html>
-<html lang="${escapeHtml(lang)}">
+<html lang="${escapeHtml(lang)}" class="${S.html}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="generator" content="clc-brain">
 <title>${plain(title)}</title>
-<style>${SCRIPT_CSS}</style>
+<style>${PAGE_CSS}</style>
 </head>
-<body>
-<header class="header">${script.industry ? `<div class="kicker">${plain(script.industry)}</div>` : ''}<h1>${plain(script.title)}</h1>${script.intro ? `<div class="subtitle">${paragraphs(script.intro)}</div>` : ''}${badges}${modes}</header>
+<body class="${S.body}">
+<header class="${S.header}">${script.industry ? `<div class="${S.kicker}">${plain(script.industry)}</div>` : ''}<h1 class="${S.h1}">${plain(script.title)}</h1>${script.intro ? `<div class="${S.subtitle}">${paragraphs(script.intro)}</div>` : ''}${badges}${modes}</header>
 ${renderAssistant(script, lang)}
-<div id="diagram" class="diagram">
+<div id="diagram">
 ${nav}
 ${script.conversations.map((c, i) => renderConversation(c, i, { lang, hasNav })).join('\n')}
-<div class="legend">${legend}</div>
+<div class="${S.legend}">${legend}</div>
 </div>
 <script>${ASSISTANT_JS.replace('__DATA__', () => scriptJson(buildAssistant(script, lang)))}</script>
 </body>

@@ -70,7 +70,7 @@ test('view --draft <script.md> previews the page and script pages in a temp fold
     assert.ok(path.relative(brain, preview).startsWith('..'));
     const page = fs.readFileSync(path.join(dir, 'scripts', 'sample-co.html'), 'utf8');
     assert.match(page, /Draft — not saved yet/);
-    assert.match(page, /<div id="assistant" class="assistant" hidden>/);
+    assert.match(page, /<div id="assistant" class="[^"]*" hidden>/);
     assert.equal((page.match(/<script>/g) ?? []).length, 1);
     assert.match(res.stdout, /scripts\/sample-co\.html/);
   } finally {
