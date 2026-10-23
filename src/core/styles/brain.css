@@ -1,0 +1,142 @@
+/*
+ * Tailwind input for every page clc-brain generates (the sales page, script pages and draft previews).
+ * Build with `npm run build:css`; the result is checked in as src/core/styles/compiled.js and inlined in each page.
+ * Renderers only use classes found in the files listed by @source below (see TECHNICAL.md, ADR 0010).
+ * Preflight is left out on purpose: the pages render markdown as bare h3/p/ul/table elements that rely on browser defaults.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+
+@source "../page-classes.js";
+@source "../sales-view.js";
+@source "../sales-dashboard.js";
+@source "../sales-sections.js";
+@source "../script-view.js";
+@source "../flowchart.js";
+
+@theme {
+  --color-*: initial;
+  --color-page: #f7f7f5;
+  --color-card: #fff;
+  --color-ink: #1f2328;
+  --color-muted: #5b6470;
+  --color-line: #e3e3de;
+  --color-accent: #2f6fde;
+  --color-accent-soft: #eef3fc;
+  --color-green: #2f8f5b;
+  --color-green-soft: #eef8f2;
+  --color-red: #c2405a;
+  --color-red-soft: #fdf1f4;
+  --color-yellow: #b7791f;
+  --color-yellow-soft: #fdf6e9;
+  --color-draft: #fff4d6;
+  --color-draft-ink: #7a4b00;
+  --color-draft-line: #e8c46a;
+
+  --font-*: initial;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --breakpoint-*: initial;
+  --breakpoint-tablet: 641px;
+  --breakpoint-desktop: 981px;
+
+  --animate-rise: rise 0.2s ease-out;
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@layer base {
+  :root {
+    --card-shadow: 0 6px 20px rgba(31, 35, 40, 0.07);
+    --fc-node: #fff;
+    --fc-stroke: #2f6fde;
+    --fc-decision: #fff8e6;
+    --fc-decision-stroke: #c98a00;
+    --fc-text: #1f2328;
+    --fc-line: #8a929c;
+    --fc-label-bg: #eef3fc;
+    --fc-label: #3d4550;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-page: #16181c;
+      --color-card: #1f2227;
+      --color-ink: #e8e8e6;
+      --color-muted: #a3a9b2;
+      --color-line: #33373e;
+      --color-accent: #7aa7ff;
+      --color-accent-soft: #232a36;
+      --color-green: #6fcf97;
+      --color-green-soft: #1c2b23;
+      --color-red: #ef8aa0;
+      --color-red-soft: #2f1c22;
+      --color-yellow: #e8b65a;
+      --color-yellow-soft: #2d2618;
+      --color-draft: #3a2f12;
+      --color-draft-ink: #f3d58a;
+      --color-draft-line: #6b5520;
+      --card-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      --fc-node: #1f2227;
+      --fc-stroke: #7aa7ff;
+      --fc-decision: #2e2715;
+      --fc-decision-stroke: #e0b04a;
+      --fc-text: #e8e8e6;
+      --fc-line: #7d848e;
+      --fc-label-bg: #232a36;
+      --fc-label: #c9ced6;
+    }
+  }
+  *,
+  ::before,
+  ::after {
+    box-sizing: border-box;
+  }
+  [hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
+  }
+}
+
+/* Inline SVG diagrams (src/core/flowchart.js): SVG paint is not covered by utilities, so these few classes stay semantic. */
+@layer components {
+  .fc {
+    font-family: var(--font-sans);
+  }
+  .fc-shape {
+    fill: var(--fc-node);
+    stroke: var(--fc-stroke);
+    stroke-width: 1.5;
+  }
+  .fc-decision {
+    fill: var(--fc-decision);
+    stroke: var(--fc-decision-stroke);
+  }
+  .fc-text {
+    fill: var(--fc-text);
+    font-size: 14px;
+  }
+  .fc-edge {
+    fill: none;
+    stroke: var(--fc-line);
+    stroke-width: 1.6;
+  }
+  .fc-arrowhead {
+    fill: var(--fc-line);
+  }
+  .fc-label-bg {
+    fill: var(--fc-label-bg);
+  }
+  .fc-label {
+    fill: var(--fc-label);
+    font-size: 13px;
+  }
+}
