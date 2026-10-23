@@ -238,8 +238,8 @@ test('the page holds the live assistant (hidden without js) and the full diagram
   assert.match(html, /<button type="button" class="[^"]*" data-mode="live"[^>]*>Asistente en vivo<\/button>/);
   assert.match(html, /<button type="button" class="[^"]*" data-mode="diagram"[^>]*>Diagrama completo<\/button>/);
   assert.match(html, /<button type="button" class="[^"]*" data-flow="1"[^>]*>2\. Second talk<\/button>/);
-  assert.match(html, /<button type="button" id="live-undo"[^>]*>[^<]*Deshacer<\/button>/);
-  assert.match(html, /<button type="button" id="live-restart"[^>]*>[^<]*Reiniciar<\/button>/);
+  assert.match(html, /<button type="button" id="live-undo"[^>]*title="Deshacer">[^<]*<span[^>]*> Deshacer<\/span><\/button>/);
+  assert.match(html, /<button type="button" id="live-restart"[^>]*title="Reiniciar">[^<]*<span[^>]*> Reiniciar<\/span><\/button>/);
   assert.match(html, /<div id="live-stream" class="[^"]*" aria-live="polite"><\/div>/);
   assert.ok(!/<button(?![^>]*type="button")/.test(html), 'every button is type=button');
 });
@@ -261,4 +261,64 @@ test('a single-conversation script still gets one tab and the assistant', () => 
   const html = renderScriptPage(parseScript(FM() + '## C\n### S\nsay: hi\n'), { lang: 'en' });
   assert.match(html, /data-flow="0"/);
   assert.match(html, /id="live-stream"/);
+});
+
+test('cards follow the live-page anatomy: step title labels the first card, tip and advice boxes, bold conditions read smaller', () => {
+  const src = FM() + '## C\nnote: Keep it short\n- Listen first\n### Greet\ntag: Opening\nsay: Hello\ndetail: **If busy:** ask for a better time\ndetail: Plain line\ntip: Wait for the answer\n';
+  const en = renderScriptPage(parseScript(src), { lang: 'en' });
+  const es = renderScriptPage(parseScript(src), { lang: 'es' });
+  assert.match(en, /data-tone="plain"[^>]*><div class="[^"]*">Greet · Opening<\/div>/);
+  assert.match(en, /data-tip class="[^"]*"><div class="[^"]*">What to do<\/div>Wait for the answer<\/div>/);
+  assert.match(es, /data-tip class="[^"]*"><div class="[^"]*">Qué hacer<\/div>/);
+  assert.match(en, /<p class="[^"]+"><strong>If busy:<\/strong> ask for a better time<\/p><p>Plain line<\/p>/);
+  assert.match(en, /<div class="[^"]*">Advice<\/div>Keep it short<\/div>/);
+  assert.match(es, /<div class="[^"]*">Reglas<\/div><ul><li>Listen first<\/li><\/ul>/);
+  assert.ok(en.indexOf('Keep it short') > en.indexOf('id="c-step-1"'), 'advice and rules close the conversation');
+});
+
+test('live cards carry the words-to-say block and the page has the sticky top bar, legend and keyboard hint', () => {
+  const data = buildAssistant(parseScript(LIVE), 'es');
+  assert.match(data.flows[0].steps[0].html, /🗣️ Guion<\/div><div class="[^"]*">Hello \[NAME\]<\/div>/);
+  assert.match(data.flows[0].head, /Conversación 1<\/div><h2 [^>]*>First talk<\/h2>/);
+  assert.equal(data.ui.keys, 'Teclas 1–{n} para elegir · ⌫ deshacer');
+  const html = renderScriptPage(parseScript(LIVE), { lang: 'en' });
+  assert.match(html, /<nav class="[^"]*" id="top"><div class="[^"]*"><div class="[^"]*">Sample<\/div><div id="modes"/);
+  assert.match(html, /<div id="nav-links" class="[^"]*"><a [^>]*href="#first-talk">1\. First talk<\/a>/);
+  for (const label of ['Script', 'Client answered', 'What to do', 'Call tip']) assert.ok(html.includes(`</i>${label}</span>`), label);
+  const one = renderScriptPage(parseScript(FM() + '## C\n### S\nsay: hi\n'), { lang: 'en' });
+  assert.ok(!one.includes('id="nav-links"'), 'one conversation needs no menu');
+});
+
+test('a step with answers also offers "Continue" to its default path unless an answer already goes there', () => {
+  const src = FM() + `## C
+### Ask
+say: q
+#### Not the person
+say: who then?
+next: end
+### Middle
+say: m
+next: Last
+#### Goes to last
+next: Last
+### Covered
+say: c
+#### Plain answer
+say: ok
+### Last
+say: l
+#### Bye
+next: end
+`;
+  const steps = buildAssistant(parseScript(src), 'en').flows[0].steps;
+  assert.deepEqual(steps[0].options.map((o) => [o.label, o.to]), [['Not the person', null], ['Continue — the conversation went on', [0, 1]]]);
+  assert.equal(steps[0].ask, true);
+  assert.equal(steps[0].options[1].reply, '');
+  assert.deepEqual(steps[1].options.map((o) => o.label), ['Goes to last'], 'an answer already takes the step next:');
+  assert.deepEqual(steps[2].options.map((o) => o.label), ['Plain answer'], 'an answer without next: follows the default path');
+  assert.deepEqual(steps[3].options.map((o) => o.label), ['Bye'], 'the last step has no default path');
+  const es = buildAssistant(parseScript(src), 'es').flows[0].steps[0].options;
+  assert.equal(es[1].label, 'Continuar — siguió la conversación');
+  const html = renderScriptPage(parseScript(src), { lang: 'en' });
+  assert.ok(!html.replace(/<script>[\s\S]*<\/script>/, '').includes('the conversation went on'), 'the diagram is unchanged');
 });

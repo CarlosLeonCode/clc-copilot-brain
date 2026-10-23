@@ -16,37 +16,58 @@
 @source "../flowchart.js";
 
 @theme {
+  /* Palette and type of the hand-made script pages this design follows (slate ink, blue brand, Inter). */
   --color-*: initial;
-  --color-page: #f7f7f5;
+  --color-page: #f7f8fb;
   --color-card: #fff;
-  --color-ink: #1f2328;
-  --color-muted: #5b6470;
-  --color-line: #e3e3de;
-  --color-accent: #2f6fde;
-  --color-accent-soft: #eef3fc;
-  --color-green: #2f8f5b;
-  --color-green-soft: #eef8f2;
-  --color-red: #c2405a;
-  --color-red-soft: #fdf1f4;
-  --color-yellow: #b7791f;
-  --color-yellow-soft: #fdf6e9;
+  --color-lane: #fbfcfe;
+  --color-ink: #0f172a;
+  --color-ink-soft: #1e293b;
+  --color-subtle: #475569;
+  --color-muted: #64748b;
+  --color-faint: #94a3b8;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+  --color-chip: #f1f5f9;
+  --color-accent: #356ae6;
+  --color-accent-soft: #f0f4ff;
+  --color-on-accent: #fff;
+  --color-green: #059669;
+  --color-green-strong: #047857;
+  --color-green-line: #10b981;
+  --color-green-soft: #ecfdf5;
+  --color-red: #e11d48;
+  --color-red-line: #f43f5e;
+  --color-red-soft: #fff1f2;
+  --color-yellow: #b45309;
+  --color-yellow-line: #fbbf24;
+  --color-yellow-soft: #fffbeb;
+  --color-tip: #fffbeb;
+  --color-tip-line: #fde68a;
+  --color-tip-ink: #451a03;
+  --color-tip-label: #b45309;
+  --color-coach: #f5f3ff;
+  --color-coach-line: #ddd6fe;
+  --color-coach-ink: #2e1065;
+  --color-coach-strong: #4c1d95;
+  --color-coach-label: #6d28d9;
   --color-draft: #fff4d6;
   --color-draft-ink: #7a4b00;
   --color-draft-line: #e8c46a;
 
   --font-*: initial;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-tablet: 641px;
   --breakpoint-desktop: 981px;
+  --breakpoint-wide: 1200px;
 
-  --animate-rise: rise 0.2s ease-out;
+  --animate-rise: rise 0.22s ease-out;
   @keyframes rise {
     from {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
@@ -57,31 +78,52 @@
 
 @layer base {
   :root {
+    --nav-h: 56px;
     --card-shadow: 0 6px 20px rgba(31, 35, 40, 0.07);
     --fc-node: #fff;
-    --fc-stroke: #2f6fde;
+    --fc-stroke: #356ae6;
     --fc-decision: #fff8e6;
     --fc-decision-stroke: #c98a00;
     --fc-text: #1f2328;
     --fc-line: #8a929c;
-    --fc-label-bg: #eef3fc;
+    --fc-label-bg: #f0f4ff;
     --fc-label: #3d4550;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --color-page: #16181c;
-      --color-card: #1f2227;
-      --color-ink: #e8e8e6;
-      --color-muted: #a3a9b2;
-      --color-line: #33373e;
-      --color-accent: #7aa7ff;
-      --color-accent-soft: #232a36;
-      --color-green: #6fcf97;
-      --color-green-soft: #1c2b23;
-      --color-red: #ef8aa0;
-      --color-red-soft: #2f1c22;
-      --color-yellow: #e8b65a;
-      --color-yellow-soft: #2d2618;
+      --color-page: #0f1218;
+      --color-card: #171b22;
+      --color-lane: #13171d;
+      --color-ink: #e7eaf0;
+      --color-ink-soft: #cfd5df;
+      --color-subtle: #b9c1cd;
+      --color-muted: #9aa4b2;
+      --color-faint: #6b7585;
+      --color-line: #2a303a;
+      --color-line-strong: #3a4250;
+      --color-chip: #222833;
+      --color-accent: #7aa2ff;
+      --color-accent-soft: #1c2540;
+      --color-on-accent: #0f1218;
+      --color-green: #34d399;
+      --color-green-strong: #6ee7b7;
+      --color-green-line: #10b981;
+      --color-green-soft: #0f2a22;
+      --color-red: #fb7185;
+      --color-red-line: #f43f5e;
+      --color-red-soft: #2e1820;
+      --color-yellow: #fbbf24;
+      --color-yellow-line: #f59e0b;
+      --color-yellow-soft: #2a2212;
+      --color-tip: #2a2212;
+      --color-tip-line: #5c4513;
+      --color-tip-ink: #fde68a;
+      --color-tip-label: #fbbf24;
+      --color-coach: #221d38;
+      --color-coach-line: #43376e;
+      --color-coach-ink: #ddd6fe;
+      --color-coach-strong: #ede9fe;
+      --color-coach-label: #a78bfa;
       --color-draft: #3a2f12;
       --color-draft-ink: #f3d58a;
       --color-draft-line: #6b5520;
